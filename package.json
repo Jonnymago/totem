@@ -12,6 +12,12 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.0",
     "clsx": "^2.1.1",
+    "expo": "^54.0.36",
+    "expo-font": "^14.0.12",
+    "expo-image-picker": "^17.0.11",
+    "expo-router": "^6.0.24",
+    "expo-splash-screen": "^31.0.13",
+    "expo-web-browser": "^15.0.11",
     "lucide-react": "^0.475.0",
     "motion": "^12.4.7",
     "react": "^19.0.0",
@@ -22,6 +28,8 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@expo/cli": "^54.0.26",
+    "@expo/prebuild-config": "^54.0.9",
     "@types/node": "^22.13.4",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
