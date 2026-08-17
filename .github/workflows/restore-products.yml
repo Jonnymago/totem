@@ -1,0 +1,21 @@
+name: Restore screens
+on:
+  workflow_dispatch:
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore products from good commit
+        run: |
+          git checkout 384d0c18 -- "frontend/app/products/[categoryId].tsx"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -A
+          git status
+          git commit -m "fix: restore products screen from commit 384d0c18" || echo "nothing to commit"
+          git push

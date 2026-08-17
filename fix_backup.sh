@@ -1,0 +1,2 @@
+sed -i 's/global_groups: typeof manifest !== "undefined" && manifest.global_groups ? manifest.global_groups : (typeof snapshot !== "undefined" && snapshot.global_groups ? snapshot.global_groups : \[\])/global_groups: snapshot.global_groups || \[\]/' frontend/src/utils/backup.ts
+sed -i 's/global_groups: snapshot.global_groups || \[\]/global_groups: manifest.global_groups || \[\]/2' frontend/src/utils/backup.ts

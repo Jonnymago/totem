@@ -1,0 +1,77 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: "preview"
+        type: choice
+        options:
+          - preview
+          - production
+  push:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: eas-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: EAS Build (Android)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN || '5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r' }}
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Ensure EAS project is configured
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || '5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r' }}
+        run: |
+          set -e
+          echo "Checking EAS project configuration..."
+          if ! eas project:info --non-interactive 2>/dev/null; then
+            echo "Project not linked. Running eas init..."
+            eas init --id 56541943-cc4e-4821-a08b-75661dcd7b5b --non-interactive --force || eas init --non-interactive --force
+          else
+            echo "EAS project already configured."
+          fi
+          echo "--- app.json owner/extra ---"
+          node -e "const a=require('./app.json'); console.log(JSON.stringify({owner:a.expo.owner, slug:a.expo.slug, extra:a.expo.extra}, null, 2))"
+
+      - name: Build Android APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || '5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r' }}
+        run: |
+          PROFILE="${{ github.event.inputs.profile || 'preview' }}"
+          echo "Building with profile: $PROFILE"
+          eas build --platform android --profile "$PROFILE" --non-interactive --no-wait
+
+      - name: Build info
+        run: |
+          echo "Build avviata su EAS sul nuovo account Expo!"
+          echo "Controlla lo stato su: https://expo.dev/accounts/mamafo2236/projects/jonnymag-totem/builds o sulla tua dashboard Expo."
+
+# trigger new Expo account token 5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r

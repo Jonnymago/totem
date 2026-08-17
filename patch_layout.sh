@@ -1,0 +1,1 @@
+sed -i '/<Tabs.Screen/i \      <Tabs.Screen\n        name="groups"\n        options={{\n          title: '\''Gruppi'\'',\n          tabBarIcon: ({ color, size }) => (\n            <Ionicons name="list" size={size} color={color} />\n          ),\n        }}\n      />' frontend/app/admin/\(tabs\)/_layout.tsx

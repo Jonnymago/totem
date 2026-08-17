@@ -1,0 +1,42 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Keystores & credentials
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore_base64.txt
+.keystore_b64.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+-e 
+node_modules
+package
+

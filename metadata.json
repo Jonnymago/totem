@@ -1,0 +1,6 @@
+{
+  "name": "Totem Ristorante",
+  "description": "Applicazione totem per ordinazioni rapide e gestione cassa/cucina per ristorante",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
