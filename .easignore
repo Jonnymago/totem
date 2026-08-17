@@ -3,5 +3,5 @@ node_modules/
 dist/
 web-build/
 .git/
-backend/
-src/
+/backend/
+/src/
