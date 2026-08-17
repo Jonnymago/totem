@@ -83,6 +83,7 @@ export interface Settings {
   printer_courtesy: string;
   printer_kitchen: string;
   known_printers: any[];
+  paper_width_mm?: number | string;
   order_reset_mode: string;
   reset_time: string;
   current_order_number: number;
@@ -388,9 +389,9 @@ async function getRemoteJson<T>(path: string, options: RequestInit = {}): Promis
   return res.json();
 }
 
-export function ensureProductSections(product: Product): UiSection[] {
+export function ensureProductSections(product: Product, includeGlobals: boolean = true): UiSection[] {
   const globals = localDb.global_groups || [];
-  const injectedGlobals: UiSection[] = (product.global_group_ids || [])
+  const injectedGlobals: UiSection[] = includeGlobals ? (product.global_group_ids || [])
     .map(gid => globals.find(g => g.id === gid))
     .filter(Boolean)
     .map((g, i) => ({
@@ -405,7 +406,7 @@ export function ensureProductSections(product: Product): UiSection[] {
       options: g!.options,
       min_selection: g!.min_selection,
       max_selection: g!.max_selection
-    } as UiSection));
+    } as UiSection)) : [];
 
   if (product.ui_sections && product.ui_sections.length > 0) {
     return [...product.ui_sections.map((s, i) => ({ ...s, order: s.order ?? i })), ...injectedGlobals].sort((a, b) => a.order - b.order);
@@ -454,23 +455,46 @@ export function ensureProductSections(product: Product): UiSection[] {
   return [...sections, ...injectedGlobals].sort((a, b) => a.order - b.order);
 }
 
-export function syncLegacyFromSections(product: Product, sections: UiSection[]) {
-  const ownSections = sections.filter(s => !s.id.startsWith('global_'));
-  product.ui_sections = ownSections;
-  
-  const baseSec = ownSections.find(s => s.type === 'base_remove' && s.enabled);
-  product.base_ingredients = baseSec ? (baseSec.items || []) : [];
+export function syncLegacyFromSections(sections: UiSection[]): {
+  base_ingredients: string[];
+  extra_additions: ExtraAddition[];
+  combo_groups: { name: string; min_selection: number; max_selection: number; options: ComboGroupOption[] }[];
+};
+export function syncLegacyFromSections(product: Product, sections: UiSection[]): void;
+export function syncLegacyFromSections(arg1: Product | UiSection[], arg2?: UiSection[]): any {
+  if (Array.isArray(arg1)) {
+    const ownSections = arg1.filter(s => !s.id.startsWith('global_'));
+    const baseSec = ownSections.find(s => s.type === 'base_remove' && s.enabled);
+    const extraSec = ownSections.find(s => s.type === 'paid_extras' && s.enabled);
+    const choiceSecs = ownSections.filter(s => s.type === 'choice_group' && s.enabled);
+    return {
+      base_ingredients: baseSec ? (baseSec.items || []) : [],
+      extra_additions: extraSec ? (extraSec.extras || []) : [],
+      combo_groups: choiceSecs.map(c => ({
+        name: c.title,
+        min_selection: c.min_selection ?? 1,
+        max_selection: c.max_selection ?? 1,
+        options: c.options || []
+      }))
+    };
+  } else if (arg1 && arg2) {
+    const ownSections = arg2.filter(s => !s.id.startsWith('global_'));
+    arg1.ui_sections = ownSections;
+    
+    const baseSec = ownSections.find(s => s.type === 'base_remove' && s.enabled);
+    arg1.base_ingredients = baseSec ? (baseSec.items || []) : [];
 
-  const extraSec = ownSections.find(s => s.type === 'paid_extras' && s.enabled);
-  product.extra_additions = extraSec ? (extraSec.extras || []) : [];
+    const extraSec = ownSections.find(s => s.type === 'paid_extras' && s.enabled);
+    arg1.extra_additions = extraSec ? (extraSec.extras || []) : [];
 
-  const choiceSecs = ownSections.filter(s => s.type === 'choice_group' && s.enabled);
-  product.combo_groups = choiceSecs.map(c => ({
-    name: c.title,
-    min_selection: c.min_selection ?? 1,
-    max_selection: c.max_selection ?? 1,
-    options: c.options || []
-  }));
+    const choiceSecs = ownSections.filter(s => s.type === 'choice_group' && s.enabled);
+    arg1.combo_groups = choiceSecs.map(c => ({
+      name: c.title,
+      min_selection: c.min_selection ?? 1,
+      max_selection: c.max_selection ?? 1,
+      options: c.options || []
+    }));
+  }
 }
 
 export const getSettings = async (): Promise<Settings> => {

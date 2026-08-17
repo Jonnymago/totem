@@ -102,7 +102,7 @@ async function buildZipBase64(): Promise<{ base64: string; fileName: string }> {
   const manifest = {
     version: VERSION,
     app: APP,
-    exported_at: snapshot.exported_at || new Date().toISOString(),
+    exported_at: (snapshot as any).exported_at || new Date().toISOString(),
     settings,
     categories,
     global_groups: snapshot.global_groups || [],
