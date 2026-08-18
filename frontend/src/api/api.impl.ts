@@ -363,22 +363,32 @@ export function getBackendBaseUrl(): string {
 }
 
 export function getRemoteAdminUrl(localIp?: string): string {
+  // Il pannello remoto è servito DAL TABLET (LocalServer sulla porta 3000).
+  // Dal telefono NON usare localhost: serve l'IP LAN del totem, es. http://192.168.1.9:3000/remote/
   const custom = localDb.settings?.custom_backend_url?.trim();
   if (custom) {
     const clean = custom.replace(/\/+$/, '');
     if (clean.endsWith('/remote') || clean.endsWith('/admin')) {
       return `${clean}/`;
     }
+    // Se l'utente ha messo solo host:port senza path, aggiungi /remote/
     return `${clean}/remote/`;
   }
   if (typeof window !== 'undefined' && window.location?.origin) {
     return `${window.location.origin}/remote/`;
   }
   const cleanIp = (localIp || '').trim();
-  if (cleanIp && cleanIp !== 'localhost' && cleanIp !== '127.0.0.1' && cleanIp !== '0.0.0.0' && cleanIp !== 'IP_DEL_TABLET' && !cleanIp.startsWith('0.')) {
-    return `http://${cleanIp}:8000/remote/`;
+  if (
+    cleanIp &&
+    cleanIp !== 'localhost' &&
+    cleanIp !== '127.0.0.1' &&
+    cleanIp !== '0.0.0.0' &&
+    cleanIp !== 'IP_DEL_TABLET' &&
+    !cleanIp.startsWith('0.')
+  ) {
+    return `http://${cleanIp}:3000/remote/`;
   }
-  return 'http://192.168.1.9:8000/remote/';
+  return 'http://192.168.1.9:3000/remote/';
 }
 
 async function getRemoteJson<T>(path: string, options: RequestInit = {}): Promise<T> {
