@@ -2,10 +2,20 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = process.cwd();
-const remoteSrc = path.join(rootDir, 'public', 'remote', 'index.html');
 const outPath = path.join(rootDir, 'src', 'utils', 'web_build.json');
 
-if (!fs.existsSync(remoteSrc)) throw new Error(`Remote Admin source not found: ${remoteSrc}`);
+// Canonical Remote Admin source. The web admin is maintained by the backend
+// static server; frontend/public is generated output and may not exist in CI.
+const sourceCandidates = [
+  path.join(rootDir, 'backend', 'static', 'remote', 'index.html'),
+  path.join(rootDir, '..', 'backend', 'static', 'remote', 'index.html'),
+  path.join(rootDir, 'public', 'remote', 'index.html')
+];
+const remoteSrc = sourceCandidates.find(fs.existsSync);
+
+if (!remoteSrc) {
+  throw new Error(`Remote Admin source not found. Checked: ${sourceCandidates.join(', ')}`);
+}
 
 const remoteHtml = fs.readFileSync(remoteSrc, 'utf8');
 const aliases = [
@@ -28,7 +38,7 @@ function setRemote(key) {
   result[key] = { type: 'text', data: remoteHtml, ext: '.html' };
 }
 
-// Always replace the embedded Remote Admin, even when no web dist exists.
+// Always replace the embedded Remote Admin with the canonical source.
 setRemote('/remote/index.html');
 setRemote('/remote.html');
 setRemote('/admin/index.html');
@@ -56,7 +66,7 @@ function walk(dir, prefix = '') {
 
 if (distPath) {
   walk(distPath);
-  // Dist may contain its own remote copies; force them back to the canonical source.
+  // Dist may contain its own remote copies; keep the canonical Remote Admin.
   setRemote('/remote/index.html');
   setRemote('/remote.html');
   setRemote('/admin/index.html');
@@ -64,4 +74,4 @@ if (distPath) {
 }
 
 fs.writeFileSync(outPath, JSON.stringify(result));
-console.log(`Remote Admin bundle updated: ${outPath}${distPath ? ` + ${distPath}` : ' (no dist; existing web assets preserved)'}`);
+console.log(`Remote Admin bundle updated from ${remoteSrc}: ${outPath}${distPath ? ` + ${distPath}` : ' (no dist; existing web assets preserved)'}`);
