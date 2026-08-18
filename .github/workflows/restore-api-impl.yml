@@ -1,0 +1,44 @@
+name: Restore kiosk api.impl
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/api.impl.ts.gz.b64
+      - .github/workflows/restore-api-impl.yml
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode compressed api.impl
+        run: |
+          python3 - <<'PY'
+          import gzip, base64
+          from pathlib import Path
+          b64 = Path('scripts/api.impl.ts.gz.b64').read_text().strip()
+          data = gzip.decompress(base64.b64decode(b64))
+          Path('frontend/src/api/api.impl.ts').write_bytes(data)
+          print('restored', len(data), 'bytes')
+          if len(data) < 15000:
+              raise SystemExit('decoded api.impl.ts still too small')
+          text = data.decode('utf-8')
+          for needle in ('export async function ensureLocalDbLoaded', 'export const adminLogin', 'export const createProduct'):
+              if needle not in text:
+                  raise SystemExit(f'missing {needle}')
+          PY
+      - name: Commit restored file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/api/api.impl.ts
+          if git diff --cached --quiet; then
+            echo already restored
+          else
+            git commit -m "fix: restore complete local kiosk api.impl from compressed payload"
+            git push
+          fi
