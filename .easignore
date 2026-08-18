@@ -4,4 +4,11 @@ dist/
 web-build/
 .git/
 backend/
-src/
+/src/
+*.tgz
+fix_*.cjs
+patch_*.cjs
+patch_*.sh
+fix_*.sh
+fix_*.py
+patch_*.py
