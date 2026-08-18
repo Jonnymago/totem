@@ -1,21 +1,18 @@
 """Remote admin panel routes — import this from server.py"""
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+logger = logging.getLogger(__name__)
+
 ROOT_DIR = Path(__file__).parent
 REMOTE_ADMIN_DIR = ROOT_DIR / "static" / "remote"
 
 
 def register_remote_admin(app: FastAPI) -> None:
-    """Register the single canonical Remote Admin application.
-
-    The backend/static/remote directory is the source of truth. Keeping one
-    canonical location prevents the remote web panel and the embedded APK
-    bundle from silently diverging.
-    """
     @app.get("/remote", include_in_schema=False)
     @app.get("/admin", include_in_schema=False)
     @app.get("/admin/", include_in_schema=False)
@@ -32,9 +29,8 @@ def register_remote_admin(app: FastAPI) -> None:
             raise HTTPException(status_code=404, detail="Pannello remoto non trovato")
         return FileResponse(index_path, media_type="text/html; charset=utf-8")
 
-    if REMOTE_ADMIN_DIR.is_dir():
-        app.mount(
-            "/remote/assets",
-            StaticFiles(directory=str(REMOTE_ADMIN_DIR)),
-            name="remote_admin_assets",
-        )
+    assets_dir = REMOTE_ADMIN_DIR / "assets"
+    if assets_dir.is_dir():
+        app.mount("/remote/assets", StaticFiles(directory=str(assets_dir)), name="remote_admin_assets")
+    else:
+        logger.warning("Remote admin assets directory missing: %s", assets_dir)
