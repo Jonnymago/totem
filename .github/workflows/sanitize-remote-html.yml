@@ -1,0 +1,118 @@
+name: Sanitize remote admin HTML
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sanitize-remote-html.yml"
+
+jobs:
+  sanitize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove fake-token login from remote HTML
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import re
+          paths = [
+              Path('backend/static/remote/index.html'),
+              Path('public/remote/index.html'),
+              Path('public/remote.html'),
+          ]
+          secure = '''async function doLogin(customPin) {
+                hideLoginError();
+                const pinInput = document.getElementById('auth-pin');
+                const pin = (typeof customPin === 'string' ? customPin : (pinInput ? pinInput.value : '')).trim();
+                if (!pin) {
+                  showLoginError('Inserisci PIN o password per accedere.');
+                  toast('Inserisci PIN o password', '\u26a0\ufe0f');
+                  return;
+                }
+                const submitBtn = document.getElementById('login-submit-btn');
+                if (submitBtn) {
+                  submitBtn.disabled = true;
+                  submitBtn.innerText = 'Accesso...';
+                }
+                try {
+                  const res = await fetch('/api/admin/pin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                  });
+                  if (!res.ok) {
+                    let detail = 'Credenziali non valide';
+                    try { const err = await res.json(); detail = err.detail || detail; } catch (e) {}
+                    showLoginError(detail);
+                    toast(detail, '\u274c');
+                    return;
+                  }
+                  const data = await res.json();
+                  const token = data.access_token || data.token;
+                  if (!token) {
+                    showLoginError('Risposta login non valida');
+                    return;
+                  }
+                  authToken = token;
+                  toast('Accesso effettuato!');
+                  showApp();
+                } catch (err) {
+                  console.error('Login error:', err);
+                  showLoginError(err.message || 'Rete non disponibile. Riprova.');
+                  toast(err.message || 'Errore di rete', '\u274c');
+                } finally {
+                  if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Accedi al Pannello';
+                  }
+                }
+              }'''
+          changed = False
+          for p in paths:
+              if not p.is_file():
+                  continue
+              h = p.read_text(encoding='utf-8')
+              orig = h
+              h = h.replace("let authToken = localStorage.getItem('totem_admin_token') || '';", "let authToken = '';")
+              h = re.sub(r'async function doLogin\\(customPin\\) \\{.*?\\n    \\}', secure, h, count=1, flags=re.S)
+              h = re.sub(r'function doLogin\\(customPin\\) \\{.*?\\n    \\}', secure, h, count=1, flags=re.S)
+              h = re.sub(r'function doLogout\\(\\) \\{.*?\\n    \\}', '''function stopOrdersPolling() {
+                if (ordersPollTimer) {
+                  clearInterval(ordersPollTimer);
+                  ordersPollTimer = null;
+                }
+              }
+              function doLogout() {
+                stopOrdersPolling();
+                authToken = '';
+                showAuth();
+                toast('Disconnesso');
+              }''', h, count=1, flags=re.S)
+              h = re.sub(r'\\s*<!-- Quick access buttons -->.*?</div>\\s*</div>', '', h, count=1, flags=re.S)
+              h = re.sub(r'\\n\\s*(async )?function quickLogin\\(presetPin\\) \\{.*?\\n    \\}\\n', '\\n', h, count=1, flags=re.S)
+              h = h.replace("localStorage.setItem('totem_admin_token', authToken);", '')
+              h = h.replace("localStorage.removeItem('totem_admin_token');", '')
+              h = h.replace('if (ordersPollTimer) clearInterval(ordersPollTimer);', 'stopOrdersPolling();')
+              if 'if (!authToken) return;' not in h:
+                  h = h.replace('async function loadOrders() {', 'async function loadOrders() {\\n      if (!authToken) return;')
+              if h != orig:
+                  p.write_text(h, encoding='utf-8')
+                  changed = True
+                  print('updated', p)
+              else:
+                  print('unchanged', p)
+          Path('/tmp/html_changed').write_text('1' if changed else '0')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add backend/static/remote/index.html public/remote/index.html public/remote.html || true
+            git commit -m "fix: require real PIN login in remote admin HTML"
+            git push
+          else
+            echo "HTML already sanitized"
+          fi
