@@ -39,14 +39,24 @@ export default function RootLayout() {
   }, []);
 
 
+  // Server embedded sulla porta 3000: serve il pannello remoto da browser (stessa WiFi)
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS === 'web') return;
+
+    const boot = () => {
       try {
         startLocalServer();
       } catch (e) {
         console.error('Local server error:', e);
       }
-    }
+    };
+
+    boot();
+
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') boot();
+    });
+    return () => sub.remove();
   }, []);
 
   if (!loaded && !error) return null;
