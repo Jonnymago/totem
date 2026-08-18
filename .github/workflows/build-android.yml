@@ -19,10 +19,6 @@ on:
         options:
           - preview
           - production
-  push:
-    branches:
-      - main
-      - master
 
 concurrency:
   group: eas-android-${{ github.ref }}
@@ -31,7 +27,7 @@ concurrency:
 jobs:
   build-eas:
     name: EAS Cloud Build (Android APK)
-    if: ${{ github.event_name == 'push' || github.event.inputs.build_mode == 'eas-cloud' }}
+    if: ${{ github.event.inputs.build_mode == 'eas-cloud' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,24 +35,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-
       - name: Setup Expo & EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
       - name: Install dependencies
         run: npm ci
-
       - name: Rebuild embedded Remote Admin
         run: node scripts/bundle-web.js
-
       - name: Validate Remote Admin bundle
         shell: bash
         run: |
@@ -70,20 +61,18 @@ jobs:
           }
           console.log('Remote Admin bundle OK');
           NODE
-
       - name: Build Android APK on EAS
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE="${{ github.event.inputs.profile || 'preview' }}"
           eas build --platform android --profile "$PROFILE" --non-interactive --no-wait
-
       - name: EAS Build Info
         run: echo "EAS Android build submitted successfully."
 
   build-native:
     name: GitHub Actions Native Gradle APK Build
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_mode == 'github-actions-native' }}
+    if: ${{ github.event.inputs.build_mode == 'github-actions-native' }}
     runs-on: ubuntu-latest
     defaults:
       run:
