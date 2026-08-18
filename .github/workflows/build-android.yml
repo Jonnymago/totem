@@ -39,6 +39,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate kiosk api.impl
+        shell: bash
+        run: |
+          SIZE=$(wc -c < src/api/api.impl.ts)
+          echo "api.impl.ts size=$SIZE"
+          if [ "$SIZE" -lt 15000 ]; then
+            echo "api.impl.ts is truncated ($SIZE bytes). Need the full local DB implementation."
+            exit 1
+          fi
+          grep -q "export async function ensureLocalDbLoaded" src/api/api.impl.ts
+          grep -q "export const adminLogin" src/api/api.impl.ts
+          grep -q "export const createProduct" src/api/api.impl.ts
+          echo "api.impl.ts OK"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -62,6 +75,9 @@ jobs:
             if (!b[path]?.data?.includes('Pannello Gestione Totem')) {
               throw new Error(`Missing Remote Admin bundle: ${path}`);
             }
+            if (b[path]?.data?.includes("let token = 'local-admin-token'")) {
+              throw new Error(`Fake-token login still in bundle: ${path}`);
+            }
           }
           console.log('Remote Admin bundle OK');
           NODE
@@ -84,6 +100,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate kiosk api.impl
+        shell: bash
+        run: |
+          SIZE=$(wc -c < src/api/api.impl.ts)
+          echo "api.impl.ts size=$SIZE"
+          if [ "$SIZE" -lt 15000 ]; then
+            echo "api.impl.ts is truncated ($SIZE bytes). Need the full local DB implementation."
+            exit 1
+          fi
+          grep -q "export const adminLogin" src/api/api.impl.ts
+          echo "api.impl.ts OK"
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -106,6 +133,9 @@ jobs:
           if (!b['/remote/index.html']?.data?.includes('Pannello Gestione Totem')) {
             throw new Error('Remote Admin bundle missing');
           }
+          if (b['/remote/index.html']?.data?.includes("let token = 'local-admin-token'")) {
+            throw new Error('Fake-token login still in Remote Admin bundle');
+          }
           console.log('Remote Admin bundle OK');
           NODE
       - name: Expo Prebuild Android
@@ -118,7 +148,7 @@ jobs:
       - name: Locate and copy APK
         run: |
           mkdir -p ../dist-apk
-          find android/app/build/outputs/apk -name '*.apk' -exec cp {} ../dist-apk/Totem-QuickBite.apk \;
+          find android/app/build/outputs/apk -name '*.apk' -exec cp {} ../dist-apk/Totem-QuickBite.apk \\;
           ls -la ../dist-apk/
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
