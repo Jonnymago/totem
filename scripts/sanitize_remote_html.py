@@ -38,7 +38,7 @@ NEW = """        const res = await fetch('/api/admin/pin-login', {
           let detail = 'Credenziali non valide';
           try { const err = await res.json(); detail = err.detail || detail; } catch (e) {}
           showLoginError(detail);
-          toast(detail, '\u274c');
+          toast(detail, '\\u274c');
           return;
         }
         const data = await res.json();
@@ -51,22 +51,12 @@ NEW = """        const res = await fetch('/api/admin/pin-login', {
         toast('Accesso effettuato!');
         showApp();"""
 
-QUICK = """      <!-- Quick access buttons -->
-      <div style=\"margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);\">
-        <div style=\"font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;\">Accesso Rapido PIN Predefinito:</div>
-        <div style=\"display:flex; gap:8px; justify-content:center;\">
-          <button type=\"button\" class=\"btn btn-outline btn-sm\" style=\"flex:1; border-radius:8px; font-weight:700;\" onclick=\"quickLogin('0000')\">\u26a1 PIN 0000</button>
-          <button type=\"button\" class=\"btn btn-outline btn-sm\" style=\"flex:1; border-radius:8px; font-weight:700;\" onclick=\"quickLogin('1234')\">\u26a1 PIN 1234</button>
-        </div>
-      </div>"""
-
-# Fix QUICK - use the real HTML without over-escaping
 QUICK = '''      <!-- Quick access buttons -->
       <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);">
         <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Accesso Rapido PIN Predefinito:</div>
         <div style="display:flex; gap:8px; justify-content:center;">
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('0000')">\u26a1 PIN 0000</button>
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('1234')">\u26a1 PIN 1234</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('0000')">\\u26a1 PIN 0000</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('1234')">\\u26a1 PIN 1234</button>
         </div>
       </div>'''
 
@@ -74,6 +64,8 @@ paths = [
     Path('backend/static/remote/index.html'),
     Path('public/remote/index.html'),
     Path('public/remote.html'),
+    Path('public/admin.html'),
+    Path('public/admin/index.html'),
 ]
 for p in paths:
     if not p.is_file():
@@ -84,6 +76,8 @@ for p in paths:
     if OLD in h:
         h = h.replace(OLD, NEW, 1)
         print('replaced login', p)
+    elif "let token = 'local-admin-token'" in h:
+        print('WARNING leftover fake token in', p)
     else:
         print('login block not found', p)
     if QUICK in h:
