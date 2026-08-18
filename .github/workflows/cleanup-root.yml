@@ -1,0 +1,31 @@
+name: Cleanup root junk
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cleanup-root.yml"
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove stale patch scripts
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mapfile -t files < <(git ls-files | grep -E '^(fix_|patch_|rewrite_|update_|test_chunk\.cjs$|test\.js$|patch\.cjs$|patch\.js$)' || true)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "Nothing to delete"
+            exit 0
+          fi
+          git rm -f -- "${files[@]}"
+          git commit -m "chore: remove stale patch scripts"
+          git push
