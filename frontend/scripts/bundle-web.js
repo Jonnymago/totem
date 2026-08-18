@@ -3,85 +3,65 @@ const path = require('path');
 
 const rootDir = process.cwd();
 const remoteSrc = path.join(rootDir, 'public', 'remote', 'index.html');
+const outPath = path.join(rootDir, 'src', 'utils', 'web_build.json');
 
-if (fs.existsSync(remoteSrc)) {
-  const remoteHtml = fs.readFileSync(remoteSrc, 'utf8');
+if (!fs.existsSync(remoteSrc)) throw new Error(`Remote Admin source not found: ${remoteSrc}`);
 
-  // Sync to public aliases
-  const targets = [
-    path.join(rootDir, 'public', 'remote.html'),
-    path.join(rootDir, 'public', 'admin.html'),
-    path.join(rootDir, 'public', 'admin', 'index.html'),
-    path.join(rootDir, 'backend', 'static', 'remote', 'index.html')
-  ];
-
-  for (const t of targets) {
-    const parent = path.dirname(t);
-    if (!fs.existsSync(parent)) fs.mkdirSync(parent, { recursive: true });
-    fs.writeFileSync(t, remoteHtml);
-  }
+const remoteHtml = fs.readFileSync(remoteSrc, 'utf8');
+const aliases = [
+  path.join(rootDir, 'public', 'remote.html'),
+  path.join(rootDir, 'public', 'admin.html'),
+  path.join(rootDir, 'public', 'admin', 'index.html'),
+  path.join(rootDir, 'backend', 'static', 'remote', 'index.html')
+];
+for (const target of aliases) {
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, remoteHtml);
 }
 
-let distPath = path.join(__dirname, '../../dist');
-if (!fs.existsSync(distPath)) {
-  distPath = path.join(__dirname, '../dist');
-}
-if (!fs.existsSync(distPath)) {
-  distPath = path.join(process.cwd(), 'dist');
+let result = {};
+if (fs.existsSync(outPath)) {
+  try { result = JSON.parse(fs.readFileSync(outPath, 'utf8')); } catch { result = {}; }
 }
 
-const outPath = path.join(__dirname, '../src/utils/web_build.json');
+function setRemote(key) {
+  result[key] = { type: 'text', data: remoteHtml, ext: '.html' };
+}
 
-const result = {};
+// Always replace the embedded Remote Admin, even when no web dist exists.
+setRemote('/remote/index.html');
+setRemote('/remote.html');
+setRemote('/admin/index.html');
+setRemote('/admin.html');
+
+const distCandidates = [
+  path.join(rootDir, '../../dist'),
+  path.join(rootDir, '../dist'),
+  path.join(rootDir, 'dist')
+];
+const distPath = distCandidates.find(fs.existsSync);
 
 function walk(dir, prefix = '') {
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const fullPath = path.join(dir, file);
-    const relPath = prefix + '/' + file;
-    if (fs.statSync(fullPath).isDirectory()) {
-      walk(fullPath, relPath);
-    } else {
+  for (const file of fs.readdirSync(dir)) {
+    const full = path.join(dir, file);
+    const rel = `${prefix}/${file}`;
+    if (fs.statSync(full).isDirectory()) walk(full, rel);
+    else {
       const ext = path.extname(file).toLowerCase();
-      const isBinary = ['.png', '.jpg', '.jpeg', '.gif', '.ttf', '.woff', '.woff2', '.ico'].includes(ext);
-      if (isBinary) {
-        result[relPath] = {
-          type: 'base64',
-          data: fs.readFileSync(fullPath).toString('base64'),
-          ext
-        };
-      } else {
-        result[relPath] = {
-          type: 'text',
-          data: fs.readFileSync(fullPath, 'utf8'),
-          ext
-        };
-      }
+      const binary = ['.png', '.jpg', '.jpeg', '.gif', '.ttf', '.woff', '.woff2', '.ico'].includes(ext);
+      result[rel] = { type: binary ? 'base64' : 'text', data: fs.readFileSync(full).toString(binary ? 'base64' : 'utf8'), ext };
     }
   }
 }
 
-if (fs.existsSync(distPath)) {
-  // Ensure dist has all remote html aliases
-  if (fs.existsSync(remoteSrc)) {
-    const remoteHtml = fs.readFileSync(remoteSrc, 'utf8');
-    const distTargets = [
-      path.join(distPath, 'remote', 'index.html'),
-      path.join(distPath, 'admin', 'index.html'),
-      path.join(distPath, 'remote.html'),
-      path.join(distPath, 'admin.html')
-    ];
-    for (const dt of distTargets) {
-      const parent = path.dirname(dt);
-      if (!fs.existsSync(parent)) fs.mkdirSync(parent, { recursive: true });
-      fs.writeFileSync(dt, remoteHtml);
-    }
-  }
-
+if (distPath) {
   walk(distPath);
-  fs.writeFileSync(outPath, JSON.stringify(result));
-  console.log(`Web build bundled to web_build.json from ${distPath} (${Object.keys(result).length} assets)`);
-} else {
-  console.error('dist directory not found');
+  // Dist may contain its own remote copies; force them back to the canonical source.
+  setRemote('/remote/index.html');
+  setRemote('/remote.html');
+  setRemote('/admin/index.html');
+  setRemote('/admin.html');
 }
 
+fs.writeFileSync(outPath, JSON.stringify(result));
+console.log(`Remote Admin bundle updated: ${outPath}${distPath ? ` + ${distPath}` : ' (no dist; existing web assets preserved)'}`);
