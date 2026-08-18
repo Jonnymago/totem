@@ -3,12 +3,8 @@
     "name": "Totem QuickBite ordinazioni",
     "slug": "mamafo2236",
     "owner": "mamafo2236s-team",
-    "version": "1.2.1",
-    "platforms": [
-      "android",
-      "ios",
-      "web"
-    ],
+    "version": "1.2.2",
+    "platforms": ["android", "ios", "web"],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "frontend",
@@ -41,7 +37,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.READ_MEDIA_IMAGES"
       ],
-      "versionCode": 121
+      "versionCode": 122
     },
     "web": {
       "bundler": "metro",
