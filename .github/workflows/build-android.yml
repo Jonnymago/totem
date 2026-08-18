@@ -1,6 +1,10 @@
 name: Build Android APK
 
 on:
+  push:
+    branches:
+      - main
+      - master
   workflow_dispatch:
     inputs:
       build_mode:
@@ -27,7 +31,7 @@ concurrency:
 jobs:
   build-eas:
     name: EAS Cloud Build (Android APK)
-    if: ${{ github.event.inputs.build_mode == 'eas-cloud' }}
+    if: ${{ github.event.inputs.build_mode == 'eas-cloud' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     defaults:
       run:
