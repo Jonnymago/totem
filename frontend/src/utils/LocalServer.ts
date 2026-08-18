@@ -166,7 +166,6 @@ function handleStaticFile(socket: any, rawPath: string) {
     let file: any = (webBuild as any)[cleanPath];
     if (!file && cleanPath.startsWith('/remote/')) file = (webBuild as any)[cleanPath.replace('/remote', '')];
 
-    // Never guess an asset by extension: a stale hashed filename must be a real 404.
     if (!file && cleanPath.startsWith('/assets/')) {
       writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Asset not found', path: cleanPath }));
       return;
@@ -193,12 +192,6 @@ function handleStaticFile(socket: any, rawPath: string) {
     console.error('handleStaticFile error:', error);
     writeResponse(socket, '500 Internal Server Error', 'application/json; charset=utf-8', JSON.stringify({ error: error?.message || 'Internal Server Error' }));
   }
-}
-
-function getBearerToken(rawPath: string, bodyText: string) {
-  // The TCP adapter cannot access headers after parsing only the body. Authentication is enforced
-  // at the browser layer by the token endpoint; health/settings remain intentionally public.
-  return true;
 }
 
 async function handleApi(socket: any, method: string, rawPath: string, bodyText: string) {
@@ -257,13 +250,13 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       const parts = path.split('/');
       result = await api.updateOrderStatus(parts[parts.length - 2] || '', json?.status || 'pending');
     } else if (method === 'POST' && ['/api/admin/login', '/api/admin/pin-login', '/api/login', '/api/pin-login'].includes(path)) {
-      const storedPin = String(await api.getAdminPin() || '0000').trim();
-      const enteredPin = String(json?.pin || json?.password || '').trim();
-      if (!enteredPin || enteredPin !== storedPin) {
-        writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: 'PIN non valido' }));
+      try {
+        const token = await api.adminLogin(String(json?.username || 'admin'), String(json?.pin || json?.password || ''));
+        result = { access_token: token, token };
+      } catch (e: any) {
+        writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: e?.message || 'Credenziali non valide' }));
         return;
       }
-      result = { access_token: 'local-admin-token', token: 'local-admin-token' };
     } else if (method === 'POST' && (path === '/api/admin/reset-order-number' || path === '/api/reset-order-number')) {
       await api.resetOrderNumber();
       result = { message: 'Order number reset successfully' };
