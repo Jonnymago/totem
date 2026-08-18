@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { AppState, LogBox, Platform } from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
 
-import { startLocalServer } from '../src/utils/LocalServer';
+import { startLocalServer } from '@/src/utils/LocalServer';
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
 import { ensureKioskIfPreferred } from "../modules/kiosk-mode/src";
 
