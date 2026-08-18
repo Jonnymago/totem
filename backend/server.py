@@ -17,6 +17,10 @@ try:
     from remote_admin import register_remote_admin
 except ImportError:
     register_remote_admin = None
+try:
+    from extra_routes import register_extra_routes
+except ImportError:
+    register_extra_routes = None
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -284,6 +288,8 @@ async def update_order_status(order_id:str,status_update:OrderStatusUpdate,usern
 @api_router.get("/admin/orders",response_model=List[Order])
 async def get_all_orders_admin(username:str=Depends(verify_token)): return [Order(**serialize_doc(o)) for o in await db.orders.find().sort("created_at",-1).to_list(1000)]
 
+if register_extra_routes:
+    register_extra_routes(api_router, db, verify_token, serialize_doc, GlobalOptionGroup, GlobalOptionGroupCreate, BackupData, bcrypt)
 app.include_router(api_router)
 if register_remote_admin: register_remote_admin(app)
 app.add_middleware(CORSMiddleware,allow_credentials=True,allow_origins=["*"],allow_methods=["*"],allow_headers=["*"])
