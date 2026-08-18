@@ -7,7 +7,9 @@ from datetime import datetime
 
 import bcrypt
 from bson import ObjectId
+import jwt
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +89,30 @@ def register_extra_routes(api_router: APIRouter) -> None:
             "message": f"Trovati {len(devices)} dispositivi",
         }
 
+    optional_bearer = HTTPBearer(auto_error=False)
+
+    async def require_admin_unless_bootstrap(
+        credentials: HTTPAuthorizationCredentials | None = Depends(optional_bearer),
+    ) -> str:
+        admin_count = await db.admin_users.count_documents({})
+        if admin_count == 0:
+            return "bootstrap"
+        if not credentials:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        from server import ALGORITHM, SECRET_KEY
+        try:
+            payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+            username = payload.get("sub")
+            if not username:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            return username
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token expired")
+        except jwt.PyJWTError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
     @api_router.post("/admin/seed")
-    async def seed_database(force: bool = False, username: str = Depends(verify_token)):
+    async def seed_database(force: bool = False, username: str = Depends(require_admin_unless_bootstrap)):
         existing = await db.categories.count_documents({})
         if existing > 0 and not force:
             return {"message": "Database already seeded"}
