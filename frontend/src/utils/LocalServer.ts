@@ -142,18 +142,27 @@ function handleStaticFile(socket: any, rawPath: string) {
       cleanPath = '/index.html';
     }
 
-    let candidatePath = cleanPath;
-    if (candidatePath.startsWith('/remote/')) {
-      candidatePath = candidatePath.replace('/remote', '');
+    // 1. Direct key match
+    let file: any = (webBuild as any)[cleanPath];
+
+    // 2. Candidate match without /remote prefix
+    if (!file && cleanPath.startsWith('/remote/')) {
+      const candidatePath = cleanPath.replace('/remote', '');
+      file = (webBuild as any)[candidatePath];
     }
 
-    let file: any =
-      (webBuild as any)[cleanPath] ||
-      (webBuild as any)[candidatePath] ||
-      (webBuild as any)['/remote/index.html'] ||
-      (webBuild as any)['/index.html'];
+    // 3. Asset fallback: if an asset is requested with a different hash (e.g. /assets/index-xxx.js), match by extension
+    if (!file && cleanPath.startsWith('/assets/')) {
+      const ext = cleanPath.split('.').pop()?.toLowerCase();
+      const keys = Object.keys(webBuild as any);
+      const matchKey = keys.find(k => k.startsWith('/assets/') && k.endsWith('.' + ext));
+      if (matchKey) {
+        file = (webBuild as any)[matchKey];
+      }
+    }
 
-    if (!file) {
+    // 4. SPA Fallback for extensionless navigation routes ONLY
+    if (!file && !cleanPath.includes('.')) {
       if (cleanPath.includes('remote') || cleanPath.includes('admin')) {
         file = (webBuild as any)['/remote/index.html'] || (webBuild as any)['/remote.html'];
       } else {

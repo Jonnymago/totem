@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Pannello Gestione Totem - Remoto</title>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <!-- Non-blocking optional library for zip backups (falls back to JSON when offline) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
     :root {
       --primary: #FF6B6B;
@@ -2142,9 +2143,26 @@
       return null;
     }
 
+    async function ensureJSZip() {
+      if (typeof JSZip !== 'undefined') return window.JSZip;
+      return new Promise((resolve) => {
+        try {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+          s.onload = () => resolve(window.JSZip || null);
+          s.onerror = () => resolve(null);
+          document.head.appendChild(s);
+          setTimeout(() => resolve(window.JSZip || null), 2500);
+        } catch {
+          resolve(null);
+        }
+      });
+    }
+
     async function exportBackupZip() {
+      await ensureJSZip();
       if (typeof JSZip === 'undefined') {
-        toast('Libreria JSZip non caricata. Uso esportazione JSON.', '⚠️');
+        toast('Libreria ZIP non raggiungibile offline. Salvo come file JSON.', 'ℹ️');
         return exportBackup();
       }
       try {
@@ -2251,8 +2269,9 @@
         let backupPayload = null;
 
         if (file.name.toLowerCase().endsWith('.zip')) {
+          await ensureJSZip();
           if (typeof JSZip === 'undefined') {
-            throw new Error('Libreria JSZip non disponibile. Ricarica la pagina.');
+            throw new Error('Libreria ZIP non disponibile in modalità offline. Importa il file di backup in formato .json');
           }
           const zip = await JSZip.loadAsync(file);
           let manifestFile = zip.file('manifest.json') || zip.file('backup.json');
@@ -2401,16 +2420,49 @@
         .replace(/'/g, '&#039;');
     }
 
-    // Auto-login check on startup
-    if (authToken) {
-      showApp();
-    } else {
-      // Pre-load public settings to display restaurant name on login screen
-      fetch('/api/settings').then(r => r.json()).then(s => {
-        if (s && s.restaurant_name) {
-          document.getElementById('login-restaurant-title').innerText = s.restaurant_name;
+    // Global error safeguard - never leave the screen blank
+    window.addEventListener('error', function(e) {
+      console.warn('Remote Admin Global Warning:', e?.message || e);
+      try {
+        const auth = document.getElementById('auth-screen');
+        const app = document.getElementById('app-screen');
+        if (auth && app && auth.style.display === 'none' && app.style.display === 'none') {
+          auth.style.display = 'flex';
         }
-      }).catch(() => {});
+      } catch {}
+    });
+
+    // Auto-login check on startup
+    function init() {
+      try {
+        if (authToken) {
+          showApp();
+        } else {
+          showAuth();
+        }
+      } catch (err) {
+        console.error('Init error:', err);
+        showAuth();
+      }
+
+      // Pre-load public settings to display restaurant name on login screen & header
+      fetch('/api/settings')
+        .then(r => r.json())
+        .then(s => {
+          if (s && s.restaurant_name) {
+            const titleEl = document.getElementById('login-restaurant-title');
+            if (titleEl) titleEl.innerText = s.restaurant_name;
+            const headEl = document.getElementById('header-restaurant-name');
+            if (headEl) headEl.innerText = s.restaurant_name;
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
     }
   </script>
 </body>
