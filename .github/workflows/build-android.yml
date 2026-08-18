@@ -36,39 +36,36 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
       - name: Setup Expo & EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN || '5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r' }}
-
+          token: ${{ secrets.EXPO_TOKEN }}
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
+        run: npm ci
+      - name: Rebuild embedded Remote Admin
+        run: node scripts/bundle-web.js
+      - name: Validate Remote Admin bundle
+        run: node -e "const b=require('./src/utils/web_build.json'); for(const k of ['/remote/index.html','/remote.html','/admin/index.html','/admin.html']) if(!b[k]?.data?.includes('Pannello Gestione Totem')) throw new Error('Missing Remote Admin bundle: '+k); console.log('Remote Admin bundle OK')"
       - name: Build Android APK on EAS
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || '5RxLW27QU9J-k68FwKaA84LQ6H9o2Cu2gvuAA9-r' }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE="${{ github.event.inputs.profile || 'preview' }}"
-          echo "Compilazione su EAS Cloud con profilo: $PROFILE..."
           eas build --platform android --profile "$PROFILE" --non-interactive --no-wait
-
       - name: EAS Build Info
         run: |
-          echo "✅ Build Android APK avviata con successo su EAS!"
-          echo "🔗 Monitora l'avanzamento su: https://expo.dev/accounts/mamafo2236s-team/projects/mamafo2236/builds"
+          echo "Build Android APK avviata su EAS."
+          echo "Monitora l'avanzamento su Expo/EAS."
 
   build-native:
     name: GitHub Actions Native Gradle APK Build
@@ -77,48 +74,43 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
+        run: npm ci
+      - name: Rebuild embedded Remote Admin
+        run: node scripts/bundle-web.js
+      - name: Validate Remote Admin bundle
+        run: node -e "const b=require('./src/utils/web_build.json'); if(!b['/remote/index.html']?.data?.includes('Pannello Gestione Totem')) throw new Error('Remote Admin bundle missing')"
       - name: Expo Prebuild Android
         run: npx expo prebuild --platform android --clean
-
       - name: Build APK via Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease || ./gradlew assembleDebug
-
+          ./gradlew assembleRelease
       - name: Locate and copy APK
         run: |
           mkdir -p ../dist-apk
-          find android/app/build/outputs/apk -name "*.apk" -exec cp {} ../dist-apk/Totem-QuickBite-v1.1.9.apk \;
+          find android/app/build/outputs/apk -name "*.apk" -exec cp {} ../dist-apk/Totem-QuickBite.apk \;
           ls -la ../dist-apk/
-
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Totem-QuickBite-Android-APK
-          path: dist-apk/Totem-QuickBite-v1.1.9.apk
+          path: dist-apk/Totem-QuickBite.apk
           retention-days: 14
