@@ -33,7 +33,12 @@ mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+_DEFAULT_JWT = "your-secret-key-change-in-production"
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", _DEFAULT_JWT)
+if SECRET_KEY == _DEFAULT_JWT:
+    logging.getLogger(__name__).warning(
+        "JWT_SECRET_KEY is using the insecure default. Set it in backend/.env for production."
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480
 ROME = ZoneInfo("Europe/Rome")
@@ -205,7 +210,7 @@ class Settings(BaseModel):
     order_reset_mode: str = "daily"
     reset_time: Optional[str] = "06:00"
     last_reset_at: Optional[datetime] = None
-    admin_pin: Optional[str] = "0000"
+    admin_pin: Optional[str] = "1234"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -365,7 +370,7 @@ async def get_settings():
     settings = await db.settings.find_one({})
     if settings:
         return Settings(**serialize_doc(settings))
-    return Settings(restaurant_name="TOTEM RISTORANTE", logo="", auto_print_courtesy=True, auto_print_kitchen=True, order_reset_mode="daily", reset_time="06:00", admin_pin="0000")
+    return Settings(restaurant_name="TOTEM RISTORANTE", logo="", auto_print_courtesy=True, auto_print_kitchen=True, order_reset_mode="daily", reset_time="06:00", admin_pin="1234")
 
 
 @api_router.put("/admin/settings", response_model=Settings)
@@ -377,7 +382,7 @@ async def update_settings(settings_update: SettingsUpdate, username: str = Depen
         await db.settings.update_one({"_id": existing["_id"]}, {"$set": data})
         updated = await db.settings.find_one({"_id": existing["_id"]})
     else:
-        base = {"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "daily", "reset_time": "06:00", "last_reset_at": None, "admin_pin": "0000"}
+        base = {"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "daily", "reset_time": "06:00", "last_reset_at": None, "admin_pin": "1234"}
         base.update(data)
         result = await db.settings.insert_one(base)
         updated = await db.settings.find_one({"_id": result.inserted_id})
@@ -391,7 +396,7 @@ async def reset_order_number(username: str = Depends(verify_token)):
     if existing:
         await db.settings.update_one({"_id": existing["_id"]}, {"$set": {"last_reset_at": now, "order_reset_mode": "manual", "updated_at": now}})
     else:
-        await db.settings.insert_one({"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "manual", "reset_time": "06:00", "last_reset_at": now, "admin_pin": "0000", "updated_at": now})
+        await db.settings.insert_one({"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "manual", "reset_time": "06:00", "last_reset_at": now, "admin_pin": "1234", "updated_at": now})
     return {"message": "Order number reset successfully", "reset_at": now.isoformat()}
 
 
