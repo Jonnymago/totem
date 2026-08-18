@@ -4,7 +4,11 @@
     "slug": "mamafo2236",
     "owner": "mamafo2236s-team",
     "version": "1.2.0",
-    "platforms": ["android", "ios", "web"],
+    "platforms": [
+      "android",
+      "ios",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "frontend",

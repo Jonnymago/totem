@@ -82,6 +82,9 @@ export default function AdminLoginScreen() {
           </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          <Text style={{ color: '#888', fontSize: 12, textAlign: 'center', marginTop: 12 }}>
+            Offline: admin / admin123 (o PIN 1234)
+          </Text>
 
           <TouchableOpacity 
             testID="admin-login-submit"

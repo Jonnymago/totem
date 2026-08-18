@@ -15,7 +15,7 @@ export default function WelcomeScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [adminPin, setAdminPin] = useState('0000');
+  const [adminPin, setAdminPin] = useState('1234');
   const clickTimerRef = useRef<any>(null);
 
   const loadSettings = useCallback(async () => {
