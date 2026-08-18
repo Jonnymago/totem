@@ -1,1 +1,0 @@
-sed -i 's/return product.ui_sections.map((s, i) => ({ ...s, order: s.order ?? i })).sort((a, b) => a.order - b.order);/return [...product.ui_sections.map((s, i) => ({ ...s, order: s.order ?? i })), ...injectedGlobals].sort((a, b) => a.order - b.order);/' frontend/src/api/api.impl.ts

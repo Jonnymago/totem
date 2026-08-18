@@ -1,2 +1,0 @@
-sed -i 's/export function ensureProductSections(product: Product): UiSection\[\] {/export function ensureProductSections(product: Product, includeGlobals = true): UiSection[] {/' frontend/src/api/api.impl.ts
-sed -i 's/const injectedGlobals: UiSection\[\] = (product.global_group_ids || \[\])/const injectedGlobals: UiSection[] = !includeGlobals ? [] : (product.global_group_ids || [])/' frontend/src/api/api.impl.ts

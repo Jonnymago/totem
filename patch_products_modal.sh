@@ -1,3 +1,0 @@
-sed -i 's/setUiSections(ensureProductSections(product).map(s => ({ ...s, id: newSectionId() })));/setUiSections(ensureProductSections(product).map(s => ({ ...s, id: newSectionId() })));\n    setSelectedGlobalGroupIds(product.global_group_ids || []);/' frontend/app/admin/\(tabs\)/products.tsx
-sed -i 's/setUiSections(ensureProductSections(product));/setUiSections(ensureProductSections(product));\n    setSelectedGlobalGroupIds(product.global_group_ids || []);/' frontend/app/admin/\(tabs\)/products.tsx
-sed -i 's/setUiSections(\[\]);/setUiSections([]);\n    setSelectedGlobalGroupIds([]);/' frontend/app/admin/\(tabs\)/products.tsx
