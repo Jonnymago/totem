@@ -36,7 +36,17 @@ node_modules/
 .expo/
 dist/
 web-build/
--e 
 node_modules
-package
 
+# One-off patch / hotfix scripts
+fix_*.py
+fix_*.sh
+fix_*.cjs
+fix_*.js
+patch_*.py
+patch_*.sh
+patch_*.cjs
+patch_*.js
+rewrite_*.cjs
+update_*.sh
+test_chunk.cjs
