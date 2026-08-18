@@ -449,7 +449,7 @@
 
   <script>
     /* State */
-    let authToken = localStorage.getItem('totem_admin_token') || '';
+    let authToken = '';
     let settings = {};
     let categories = [];
     let products = [];
@@ -486,7 +486,7 @@
       const res = await fetch('/api' + path, { ...options, headers });
       if (!res.ok) {
         if (res.status === 401) {
-          localStorage.removeItem('totem_admin_token');
+          
           authToken = '';
           showAuth();
           throw new Error('Sessione scaduta o PIN errato');
@@ -593,7 +593,7 @@
         }
 
         authToken = token;
-        localStorage.setItem('totem_admin_token', authToken);
+        
         toast('Accesso effettuato!');
         showApp();
       } catch (err) {
@@ -609,7 +609,7 @@
     }
 
     function doLogout() {
-      localStorage.removeItem('totem_admin_token');
+      
       authToken = '';
       showAuth();
       toast('Disconnesso');
@@ -624,7 +624,7 @@
         submitBtn.disabled = false;
         submitBtn.innerText = 'Accedi al Pannello';
       }
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
     }
 
     function showApp() {
@@ -1695,7 +1695,7 @@
     /* ========================================================
        ORDERS & KITCHEN TAB LOGIC
        ======================================================== */
-    async function loadOrders() {
+    async function loadOrders() {\n      if (!authToken) return;
       try {
         orders = await api('/admin/orders').catch(() => []);
         if (!Array.isArray(orders)) orders = [];
@@ -1834,7 +1834,7 @@
     }
 
     function startOrdersPolling() {
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
       ordersPollTimer = setInterval(() => {
         if (authToken && currentTab === 'orders') {
           loadOrders();
