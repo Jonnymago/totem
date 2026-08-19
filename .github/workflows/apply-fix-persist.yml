@@ -1,0 +1,41 @@
+name: Apply persist / remote-admin fix
+on:
+  workflow_dispatch:
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode payload and patch HTML bundle
+        run: |
+          python3 - <<'PY'
+          import base64, gzip, io, tarfile, json
+          from pathlib import Path
+          payload = Path('scripts/fix-persist-20260819.tar.gz.b64').read_text().strip()
+          raw = gzip.decompress(base64.b64decode(payload))
+          tf = tarfile.open(fileobj=io.BytesIO(raw), mode='r:')
+          tf.extractall('.')
+          broken = 'async function loadOrders() {\\n      if (!authToken) return;'
+          fixed = 'async function loadOrders() {\n      if (!authToken) return;'
+          wb_path = Path('frontend/src/utils/web_build.json')
+          wb = json.loads(wb_path.read_text())
+          changed = 0
+          for k, v in wb.items():
+              data = v.get('data', '')
+              if broken in data:
+                  v['data'] = data.replace(broken, fixed)
+                  changed += 1
+          if changed:
+              wb_path.write_text(json.dumps(wb, ensure_ascii=False, separators=(',', ':')))
+          print('extracted payload, web_build entries patched:', changed)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "Totem Bot"
+          git config user.email "bot@totem.local"
+          git add frontend public backend/static/remote/index.html
+          git diff --cached --stat
+          git commit -m "fix: persistenza stampanti/IP, pagina bianca remote admin, scan Bluetooth" || echo "no changes"
+          git push
