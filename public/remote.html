@@ -539,7 +539,7 @@
       }
     }
 
-    async async function doLogin(customPin) {
+    async function doLogin(customPin) {
       hideLoginError();
       const pinInput = document.getElementById('auth-pin');
       const pin = (typeof customPin === 'string' ? customPin : (pinInput ? pinInput.value : '')).trim();
