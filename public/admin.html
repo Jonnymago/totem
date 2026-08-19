@@ -1680,7 +1680,8 @@
     /* ========================================================
        ORDERS & KITCHEN TAB LOGIC
        ======================================================== */
-    async function loadOrders() {\n      if (!authToken) return;
+    async function loadOrders() {
+      if (!authToken) return;
       try {
         orders = await api('/admin/orders').catch(() => []);
         if (!Array.isArray(orders)) orders = [];

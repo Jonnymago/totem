@@ -399,8 +399,9 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
     } else if (method === 'POST' && (path === '/api/admin/change-credentials' || path === '/api/change-credentials')) {
       if (json?.new_pin) await api.setAdminPin(String(json.new_pin).trim());
       result = { message: 'Credentials updated successfully' };
-    } else if ((method === 'POST' || method === 'GET') && ['/api/admin/scan-printers', '/api/scan-printers', '/api/admin/scan', '/api/scan'].includes(path)) {
-      result = await api.scanBluetoothPrinters();
+    } else if ((method === 'POST' || method === 'GET') && ['/api/admin/scan-printers', '/api/scan-printers', '/api/admin/scan', '/api/scan', '/api/admin/bt/printers', '/api/bt/printers'].includes(path)) {
+      const scanned = await api.scanBluetoothPrinters();
+      result = { ...scanned, printers: scanned?.devices || [] };
     } else if (method === 'POST' && (path === '/api/admin/test-print' || path === '/api/test-print')) {
       result = await api.testPrintHardware(json?.type || 'courtesy');
     } else if (method === 'POST' && (path === '/api/admin/seed' || path === '/api/seed')) {

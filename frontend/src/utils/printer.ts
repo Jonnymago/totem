@@ -324,7 +324,7 @@ async function requestBtPerms(): Promise<boolean> {
       const connectGranted = r['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED;
       const scanGranted = r['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED;
       const locGranted = r['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED;
-      const finalResult = connectGranted && scanGranted;
+      const finalResult = connectGranted || scanGranted || locGranted;
       console.log('[printer][perms] Android >=31 permissions result:', {
         api,
         BLUETOOTH_CONNECT: r['android.permission.BLUETOOTH_CONNECT'],
@@ -465,11 +465,22 @@ export async function getPairedPrinters(token?: string): Promise<PairedPrinter[]
       found: result?.found,
     });
 
-    const list = [...(result?.paired || []), ...(result?.found || [])];
+    const extraLists = [
+      result?.bonded,
+      result?.devices,
+      result?.printers,
+      Array.isArray(result) ? result : null,
+    ];
+    const list = [
+      ...(result?.paired || []),
+      ...(result?.found || []),
+      ...extraLists.flatMap((x) => (Array.isArray(x) ? x : [])),
+    ];
     const map = new Map<string, PairedPrinter>();
     for (const d of list) {
       const m = mapDevice(d);
-      if (m?.address && !map.has(m.address.toUpperCase())) map.set(m.address.toUpperCase(), m);
+      const key = (m?.address || m?.id || m?.name || '').toUpperCase();
+      if (m && key && !map.has(key)) map.set(key, m);
     }
     const finalPrinters = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'it'));
     console.log('[printer][scan] Final resolved printers list:', finalPrinters);

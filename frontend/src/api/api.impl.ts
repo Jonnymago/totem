@@ -498,16 +498,74 @@ export function syncLegacyFromSections(arg1: Product | UiSection[], arg2?: UiSec
   }
 }
 
+function normalizeKnownPrinters(list: any[]): string[] {
+  const out: string[] = [];
+  for (const p of list || []) {
+    const key = typeof p === 'string' ? p.trim() : String(p?.address || p?.name || p?.id || '').trim();
+    if (key && !out.includes(key)) out.push(key);
+  }
+  return out;
+}
+
+async function mergePrinterSidecarIntoSettings() {
+  try {
+    const cfgRaw = await AsyncStorage.getItem('totem_printer_config');
+    const courtesy = await AsyncStorage.getItem('totem_printer_address');
+    const kitchen = await AsyncStorage.getItem('totem_printer_kitchen_address');
+    let cfg: any = null;
+    try { if (cfgRaw) cfg = JSON.parse(cfgRaw); } catch {}
+    const nextCourtesy = localDb.settings.printer_courtesy || courtesy || cfg?.printer_courtesy || '';
+    const nextKitchen = localDb.settings.printer_kitchen || kitchen || cfg?.printer_kitchen || '';
+    const nextKnown = normalizeKnownPrinters([
+      ...(localDb.settings.known_printers || []),
+      ...(cfg?.known_printers || []),
+      nextCourtesy,
+      nextKitchen,
+    ]);
+    localDb.settings.printer_courtesy = nextCourtesy;
+    localDb.settings.printer_kitchen = nextKitchen;
+    localDb.settings.known_printers = nextKnown;
+  } catch (e) {
+    console.warn('mergePrinterSidecarIntoSettings failed:', e);
+  }
+}
+
+async function persistPrinterSidecarFromSettings() {
+  try {
+    const courtesy = localDb.settings.printer_courtesy || '';
+    const kitchen = localDb.settings.printer_kitchen || '';
+    const known = normalizeKnownPrinters(localDb.settings.known_printers || []);
+    localDb.settings.known_printers = known;
+    await AsyncStorage.setItem('totem_printer_address', courtesy);
+    await AsyncStorage.setItem('totem_printer_kitchen_address', kitchen);
+    await AsyncStorage.setItem('totem_printer_config', JSON.stringify({
+      printer_courtesy: courtesy,
+      printer_kitchen: kitchen,
+      known_printers: known,
+    }));
+  } catch (e) {
+    console.warn('persistPrinterSidecarFromSettings failed:', e);
+  }
+}
+
 export const getSettings = async (): Promise<Settings> => {
   await ensureLocalDbLoaded();
+  await mergePrinterSidecarIntoSettings();
   return clone(localDb.settings);
 };
 
 export const updateSettings = async (data: Partial<Settings>): Promise<Settings> => {
   await ensureLocalDbLoaded();
-  localDb.settings = { ...localDb.settings, ...data };
+  const next = { ...data };
+  if (next.known_printers) {
+    next.known_printers = normalizeKnownPrinters(next.known_printers);
+  }
+  localDb.settings = { ...localDb.settings, ...next };
+  if (localDb.settings.known_printers) {
+    localDb.settings.known_printers = normalizeKnownPrinters(localDb.settings.known_printers);
+  }
   await saveLocalDb();
-  // Forza verifica: rileggi da storage per confermare il salvataggio
+  await persistPrinterSidecarFromSettings();
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) throw new Error('Save verification failed');
@@ -814,13 +872,8 @@ export const scanBluetoothPrinters = async (): Promise<{ devices: any[]; setting
     localDb.settings.known_printers = Array.from(existingMap.values()).map(
       (p: any) => p.address || p.name || p.id
     ).filter(Boolean);
-    if (!localDb.settings.printer_courtesy && devices.length > 0) {
-      localDb.settings.printer_courtesy = devices[0].address || devices[0].name || devices[0].id;
-    }
-    if (!localDb.settings.printer_kitchen && devices.length > 0) {
-      localDb.settings.printer_kitchen = devices[0].address || devices[0].name || devices[0].id;
-    }
     await saveLocalDb();
+    await persistPrinterSidecarFromSettings();
     return { devices: devices || [], settings: clone(localDb.settings) };
   } catch (e) {
     console.error('scanBluetoothPrinters error:', e);
