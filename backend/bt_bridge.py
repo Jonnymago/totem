@@ -17,8 +17,6 @@ Avvio:
 from __future__ import annotations
 import asyncio
 import socket
-import struct
-from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -144,7 +142,7 @@ def health():
 @app.get("/printers")
 async def scan_printers():
     """Scansiona e restituisce stampanti disponibili (classiche + BLE)."""
-    classic = _scan_rfcomm()
+    classic = await asyncio.get_running_loop().run_in_executor(None, _scan_rfcomm)
     ble     = await _scan_bleak(timeout=6.0)
     # filtra errori dal BLE scan
     ble_clean = [d for d in ble if "error" not in d]
@@ -169,7 +167,7 @@ async def print_ticket(req: PrintRequest):
     try:
         # Prova prima RFCOMM (BT classico)
         if req.address.lower().startswith("bt:"):
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, _bt_send_rfcomm, req.address, data, req.timeout)
             return {"success": True, "method": "rfcomm", "bytes_sent": len(data)}
 
