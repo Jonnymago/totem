@@ -539,28 +539,20 @@
       }
     }
 
-    async function quickLogin(presetPin) {
-      document.getElementById('auth-pin').value = presetPin;
-      await doLogin(presetPin);
-    }
-
-    async function doLogin(customPin) {
+    async async function doLogin(customPin) {
       hideLoginError();
       const pinInput = document.getElementById('auth-pin');
-      const pin = (typeof customPin === 'string' ? customPin : pinInput.value).trim();
-      
+      const pin = (typeof customPin === 'string' ? customPin : (pinInput ? pinInput.value : '')).trim();
       if (!pin) {
-        showLoginError('Inserisci il PIN di 4 cifre per accedere.');
-        toast('Inserisci il PIN', '⚠️');
+        showLoginError('Inserisci PIN o password per accedere.');
+        toast('Inserisci PIN o password', '⚠️');
         return;
       }
-
       const submitBtn = document.getElementById('login-submit-btn');
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerText = 'Accesso...';
       }
-
       try {
         const res = await fetch('/api/admin/pin-login', {
           method: 'POST',
@@ -585,8 +577,8 @@
         showApp();
       } catch (err) {
         console.error('Login error:', err);
-        showLoginError(err.message || 'Errore di autenticazione.');
-        toast(err.message || 'Errore PIN', '❌');
+        showLoginError(err.message || 'Rete non disponibile. Riprova.');
+        toast(err.message || 'Errore di rete', '❌');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -595,8 +587,14 @@
       }
     }
 
+    function stopOrdersPolling() {
+      if (typeof ordersPollTimer !== 'undefined' && ordersPollTimer) {
+        clearInterval(ordersPollTimer);
+        ordersPollTimer = null;
+      }
+    }
     function doLogout() {
-      
+      stopOrdersPolling();
       authToken = '';
       showAuth();
       toast('Disconnesso');
@@ -611,7 +609,7 @@
         submitBtn.disabled = false;
         submitBtn.innerText = 'Accedi al Pannello';
       }
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
     }
 
     function showApp() {
@@ -1682,7 +1680,7 @@
     /* ========================================================
        ORDERS & KITCHEN TAB LOGIC
        ======================================================== */
-    async function loadOrders() {
+    async function loadOrders() {\n      if (!authToken) return;
       try {
         orders = await api('/admin/orders').catch(() => []);
         if (!Array.isArray(orders)) orders = [];
@@ -1821,7 +1819,7 @@
     }
 
     function startOrdersPolling() {
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
       ordersPollTimer = setInterval(() => {
         if (authToken && currentTab === 'orders') {
           loadOrders();

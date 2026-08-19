@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -44,8 +45,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 480
 ROME = ZoneInfo("Europe/Rome")
 UTC = ZoneInfo("UTC")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    client.close()
+
+
 security = HTTPBearer()
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 api_router = APIRouter(prefix="/api")
 
 
@@ -55,7 +63,7 @@ class Category(BaseModel):
     description: str
     image: Optional[str] = None
     order_index: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class CategoryCreate(BaseModel):
@@ -98,7 +106,7 @@ class Product(BaseModel):
     combo_groups: Optional[List[ComboGroup]] = []
     ui_sections: Optional[List[Any]] = []
     global_group_ids: Optional[List[str]] = []
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class ProductCreate(BaseModel):
@@ -169,8 +177,8 @@ class Order(BaseModel):
     total_price: float
     status: str = "pending"
     order_type: str = "full"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class OrderCreate(BaseModel):
@@ -210,8 +218,8 @@ class Settings(BaseModel):
     order_reset_mode: str = "daily"
     reset_time: Optional[str] = "06:00"
     last_reset_at: Optional[datetime] = None
-    admin_pin: Optional[str] = "1234"
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    admin_pin: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class SettingsUpdate(BaseModel):
@@ -237,7 +245,7 @@ class ChangeCredentials(BaseModel):
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    to_encode.update({"exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)})
+    to_encode.update({"exp": datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -313,8 +321,8 @@ async def create_order(order_input: OrderCreate):
     order_dict.update(
         order_number=await get_next_order_number(),
         status="pending",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
     result = await db.orders.insert_one(order_dict)
     order_dict["id"] = str(result.inserted_id)
@@ -329,8 +337,8 @@ async def create_number_only_order():
         "total_price": 0.0,
         "status": "pending",
         "order_type": "number_only",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
     }
     result = await db.orders.insert_one(order_dict)
     order_dict["id"] = str(result.inserted_id)
@@ -357,8 +365,13 @@ async def admin_pin_login(credentials: PinLogin):
     if not settings:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sistema non inizializzato")
     expected_pin = str(settings.get("admin_pin") or "").strip()
+    if not expected_pin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="PIN amministratore non configurato. Accedere alle impostazioni."
+        )
     entered = (credentials.pin or "").strip()
-    if not expected_pin or entered != expected_pin:
+    if entered != expected_pin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="PIN non valido")
     admin = await db.admin_users.find_one({})
     username = admin["username"] if admin else "admin"
@@ -368,7 +381,15 @@ async def admin_pin_login(credentials: PinLogin):
 def _settings_or_default(doc):
     if doc:
         return Settings(**serialize_doc(doc))
-    return Settings(restaurant_name="TOTEM RISTORANTE", logo="", auto_print_courtesy=True, auto_print_kitchen=True, order_reset_mode="daily", reset_time="06:00", admin_pin="1234")
+    return Settings(
+        restaurant_name="TOTEM RISTORANTE",
+        logo="",
+        auto_print_courtesy=True,
+        auto_print_kitchen=True,
+        order_reset_mode="daily",
+        reset_time="06:00",
+        admin_pin=None,
+    )
 
 
 def _public_settings(settings: Settings) -> dict:
@@ -391,12 +412,21 @@ async def get_admin_settings(username: str = Depends(verify_token)):
 async def update_settings(settings_update: SettingsUpdate, username: str = Depends(verify_token)):
     existing = await db.settings.find_one({})
     data = {k: v for k, v in settings_update.dict().items() if v is not None}
-    data["updated_at"] = datetime.utcnow()
+    data["updated_at"] = datetime.now(UTC)
     if existing:
         await db.settings.update_one({"_id": existing["_id"]}, {"$set": data})
         updated = await db.settings.find_one({"_id": existing["_id"]})
     else:
-        base = {"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "daily", "reset_time": "06:00", "last_reset_at": None, "admin_pin": "1234"}
+        base = {
+            "restaurant_name": "TOTEM RISTORANTE",
+            "logo": "",
+            "auto_print_courtesy": True,
+            "auto_print_kitchen": True,
+            "order_reset_mode": "daily",
+            "reset_time": "06:00",
+            "last_reset_at": None,
+            "admin_pin": None,
+        }
         base.update(data)
         result = await db.settings.insert_one(base)
         updated = await db.settings.find_one({"_id": result.inserted_id})
@@ -405,12 +435,22 @@ async def update_settings(settings_update: SettingsUpdate, username: str = Depen
 
 @api_router.post("/admin/reset-order-number")
 async def reset_order_number(username: str = Depends(verify_token)):
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     existing = await db.settings.find_one({})
     if existing:
         await db.settings.update_one({"_id": existing["_id"]}, {"$set": {"last_reset_at": now, "order_reset_mode": "manual", "updated_at": now}})
     else:
-        await db.settings.insert_one({"restaurant_name": "TOTEM RISTORANTE", "logo": "", "auto_print_courtesy": True, "auto_print_kitchen": True, "order_reset_mode": "manual", "reset_time": "06:00", "last_reset_at": now, "admin_pin": "1234", "updated_at": now})
+        await db.settings.insert_one({
+            "restaurant_name": "TOTEM RISTORANTE",
+            "logo": "",
+            "auto_print_courtesy": True,
+            "auto_print_kitchen": True,
+            "order_reset_mode": "manual",
+            "reset_time": "06:00",
+            "last_reset_at": now,
+            "admin_pin": None,
+            "updated_at": now,
+        })
     return {"message": "Order number reset successfully", "reset_at": now.isoformat()}
 
 
@@ -434,7 +474,7 @@ async def test_print(data: Optional[Dict[str, Any]] = None, username: str = Depe
 @api_router.post("/admin/categories", response_model=Category)
 async def create_category(category: CategoryCreate, username: str = Depends(verify_token)):
     d = category.dict()
-    d["created_at"] = datetime.utcnow()
+    d["created_at"] = datetime.now(UTC)
     result = await db.categories.insert_one(d)
     d["id"] = str(result.inserted_id)
     return Category(**d)
@@ -455,7 +495,7 @@ async def delete_category(category_id: str, username: str = Depends(verify_token
 @api_router.post("/admin/products", response_model=Product)
 async def create_product(product: ProductCreate, username: str = Depends(verify_token)):
     d = product.dict()
-    d["created_at"] = datetime.utcnow()
+    d["created_at"] = datetime.now(UTC)
     result = await db.products.insert_one(d)
     d["id"] = str(result.inserted_id)
     return Product(**d)
@@ -480,7 +520,7 @@ async def get_all_products_admin(username: str = Depends(verify_token)):
 
 @api_router.put("/admin/orders/{order_id}/status", response_model=Order)
 async def update_order_status(order_id: str, status_update: OrderStatusUpdate, username: str = Depends(verify_token)):
-    await db.orders.update_one({"_id": ObjectId(order_id)}, {"$set": {"status": status_update.status, "updated_at": datetime.utcnow()}})
+    await db.orders.update_one({"_id": ObjectId(order_id)}, {"$set": {"status": status_update.status, "updated_at": datetime.now(UTC)}})
     return Order(**serialize_doc(await db.orders.find_one({"_id": ObjectId(order_id)})))
 
 
@@ -499,8 +539,3 @@ if register_remote_admin:
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()

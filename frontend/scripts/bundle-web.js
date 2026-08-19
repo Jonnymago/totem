@@ -2,9 +2,16 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = process.cwd();
-const outPath = path.join(rootDir, 'src', 'utils', 'web_build.json');
+const outCandidates = [
+  path.join(rootDir, 'frontend', 'src', 'utils', 'web_build.json'),
+  path.join(rootDir, 'src', 'utils', 'web_build.json')
+];
+const outPath = outCandidates.find(p => fs.existsSync(path.dirname(p))) || outCandidates[0];
 
 function sanitizeRemoteHtml(html) {
+  if (html.includes('stopOrdersPolling') && html.includes('PIN o password per accedere')) {
+    return html;
+  }
   const secureLogin = `async function doLogin(customPin) {
       hideLoginError();
       const pinInput = document.getElementById('auth-pin');
@@ -152,5 +159,6 @@ if (distPath) {
   setRemote('/admin.html');
 }
 
+fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(result));
 console.log(`Remote Admin bundle updated from ${remoteSrc}: ${outPath}${distPath ? ` + ${distPath}` : ' (no dist; existing web assets preserved)'}`);
