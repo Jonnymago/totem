@@ -74,7 +74,11 @@
     "install": {
       "exclude": [
         "react-native-web",
-        "@react-navigation/bottom-tabs"
+        "@react-navigation/bottom-tabs",
+        "expo",
+        "expo-constants",
+        "expo-file-system",
+        "expo-updates"
       ]
     },
     "doctor": {
