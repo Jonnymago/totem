@@ -111,37 +111,71 @@ function isPixelInText(x, y, cx, cy, scale) {
   return glyph[gridY][gridX] === "1";
 }
 
+function isPixelInBigT(x, y, cx, cy, scale) {
+  const barW = Math.round(180 * scale);
+  const barH = Math.round(65 * scale);
+  const stemW = Math.round(42 * scale);
+  const stemH = Math.round(190 * scale);
+  const topY = cy - Math.round(140 * scale);
+
+  // Top horizontal bar
+  if (y >= topY && y < topY + barH && x >= cx - barW && x <= cx + barW) {
+    return true;
+  }
+  // Vertical stem
+  if (y >= topY + barH && y <= topY + barH + stemH && x >= cx - stemW && x <= cx + stemW) {
+    return true;
+  }
+  return false;
+}
+
 function main() {
-  const dirs = [path.join(__dirname, '../assets/images'), path.join(__dirname, '../../assets/images')];
+  const dirs = [
+    path.join(__dirname, '../assets/images'),
+    path.join(__dirname, '../../assets/images'),
+    path.join(__dirname, '../../public/assets/images'),
+  ];
   for (const d of dirs) {
     if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
   }
 
+  // 1. icon.png (1024x1024, RGB 8-bit, background #1A1A1A, circle #FF6B00, white T and TOTEM)
   const iconBuf = encodePNG(1024, 1024, false, (x, y) => {
     const cx = 512, cy = 512, r = 384;
     const dx = x - cx, dy = y - cy;
     if (dx * dx + dy * dy <= r * r) {
-      return isPixelInText(x, y, cx, cy, 14) ? [255, 255, 255] : [0, 170, 0];
+      if (isPixelInBigT(x, y, cx, cy - 20, 1.0) || isPixelInText(x, y, cx, cy + 180, 5)) {
+        return [255, 255, 255];
+      }
+      return [255, 107, 0]; // #FF6B00
     }
-    return [0, 0, 0];
+    return [26, 26, 26]; // #1A1A1A
   });
 
+  // 2. adaptive-icon.png (1024x1024, RGBA 8-bit, transparent background, circle #FF6B00, white T and TOTEM)
   const adaptiveBuf = encodePNG(1024, 1024, true, (x, y) => {
     const cx = 512, cy = 512, r = 384;
     const dx = x - cx, dy = y - cy;
     if (dx * dx + dy * dy <= r * r) {
-      return isPixelInText(x, y, cx, cy, 14) ? [255, 255, 255, 255] : [0, 170, 0, 255];
+      if (isPixelInBigT(x, y, cx, cy - 20, 1.0) || isPixelInText(x, y, cx, cy + 180, 5)) {
+        return [255, 255, 255, 255];
+      }
+      return [255, 107, 0, 255]; // #FF6B00
     }
-    return [0, 0, 0, 0];
+    return [0, 0, 0, 0]; // Transparent
   });
 
+  // 3. splash-image.png (1284x2778, RGB 8-bit, background #1A1A1A, circle #FF6B00, white T and TOTEM)
   const splashBuf = encodePNG(1284, 2778, false, (x, y) => {
-    const cx = 642, cy = 1389, r = 300;
+    const cx = 642, cy = 1389, r = 320;
     const dx = x - cx, dy = y - cy;
     if (dx * dx + dy * dy <= r * r) {
-      return isPixelInText(x, y, cx, cy, 11) ? [255, 255, 255] : [0, 170, 0];
+      if (isPixelInBigT(x, y, cx, cy - 15, 0.85) || isPixelInText(x, y, cx, cy + 150, 4)) {
+        return [255, 255, 255];
+      }
+      return [255, 107, 0]; // #FF6B00
     }
-    return [0, 0, 0];
+    return [26, 26, 26]; // #1A1A1A
   });
 
   for (const dir of dirs) {
@@ -151,7 +185,7 @@ function main() {
     fs.writeFileSync(path.join(dir, 'favicon.png'), iconBuf);
     fs.writeFileSync(path.join(dir, 'app-image.png'), iconBuf);
   }
-  console.log('PNG assets regenerated successfully');
+  console.log('Professional PNG assets regenerated successfully (#1A1A1A background, #FF6B00 circle, white T & TOTEM)');
 }
 
 main();

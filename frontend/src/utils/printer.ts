@@ -1,8 +1,90 @@
 import * as Print from 'expo-print';
 import { PermissionsAndroid, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Order, Settings } from '@/src/api/api';
 
 export type PaperWidthMm = 58 | 80;
+
+export const STORAGE_KEY_PRINTER_CONFIG = 'totem_printer_config';
+export const STORAGE_KEY_PRINTER_ADDRESS = 'totem_printer_address';
+export const STORAGE_KEY_PRINTER_KITCHEN_ADDRESS = 'totem_printer_kitchen_address';
+
+export interface StoredPrinterConfig {
+  printer_courtesy?: string;
+  printer_kitchen?: string;
+  known_printers?: string[];
+  paper_width_mm?: PaperWidthMm;
+}
+
+export async function savePrinterConfig(config: StoredPrinterConfig): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY_PRINTER_CONFIG, JSON.stringify(config));
+    if (config.printer_courtesy !== undefined) {
+      if (config.printer_courtesy) {
+        await AsyncStorage.setItem(STORAGE_KEY_PRINTER_ADDRESS, config.printer_courtesy);
+      } else {
+        await AsyncStorage.removeItem(STORAGE_KEY_PRINTER_ADDRESS);
+      }
+    }
+    if (config.printer_kitchen !== undefined) {
+      if (config.printer_kitchen) {
+        await AsyncStorage.setItem(STORAGE_KEY_PRINTER_KITCHEN_ADDRESS, config.printer_kitchen);
+      } else {
+        await AsyncStorage.removeItem(STORAGE_KEY_PRINTER_KITCHEN_ADDRESS);
+      }
+    }
+    return true;
+  } catch (e) {
+    console.warn('[printer] savePrinterConfig error:', e);
+    return false;
+  }
+}
+
+export async function savePrinterAddress(address: string, role: 'courtesy' | 'kitchen' = 'courtesy'): Promise<boolean> {
+  try {
+    const key = role === 'kitchen' ? STORAGE_KEY_PRINTER_KITCHEN_ADDRESS : STORAGE_KEY_PRINTER_ADDRESS;
+    if (address && address.trim()) {
+      await AsyncStorage.setItem(key, address.trim());
+    } else {
+      await AsyncStorage.removeItem(key);
+    }
+    const existing = await getStoredPrinterConfig();
+    const updated: StoredPrinterConfig = {
+      ...(existing || {}),
+      [role === 'kitchen' ? 'printer_kitchen' : 'printer_courtesy']: address.trim(),
+    };
+    await AsyncStorage.setItem(STORAGE_KEY_PRINTER_CONFIG, JSON.stringify(updated));
+    return true;
+  } catch (e) {
+    console.warn(`[printer] savePrinterAddress(${role}) error:`, e);
+    return false;
+  }
+}
+
+export async function getStoredPrinterAddress(role: 'courtesy' | 'kitchen' = 'courtesy'): Promise<string | null> {
+  try {
+    const key = role === 'kitchen' ? STORAGE_KEY_PRINTER_KITCHEN_ADDRESS : STORAGE_KEY_PRINTER_ADDRESS;
+    const direct = await AsyncStorage.getItem(key);
+    if (direct && direct.trim()) return direct.trim();
+    const config = await getStoredPrinterConfig();
+    const fallback = role === 'kitchen' ? config?.printer_kitchen : config?.printer_courtesy;
+    return fallback && fallback.trim() ? fallback.trim() : null;
+  } catch (e) {
+    console.warn(`[printer] getStoredPrinterAddress(${role}) error:`, e);
+    return null;
+  }
+}
+
+export async function getStoredPrinterConfig(): Promise<StoredPrinterConfig | null> {
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_PRINTER_CONFIG);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[printer] getStoredPrinterConfig error:', e);
+    return null;
+  }
+}
 
 function charsPerLine(mm: PaperWidthMm = 58): number {
   return mm >= 80 ? 48 : 32;
@@ -440,12 +522,16 @@ export async function scanPrinters(token?: string): Promise<PairedPrinter[]> {
   return getPairedPrinters(token);
 }
 
-export async function resolvePrinterAddress(id: string): Promise<string | null> {
-  if (!id?.trim()) return null;
-  const n = preferClassic(normalizePrinterAddress(id));
+export async function resolvePrinterAddress(id?: string): Promise<string | null> {
+  let targetId = id?.trim();
+  if (!targetId) {
+    targetId = (await getStoredPrinterAddress('courtesy')) || '';
+  }
+  if (!targetId) return null;
+  const n = preferClassic(normalizePrinterAddress(targetId));
   if (/^(bt|ble|tcp):/i.test(n)) return n;
   const devices = await getPairedPrinters();
-  const needle = id.trim().toLowerCase();
+  const needle = targetId.trim().toLowerCase();
   const match = devices.find(
     (d) =>
       d.id.toLowerCase() === needle ||
@@ -454,7 +540,7 @@ export async function resolvePrinterAddress(id: string): Promise<string | null> 
       d.address.toLowerCase() === needle
   );
   if (match?.address) return preferClassic(match.address);
-  if (MAC_RE.test(id.replace(/-/g, ':'))) return normalizePrinterAddress(id, 'bt');
+  if (MAC_RE.test(targetId.replace(/-/g, ':'))) return normalizePrinterAddress(targetId, 'bt');
   return null;
 }
 
@@ -695,6 +781,10 @@ async function printBluetoothText(
   let address: string | null = null;
   if (printerRef) address = await resolvePrinterAddress(printerRef);
   if (!address) {
+    const saved = await getStoredPrinterAddress('courtesy');
+    if (saved) address = await resolvePrinterAddress(saved);
+  }
+  if (!address) {
     const devices = await getPairedPrinters();
     const mpt = devices.find(
       (d) =>
@@ -769,7 +859,7 @@ export const printCourtesyTicket = async (
   const paperMm = getPaperMm(settings);
   const html = generateCourtesyTicketHTML(order, settings);
   const text = generateCourtesyTicketText(order, settings, paperMm);
-  const target = printerName || settings?.printer_courtesy || undefined;
+  const target = printerName || settings?.printer_courtesy || (await getStoredPrinterAddress('courtesy')) || undefined;
   const hasItems = (order.items?.length || 0) > 0;
   await printTicket(html, text, target, {
     // Nessun logo sullo scontrino (richiesta: solo testo nome ristorante più grande)
@@ -786,7 +876,7 @@ export const printKitchenTicket = async (
   const paperMm = getPaperMm(settings);
   const html = generateKitchenTicketHTML(order);
   const text = generateKitchenTicketText(order, paperMm);
-  const target = printerName || settings?.printer_kitchen || undefined;
+  const target = printerName || settings?.printer_kitchen || (await getStoredPrinterAddress('kitchen')) || undefined;
   const hasItems = (order.items?.length || 0) > 0;
   await printTicket(html, text, target, {
     paperMm,

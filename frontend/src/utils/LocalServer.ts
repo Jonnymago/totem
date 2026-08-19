@@ -1,7 +1,41 @@
 import { Buffer } from 'buffer';
 import TcpSocket from 'react-native-tcp-socket';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import webBuild from './web_build.json';
 import * as api from '../api/api.impl';
+
+export const STORAGE_KEY_SERVER_IP = 'totem_server_ip';
+export const STORAGE_KEY_LOCAL_IP = 'totem_local_ip';
+
+export async function saveStoredServerIp(ip: string): Promise<boolean> {
+  const clean = (ip || '').trim();
+  if (!clean || clean === '0.0.0.0' || clean.startsWith('0.') || clean === '127.0.0.1') return false;
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY_SERVER_IP, clean);
+    await AsyncStorage.setItem(STORAGE_KEY_LOCAL_IP, clean);
+    return true;
+  } catch (e) {
+    console.warn('[LocalServer] saveStoredServerIp error:', e);
+    return false;
+  }
+}
+
+export async function getStoredServerIp(): Promise<string | null> {
+  try {
+    const primary = await AsyncStorage.getItem(STORAGE_KEY_SERVER_IP);
+    if (primary && primary.trim() && primary !== '0.0.0.0' && !primary.startsWith('0.') && primary !== '127.0.0.1') {
+      return primary.trim();
+    }
+    const legacy = await AsyncStorage.getItem(STORAGE_KEY_LOCAL_IP);
+    if (legacy && legacy.trim() && legacy !== '0.0.0.0' && !legacy.startsWith('0.') && legacy !== '127.0.0.1') {
+      return legacy.trim();
+    }
+    return null;
+  } catch (e) {
+    console.warn('[LocalServer] getStoredServerIp error:', e);
+    return null;
+  }
+}
 
 const PORT = 3000;
 const MAX_HEADER_BYTES = 32 * 1024;
@@ -182,42 +216,95 @@ export function startLocalServer() {
 }
 
 function normaliseStaticPath(rawPath: string) {
-  let path = rawPath.split('?')[0].trim();
+  let path = (rawPath || '/').split('?')[0].trim();
   if (!path.startsWith('/')) path = '/' + path;
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
-  if (['/remote', '/remote/index.html', '/remote.html', '/admin', '/admin/index.html', '/admin.html'].includes(path)) return '/remote/index.html';
-  if (['', '/', '/totem', '/kitchen', '/categories', '/take-number'].includes(path)) return '/index.html';
   return path;
 }
 
 function handleStaticFile(socket: any, rawPath: string) {
   try {
     const cleanPath = normaliseStaticPath(rawPath);
-    let file: any = (webBuild as any)[cleanPath];
-    if (!file && cleanPath.startsWith('/remote/')) file = (webBuild as any)[cleanPath.replace('/remote', '')];
+    const wb = (webBuild || {}) as Record<string, any>;
 
-    if (!file && cleanPath.startsWith('/assets/')) {
-      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Asset not found', path: cleanPath }));
-      return;
+    let file: any = null;
+
+    // Direct exact match
+    if (wb[cleanPath]) {
+      file = wb[cleanPath];
     }
 
-    if (!file && !cleanPath.includes('.')) {
-      file = (webBuild as any)['/remote/index.html'] || (webBuild as any)['/remote.html'];
+    // Remote / Admin aliases
+    if (!file && ['/remote', '/remote/index.html', '/remote.html', '/admin', '/admin/index.html', '/admin.html'].includes(cleanPath)) {
+      file = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/admin.html'] || wb['/index.html'];
+    }
+
+    // Root and client routes
+    if (!file && ['', '/', '/totem', '/kitchen', '/categories', '/take-number', '/products', '/cart'].includes(cleanPath)) {
+      file = wb['/index.html'] || wb['/remote/index.html'] || wb['/remote.html'];
+    }
+
+    // Stripped path for subdirectories
+    if (!file && cleanPath.startsWith('/remote/')) {
+      const stripped = cleanPath.replace('/remote', '');
+      if (wb[stripped]) file = wb[stripped];
+    }
+    if (!file && cleanPath.startsWith('/admin/')) {
+      const stripped = cleanPath.replace('/admin', '');
+      if (wb[stripped]) file = wb[stripped];
+    }
+
+    // Static assets
+    if (!file && cleanPath.startsWith('/assets/')) {
+      const filename = cleanPath.split('/').pop();
+      if (filename) {
+        for (const [k, v] of Object.entries(wb)) {
+          if (k.endsWith('/' + filename) || k === filename) {
+            file = v;
+            break;
+          }
+        }
+      }
+      if (!file) {
+        writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Asset not found', path: cleanPath }));
+        return;
+      }
+    }
+
+    // Fallback for HTML routes
+    if (!file) {
+      if (cleanPath.startsWith('/remote') || cleanPath.startsWith('/admin')) {
+        file = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/index.html'];
+      } else if (!cleanPath.includes('.')) {
+        file = wb['/index.html'] || wb['/remote/index.html'] || wb['/remote.html'];
+      }
     }
 
     if (!file) {
-      writeResponse(socket, '404 Not Found', 'text/html; charset=utf-8', '<!doctype html><html><body><h1>404 Not Found</h1></body></html>');
+      writeResponse(socket, '404 Not Found', 'text/html; charset=utf-8', '<!doctype html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>Path: ' + cleanPath + '</p></body></html>');
       return;
     }
 
     const ext = String(file.ext || '').toLowerCase();
     const mimeMap: Record<string, string> = {
-      '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript; charset=utf-8',
-      '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2'
+      '.html': 'text/html; charset=utf-8',
+      '.htm': 'text/html; charset=utf-8',
+      '.js': 'application/javascript; charset=utf-8',
+      '.mjs': 'application/javascript; charset=utf-8',
+      '.css': 'text/css; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+      '.ttf': 'font/ttf',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2'
     };
-    const data = file.type === 'base64' ? Buffer.from(file.data, 'base64') : Buffer.from(file.data, 'utf8');
-    writeResponse(socket, '200 OK', mimeMap[ext] || 'application/octet-stream', data);
+    const defaultMime = ext ? (mimeMap[ext] || 'application/octet-stream') : 'text/html; charset=utf-8';
+    const data = file.type === 'base64' ? Buffer.from(file.data, 'base64') : Buffer.from(file.data || '', 'utf8');
+    writeResponse(socket, '200 OK', defaultMime, data);
   } catch (error: any) {
     console.error('handleStaticFile error:', error);
     writeResponse(socket, '500 Internal Server Error', 'application/json; charset=utf-8', JSON.stringify({ error: error?.message || 'Internal Server Error' }));

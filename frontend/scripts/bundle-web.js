@@ -4,7 +4,8 @@ const path = require('path');
 const rootDir = process.cwd();
 const outCandidates = [
   path.join(rootDir, 'frontend', 'src', 'utils', 'web_build.json'),
-  path.join(rootDir, 'src', 'utils', 'web_build.json')
+  path.join(rootDir, 'src', 'utils', 'web_build.json'),
+  path.join(__dirname, '../src/utils/web_build.json')
 ];
 const outPath = outCandidates.find(p => fs.existsSync(path.dirname(p))) || outCandidates[0];
 
@@ -97,19 +98,21 @@ function sanitizeRemoteHtml(html) {
 const sourceCandidates = [
   path.join(rootDir, 'backend', 'static', 'remote', 'index.html'),
   path.join(rootDir, '..', 'backend', 'static', 'remote', 'index.html'),
-  path.join(rootDir, 'public', 'remote', 'index.html')
+  path.join(rootDir, 'frontend', 'backend', 'static', 'remote', 'index.html'),
+  path.join(rootDir, 'public', 'remote', 'index.html'),
+  path.join(rootDir, 'frontend', 'public', 'remote', 'index.html'),
+  path.join(rootDir, 'frontend', 'public', 'remote.html'),
+  path.join(rootDir, 'public', 'remote.html'),
+  path.join(__dirname, '../public/remote.html')
 ];
-const remoteSrc = sourceCandidates.find(fs.existsSync);
+const remoteSrc = sourceCandidates.find(p => fs.existsSync(p));
 
 if (!remoteSrc) {
   console.warn(`[bundle-web] Remote Admin source not found, skipping HTML injection. Checked: ${sourceCandidates.join(', ')}`);
-  // Aggiorna solo i campi nel JSON esistente senza toccare l'HTML
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  // Se il file esiste già, non sovrascrivere nulla
   if (!fs.existsSync(outPath)) {
     fs.writeFileSync(outPath, JSON.stringify({}));
   }
-  console.log(`[bundle-web] Skipped (no source). Existing web_build.json preserved.`);
   process.exit(0);
 }
 
@@ -118,6 +121,9 @@ const aliases = [
   path.join(rootDir, 'public', 'remote.html'),
   path.join(rootDir, 'public', 'admin.html'),
   path.join(rootDir, 'public', 'admin', 'index.html'),
+  path.join(rootDir, 'public', 'remote', 'index.html'),
+  path.join(rootDir, 'frontend', 'public', 'remote.html'),
+  path.join(rootDir, 'frontend', 'public', 'admin.html'),
   path.join(rootDir, 'backend', 'static', 'remote', 'index.html')
 ];
 for (const target of aliases) {
@@ -167,6 +173,10 @@ if (distPath) {
   setRemote('/admin.html');
 }
 
+if (!result['/index.html']) {
+  result['/index.html'] = { type: 'text', data: remoteHtml, ext: '.html' };
+}
+
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(result));
-console.log(`Remote Admin bundle updated from ${remoteSrc}: ${outPath}${distPath ? ` + ${distPath}` : ' (no dist; existing web assets preserved)'}`);
+console.log(`Remote Admin bundle updated from ${remoteSrc}: ${outPath}`);

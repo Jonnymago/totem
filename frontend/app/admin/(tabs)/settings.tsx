@@ -166,10 +166,10 @@ export default function SettingsScreen() {
       if (manual) setIpDetecting(true);
       const ip = await Network.getIpAddressAsync();
       if (ip && ip !== '0.0.0.0' && !ip.startsWith('0.') && ip !== '127.0.0.1' && ip !== 'localhost') {
-        // Salva SOLO se non c'è già un IP manuale dell'utente
-        const saved = await AsyncStorage.getItem('totem_local_ip');
-        if (!saved || saved === '192.168.1.9' || saved === '0.0.0.0') {
+        const saved = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
+        if (manual || !saved || saved === '192.168.1.9' || saved === '0.0.0.0') {
           setLocalIp(ip);
+          await AsyncStorage.setItem('totem_server_ip', ip);
           await AsyncStorage.setItem('totem_local_ip', ip);
         }
         return ip;
@@ -181,7 +181,7 @@ export default function SettingsScreen() {
     }
 
     try {
-      const saved = await AsyncStorage.getItem('totem_local_ip');
+      const saved = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
       if (saved && saved !== '0.0.0.0' && !saved.startsWith('0.') && saved !== '127.0.0.1') {
         setLocalIp(saved);
         return saved;
@@ -210,13 +210,29 @@ export default function SettingsScreen() {
       setAutoPrintCourtesy(data.auto_print_courtesy);
       setAutoPrintKitchen(data.auto_print_kitchen);
       setKitchenDisplayEnabled(data.kitchen_display_enabled);
-      setPrinterCourtesy(data.printer_courtesy || '');
-      setPrinterKitchen(data.printer_kitchen || '');
-      const normalized = (data.known_printers || []).map((p: any) =>
+
+      const savedCourtesy = await AsyncStorage.getItem('totem_printer_address');
+      const savedKitchen = await AsyncStorage.getItem('totem_printer_kitchen_address');
+      const savedPrinterConfigRaw = await AsyncStorage.getItem('totem_printer_config');
+      let savedPrinterConfig: any = null;
+      try {
+        if (savedPrinterConfigRaw) savedPrinterConfig = JSON.parse(savedPrinterConfigRaw);
+      } catch {}
+
+      const courtesyTarget = data.printer_courtesy || savedCourtesy || savedPrinterConfig?.printer_courtesy || '';
+      const kitchenTarget = data.printer_kitchen || savedKitchen || savedPrinterConfig?.printer_kitchen || '';
+
+      setPrinterCourtesy(courtesyTarget);
+      setPrinterKitchen(kitchenTarget);
+
+      const baseKnown = (data.known_printers || []).map((p: any) =>
         typeof p === 'string' ? p : (p.address || p.name || p.id || p)
       ).filter(Boolean);
-      setKnownPrinters(normalized);
-      const savedIp = await AsyncStorage.getItem('totem_local_ip');
+      const extraKnown = (savedPrinterConfig?.known_printers || []).filter(Boolean);
+      const combinedKnown = Array.from(new Set([...baseKnown, ...extraKnown, courtesyTarget, kitchenTarget].filter(Boolean)));
+      setKnownPrinters(combinedKnown);
+
+      const savedIp = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
       if (savedIp && savedIp !== '0.0.0.0' && !savedIp.startsWith('0.') && savedIp !== '127.0.0.1') {
         setLocalIp(savedIp);
       }
@@ -254,7 +270,7 @@ export default function SettingsScreen() {
     try {
       await updateSettings({
         restaurant_name: restaurantName,
-      custom_backend_url: customBackendUrl,
+        custom_backend_url: customBackendUrl,
         logo,
         auto_print_courtesy: autoPrintCourtesy,
         auto_print_kitchen: autoPrintKitchen,
@@ -266,6 +282,19 @@ export default function SettingsScreen() {
         reset_time: resetTime,
         last_reset_at: lastResetAt,
       });
+
+      await AsyncStorage.setItem('totem_printer_address', printerCourtesy || '');
+      await AsyncStorage.setItem('totem_printer_kitchen_address', printerKitchen || '');
+      await AsyncStorage.setItem('totem_printer_config', JSON.stringify({
+        printer_courtesy: printerCourtesy || '',
+        printer_kitchen: printerKitchen || '',
+        known_printers: knownPrinters,
+      }));
+      if (localIp && localIp.trim()) {
+        await AsyncStorage.setItem('totem_server_ip', localIp.trim());
+        await AsyncStorage.setItem('totem_local_ip', localIp.trim());
+      }
+
       Alert.alert('Successo', 'Impostazioni salvate correttamente');
     } catch (error) {
       console.error('Error saving:', error);
@@ -630,22 +659,62 @@ export default function SettingsScreen() {
                 <View style={styles.printerRoles}>
                   <TouchableOpacity
                     style={[styles.roleChip, printerCourtesy === printer && styles.roleChipActive]}
-                    onPress={() => setPrinterCourtesy(printerCourtesy === printer ? '' : printer)}
+                    onPress={async () => {
+                      const nextVal = printerCourtesy === printer ? '' : printer;
+                      setPrinterCourtesy(nextVal);
+                      await AsyncStorage.setItem('totem_printer_address', nextVal);
+                      const existingRaw = await AsyncStorage.getItem('totem_printer_config');
+                      let existing: any = {};
+                      try { if (existingRaw) existing = JSON.parse(existingRaw); } catch {}
+                      await AsyncStorage.setItem('totem_printer_config', JSON.stringify({
+                        ...existing,
+                        printer_courtesy: nextVal,
+                        known_printers: knownPrinters,
+                      }));
+                    }}
                   >
                     <Text style={[styles.roleChipText, printerCourtesy === printer && styles.roleChipTextActive]}>Scontrino</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.roleChip, printerKitchen === printer && styles.roleChipActiveKitchen]}
-                    onPress={() => setPrinterKitchen(printerKitchen === printer ? '' : printer)}
+                    onPress={async () => {
+                      const nextVal = printerKitchen === printer ? '' : printer;
+                      setPrinterKitchen(nextVal);
+                      await AsyncStorage.setItem('totem_printer_kitchen_address', nextVal);
+                      const existingRaw = await AsyncStorage.getItem('totem_printer_config');
+                      let existing: any = {};
+                      try { if (existingRaw) existing = JSON.parse(existingRaw); } catch {}
+                      await AsyncStorage.setItem('totem_printer_config', JSON.stringify({
+                        ...existing,
+                        printer_kitchen: nextVal,
+                        known_printers: knownPrinters,
+                      }));
+                    }}
                   >
                     <Text style={[styles.roleChipText, printerKitchen === printer && styles.roleChipTextActive]}>Cucina</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.printerRemoveBtn}
-                    onPress={() => {
-                      setKnownPrinters(knownPrinters.filter((_, i) => i !== index));
-                      if (printerCourtesy === printer) setPrinterCourtesy('');
-                      if (printerKitchen === printer) setPrinterKitchen('');
+                    onPress={async () => {
+                      const updated = knownPrinters.filter((_, i) => i !== index);
+                      setKnownPrinters(updated);
+                      let nextCourtesy = printerCourtesy;
+                      let nextKitchen = printerKitchen;
+                      if (printerCourtesy === printer) {
+                        nextCourtesy = '';
+                        setPrinterCourtesy('');
+                        await AsyncStorage.setItem('totem_printer_address', '');
+                      }
+                      if (printerKitchen === printer) {
+                        nextKitchen = '';
+                        setPrinterKitchen('');
+                        await AsyncStorage.setItem('totem_printer_kitchen_address', '');
+                      }
+                      await AsyncStorage.setItem('totem_printer_config', JSON.stringify({
+                        printer_courtesy: nextCourtesy,
+                        printer_kitchen: nextKitchen,
+                        known_printers: updated,
+                      }));
                     }}
                   >
                     <Ionicons name="close-circle" size={22} color="#FF4444" />
