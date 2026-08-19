@@ -220,7 +220,14 @@ function preferClassic(address: string): string {
 }
 
 async function requestBtPerms(): Promise<boolean> {
-  if (Platform.OS !== 'android') return true;
+  console.log('[printer][perms] Checking Bluetooth permissions...', {
+    os: Platform.OS,
+    version: Platform.Version,
+  });
+  if (Platform.OS !== 'android') {
+    console.log('[printer][perms] Non-Android platform, permissions granted by default');
+    return true;
+  }
   try {
     const api =
       typeof Platform.Version === 'number'
@@ -232,16 +239,34 @@ async function requestBtPerms(): Promise<boolean> {
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       ]);
-      return (
-        r['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
-        r['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED
-      );
+      const connectGranted = r['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED;
+      const scanGranted = r['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED;
+      const locGranted = r['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED;
+      const finalResult = connectGranted && scanGranted;
+      console.log('[printer][perms] Android >=31 permissions result:', {
+        api,
+        BLUETOOTH_CONNECT: r['android.permission.BLUETOOTH_CONNECT'],
+        BLUETOOTH_SCAN: r['android.permission.BLUETOOTH_SCAN'],
+        ACCESS_FINE_LOCATION: r['android.permission.ACCESS_FINE_LOCATION'],
+        connectGranted,
+        scanGranted,
+        locGranted,
+        finalResult,
+      });
+      return finalResult;
     }
     const loc = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
     );
-    return loc === PermissionsAndroid.RESULTS.GRANTED;
-  } catch {
+    const finalResult = loc === PermissionsAndroid.RESULTS.GRANTED;
+    console.log('[printer][perms] Android <31 location permission result:', {
+      api,
+      ACCESS_FINE_LOCATION: loc,
+      finalResult,
+    });
+    return finalResult;
+  } catch (err) {
+    console.warn('[printer][perms] Exception requesting Bluetooth permissions:', err);
     return false;
   }
 }
@@ -296,7 +321,14 @@ const getApiBase = (): string => {
 };
 
 export async function getPairedPrinters(token?: string): Promise<PairedPrinter[]> {
-  if (Platform.OS === 'web' && (typeof navigator === 'undefined' || !(navigator as any).bluetooth)) {
+  const isWeb = Platform.OS === 'web' && (typeof navigator === 'undefined' || !(navigator as any).bluetooth);
+  console.log('[printer][scan] Starting getPairedPrinters...', {
+    os: Platform.OS,
+    isWebBridgeBranch: isWeb,
+  });
+
+  if (isWeb) {
+    console.log('[printer][scan] Entering Web bridge branch via backend /api/admin/bt/printers');
     // Usa il bridge Python via backend
     try {
       const apiBase = getApiBase();
@@ -307,29 +339,69 @@ export async function getPairedPrinters(token?: string): Promise<PairedPrinter[]
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      return (data.printers || []).map((p: any) => ({
+      const list = (data.printers || []).map((p: any) => ({
         name: p.name || '(Senza nome)',
         address: p.address || '',
         type: p.type || 'unknown',
         id: p.name || p.address || '',
       })) as PairedPrinter[];
+      console.log('[printer][scan] Web bridge returned printers:', list);
+      return list;
     } catch (e) {
       console.warn('Bridge BT non disponibile:', e);
       return WEB_MOCK;
     }
   }
-  if (!(await requestBtPerms())) return [];
+
+  console.log('[printer][scan] Entering Android/Native Bluetooth branch');
+  const permsOk = await requestBtPerms();
+  if (!permsOk) {
+    console.warn('[printer][scan] Bluetooth permissions rejected or unavailable');
+    return [];
+  }
+
   const TP = await getTP();
-  if (!TP?.scan) return [];
+  if (!TP) {
+    console.warn('[printer][scan] getTP() returned null (thermal printer driver module not available)');
+    return [];
+  }
+  if (!TP.scan) {
+    console.warn('[printer][scan] TP.scan is undefined or not supported on this driver instance');
+    return [];
+  }
+
   try {
+    console.log('[printer][scan] Calling TP.scan()...');
     const result = await TP.scan();
+    console.log('[printer][scan] TP.scan() raw result:', result);
+    const pairedCount = result?.paired?.length || 0;
+    const foundCount = result?.found?.length || 0;
+    console.log('[printer][scan] Devices breakdown:', {
+      pairedCount,
+      foundCount,
+      paired: result?.paired,
+      found: result?.found,
+    });
+
     const list = [...(result?.paired || []), ...(result?.found || [])];
     const map = new Map<string, PairedPrinter>();
     for (const d of list) {
       const m = mapDevice(d);
       if (m?.address && !map.has(m.address.toUpperCase())) map.set(m.address.toUpperCase(), m);
     }
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'it'));
+    const finalPrinters = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'it'));
+    console.log('[printer][scan] Final resolved printers list:', finalPrinters);
+
+    if (finalPrinters.length === 0) {
+      console.warn(
+        'Nessuna stampante trovata. Verifica che:\n' +
+          '1. la stampante sia già associata nelle impostazioni Bluetooth di Android,\n' +
+          '2. i permessi Bluetooth siano concessi,\n' +
+          '3. il Bluetooth del telefono sia attivo.'
+      );
+    }
+
+    return finalPrinters;
   } catch (e) {
     console.warn('scan failed', e);
     return [];
