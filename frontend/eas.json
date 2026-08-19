@@ -10,14 +10,17 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "prebuildCommand": "node ./scripts/bundle-web.js",
+        "environment": "preview"
       },
       "env": {
         "EXPO_PUBLIC_EAS_BUILD": "1"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "prebuildCommand": "node ./scripts/bundle-web.js"
     }
   }
 }

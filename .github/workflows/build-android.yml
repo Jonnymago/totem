@@ -64,10 +64,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci || npm install --legacy-peer-deps
-
-      - name: Generate clean binary image assets
-        run: node scripts/generate-assets.js
+        run: npm ci
 
       - name: Rebuild embedded Remote Admin
         run: node scripts/bundle-web.js
