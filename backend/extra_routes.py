@@ -4,6 +4,9 @@ from __future__ import annotations
 import logging
 import secrets
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+UTC = ZoneInfo("UTC")
 
 import bcrypt
 from bson import ObjectId
@@ -77,18 +80,6 @@ def register_extra_routes(api_router: APIRouter) -> None:
                 await db.global_groups.insert_many(backup.global_groups)
         return {"message": "Backup synchronized successfully"}
 
-    @api_router.post("/admin/scan-printers")
-    @api_router.get("/admin/scan-printers")
-    async def scan_printers_endpoint(username: str = Depends(verify_token)):
-        current = await db.settings.find_one() or {}
-        known = current.get("known_printers", [])
-        devices = [{"name": p, "address": p, "id": p, "type": "classic"} for p in known]
-        return {
-            "devices": devices,
-            "settings": serialize_doc(current) if current else {},
-            "message": f"Trovati {len(devices)} dispositivi",
-        }
-
     optional_bearer = HTTPBearer(auto_error=False)
 
     async def require_admin_unless_bootstrap(
@@ -132,14 +123,14 @@ def register_extra_routes(api_router: APIRouter) -> None:
                 "order_reset_mode": "daily",
                 "reset_time": "06:00",
                 "last_reset_at": None,
-                "admin_pin": "1234",
-                "updated_at": datetime.utcnow(),
+                "admin_pin": None,
+                "updated_at": datetime.now(UTC),
             }
         )
         generated_password = secrets.token_urlsafe(12)
         logger.info("Seed completed. Generated admin password (store securely): %s", generated_password)
         password_hash = bcrypt.hashpw(generated_password.encode(), bcrypt.gensalt()).decode()
         await db.admin_users.insert_one(
-            {"username": "admin", "password_hash": password_hash, "created_at": datetime.utcnow()}
+            {"username": "admin", "password_hash": password_hash, "created_at": datetime.now(UTC)}
         )
         return {"message": "Database seeded successfully", "admin_username": "admin"}

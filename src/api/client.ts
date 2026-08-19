@@ -405,5 +405,20 @@ export const api = {
       throw new Error('Order not found');
     }
   },
+
+  btHealth: async () => {
+    return fetchJson<{ bridge_online: boolean; status?: string }>('/admin/bt/health');
+  },
+
+  btScanPrinters: async () => {
+    return fetchJson<{ printers: { name: string; address: string; type: string }[]; count: number }>('/admin/bt/printers');
+  },
+
+  btPrint: async (address: string, lines: string[], timeout = 10.0) => {
+    return fetchJson<{ success: boolean; method: string; bytes_sent: number }>('/admin/bt/print', {
+      method: 'POST',
+      body: JSON.stringify({ address, lines, timeout }),
+    });
+  },
 };
 
