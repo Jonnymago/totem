@@ -11,7 +11,8 @@
     "preview": {
       "android": {
         "buildType": "apk",
-        "prebuildCommand": "node ./scripts/bundle-web.js"
+        "prebuildCommand": "node ./scripts/bundle-web.js",
+        "environment": "preview"
       },
       "env": {
         "EXPO_PUBLIC_EAS_BUILD": "1"

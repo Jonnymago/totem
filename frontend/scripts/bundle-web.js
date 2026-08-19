@@ -102,7 +102,15 @@ const sourceCandidates = [
 const remoteSrc = sourceCandidates.find(fs.existsSync);
 
 if (!remoteSrc) {
-  throw new Error(`Remote Admin source not found. Checked: ${sourceCandidates.join(', ')}`);
+  console.warn(`[bundle-web] Remote Admin source not found, skipping HTML injection. Checked: ${sourceCandidates.join(', ')}`);
+  // Aggiorna solo i campi nel JSON esistente senza toccare l'HTML
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  // Se il file esiste già, non sovrascrivere nulla
+  if (!fs.existsSync(outPath)) {
+    fs.writeFileSync(outPath, JSON.stringify({}));
+  }
+  console.log(`[bundle-web] Skipped (no source). Existing web_build.json preserved.`);
+  process.exit(0);
 }
 
 const remoteHtml = sanitizeRemoteHtml(fs.readFileSync(remoteSrc, 'utf8'));
