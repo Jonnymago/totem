@@ -1976,8 +1976,13 @@
       toast('Avvio scansione Bluetooth hardware sul Totem...', '🔍');
 
       try {
-        const res = await api('/admin/scan-printers', { method: 'POST' });
-        const devices = res?.devices || (Array.isArray(res) ? res : []);
+        let res;
+        try {
+          res = await api('/admin/bt/printers');
+        } catch (e) {
+          res = await api('/admin/scan-printers', { method: 'POST' });
+        }
+        const devices = res?.printers || res?.devices || (Array.isArray(res) ? res : []);
 
         if (devices && devices.length > 0) {
           if (!settings.known_printers) settings.known_printers = [];

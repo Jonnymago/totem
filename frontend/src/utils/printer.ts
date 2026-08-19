@@ -285,8 +285,42 @@ function mapDevice(d: any): PairedPrinter | null {
   };
 }
 
-export async function getPairedPrinters(): Promise<PairedPrinter[]> {
-  if (Platform.OS === 'web') return WEB_MOCK;
+const getApiBase = () => {
+  if (typeof process !== 'undefined' && (process as any).env?.EXPO_PUBLIC_API_URL) {
+    return (process as any).env.EXPO_PUBLIC_API_URL;
+  }
+  if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_API_URL) {
+    return (import.meta as any).env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return 'http://localhost:8000';
+};
+
+export async function getPairedPrinters(token?: string): Promise<PairedPrinter[]> {
+  if (Platform.OS === 'web' && (typeof navigator === 'undefined' || !(navigator as any).bluetooth)) {
+    // Usa il bridge Python via backend
+    try {
+      const apiBase = getApiBase();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${apiBase}/api/admin/bt/printers`, {
+        headers,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      return (data.printers || []).map((p: any) => ({
+        name: p.name || '(Senza nome)',
+        address: p.address || '',
+        type: p.type || 'unknown',
+        id: p.name || p.address || '',
+      })) as PairedPrinter[];
+    } catch (e) {
+      console.warn('Bridge BT non disponibile:', e);
+      return WEB_MOCK;
+    }
+  }
   if (!(await requestBtPerms())) return [];
   const TP = await getTP();
   if (!TP?.scan) return [];
@@ -305,8 +339,36 @@ export async function getPairedPrinters(): Promise<PairedPrinter[]> {
   }
 }
 
-export async function scanPrinters(): Promise<PairedPrinter[]> {
-  return getPairedPrinters();
+/**
+ * Stampa un ticket via bridge Python.
+ * lines: usa generateCourtesyTicketText() o generateKitchenTicketText()
+ */
+export async function printViaBridge(
+  address: string,
+  lines: string[],
+  token?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const apiBase = getApiBase();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${apiBase}/api/admin/bt/print`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ address, lines }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { success: false, error: data.detail || 'Errore stampa' };
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function scanPrinters(token?: string): Promise<PairedPrinter[]> {
+  return getPairedPrinters(token);
 }
 
 export async function resolvePrinterAddress(id: string): Promise<string | null> {

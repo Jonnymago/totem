@@ -529,6 +529,49 @@ async def get_all_orders_admin(username: str = Depends(verify_token)):
     return [Order(**serialize_doc(o)) for o in await db.orders.find().sort("created_at", -1).to_list(1000)]
 
 
+# ── Bluetooth Bridge proxy ────────────────────────────────────────────────────
+import httpx
+
+BT_BRIDGE_URL = os.environ.get("BT_BRIDGE_URL", "http://127.0.0.1:8765")
+
+class BtPrintRequest(BaseModel):
+    address: str
+    lines: list[str]
+    timeout: float = 10.0
+
+@api_router.get("/admin/bt/printers")
+async def bt_scan_printers(username: str = Depends(verify_token)):
+    """Proxy verso il bridge BT locale per scansionare le stampanti."""
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(f"{BT_BRIDGE_URL}/printers")
+            return r.json()
+    except Exception as e:
+        raise HTTPException(503, f"Bridge BT non raggiungibile: {e}. "
+                               f"Assicurati che bt_bridge.py sia in esecuzione.")
+
+@api_router.post("/admin/bt/print")
+async def bt_print(req: BtPrintRequest, username: str = Depends(verify_token)):
+    """Proxy verso il bridge BT locale per stampare un ticket."""
+    try:
+        async with httpx.AsyncClient(timeout=req.timeout + 5) as client:
+            r = await client.post(f"{BT_BRIDGE_URL}/print", json=req.dict())
+            return r.json()
+    except Exception as e:
+        raise HTTPException(503, f"Bridge BT non raggiungibile: {e}. "
+                               f"Assicurati che bt_bridge.py sia in esecuzione.")
+
+@api_router.get("/admin/bt/health")
+async def bt_bridge_health(username: str = Depends(verify_token)):
+    """Controlla se il bridge BT è attivo."""
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            r = await client.get(f"{BT_BRIDGE_URL}/health")
+            return {"bridge_online": True, **r.json()}
+    except Exception:
+        return {"bridge_online": False, "message": "Bridge non raggiungibile"}
+# ── Fine Bluetooth Bridge proxy ───────────────────────────────────────────────
+
 if register_extra_routes:
     register_extra_routes(api_router)
 
