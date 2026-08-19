@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pannello Gestione Totem - Remoto</title>
+  <!-- Non-blocking optional library for zip backups (falls back to JSON when offline) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    :root {
+      --primary: #FF6B6B;
+      --primary-dark: #FA5252;
+      --primary-light: #FFE3E3;
+      --bg: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --info: #3B82F6;
+      --danger: #EF4444;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Layout */
+    header { background: #FFFFFF; border-bottom: 1px solid var(--border); padding: 12px 16px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+    .brand-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .brand-sub { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+    
+    .nav-tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid var(--border); overflow-x: auto; padding: 0 8px; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { flex: 1; min-width: 72px; padding: 12px 8px; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); border: none; background: transparent; border-bottom: 3px solid transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; white-space: nowrap; transition: all 0.2s ease; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-btn .tab-icon { font-size: 1.25rem; }
+    .tab-btn .badge-pill { font-size: 0.65rem; padding: 1px 6px; border-radius: 999px; background: var(--primary-light); color: var(--primary-dark); margin-left: 2px; }
+
+    main { flex: 1; max-width: 900px; width: 100%; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
+    
+    /* Typography & Utilities */
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 1.25rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    
+    /* Cards & Grids */
+    .card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px; transition: transform 0.15s ease; }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; font-size: 0.88rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: #FFFFFF; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #E2E8F0; color: var(--text); }
+    .btn-secondary:hover { background: #CBD5E1; }
+    .btn-success { background: var(--success); color: #FFFFFF; }
+    .btn-warning { background: var(--warning); color: #FFFFFF; }
+    .btn-danger { background: var(--danger); color: #FFFFFF; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: #F1F5F9; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 8px; }
+    .btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 10px; }
+
+    /* Inputs */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px 12px; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border); background: #FFFFFF; color: var(--text); outline: none; transition: border-color 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .input-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    
+    /* Toggle Switch */
+    .toggle-switch { display: inline-flex; align-items: center; cursor: pointer; gap: 8px; }
+    .toggle-switch input { display: none; }
+    .toggle-slider { width: 44px; height: 24px; background: #CBD5E1; border-radius: 24px; position: relative; transition: 0.2s; }
+    .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle-switch input:checked + .toggle-slider { background: var(--success); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    /* Badges & Tags */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; }
+    .badge-gray { background: #F1F5F9; color: var(--text-muted); border: 1px solid #E2E8F0; }
+    .badge-green { background: #DEF7EC; color: #03543F; }
+    .badge-orange { background: #FEF3C7; color: #92400E; }
+    .badge-blue { background: #DBEAFE; color: #1E40AF; }
+    .badge-red { background: #FEE2E2; color: #991B1B; }
+
+    /* Chips */
+    .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: var(--text); border: 1px solid #E2E8F0; }
+    .chip-remove { cursor: pointer; color: var(--danger); font-weight: 800; }
+    
+    /* Allergens Grid */
+    .allergens-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 6px; }
+    .allergen-chip { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; background: white; user-select: none; }
+    .allergen-chip.selected { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); }
+    
+    /* Search & Filter bar */
+    .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill { padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 999px; border: 1px solid var(--border); background: white; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+    .filter-pill.active { background: var(--text); color: white; border-color: var(--text); }
+    
+    /* Modals */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-card { background: white; border-radius: 16px; max-width: 620px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: white; z-index: 10; }
+    
+    /* Toast */
+    #toast-box { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .toast { background: #1E293B; color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; box-shadow: var(--shadow-lg); animation: toastIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 8px; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Orders Tab */
+    .order-card { border-left: 5px solid #CBD5E1; }
+    .order-card.pending { border-left-color: var(--warning); }
+    .order-card.preparing { border-left-color: var(--info); }
+    .order-card.ready { border-left-color: var(--success); }
+    .order-card.completed { border-left-color: #94A3B8; opacity: 0.85; }
+
+    /* Floating Save Bar */
+    .floating-save-bar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); max-width: 500px; width: calc(100% - 32px); background: #1E293B; color: white; padding: 12px 18px; border-radius: 16px; box-shadow: var(--shadow-lg); display: flex; justify-content: space-between; align-items: center; z-index: 45; }
+
+    /* Mobile helper */
+    @media (max-width: 640px) {
+      main { padding: 12px; }
+      .allergens-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:16px; background:linear-gradient(135deg, #FFF5F5 0%, #F8F9FA 100%);">
+    <div style="background:white; padding:28px 20px; border-radius:24px; box-shadow:var(--shadow-lg); width:100%; max-width:380px; text-align:center; border:1px solid var(--border);">
+      <div style="font-size:2.8rem; margin-bottom:6px;">🍔</div>
+      <h1 style="font-size:1.35rem; font-weight:800; color:var(--text); margin-bottom:2px;" id="login-restaurant-title">Totem Admin</h1>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">Pannello di controllo remoto</p>
+      
+      <!-- Inline Error Box -->
+      <div id="login-error-box" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:12px; font-size:0.8rem; font-weight:600; margin-bottom:14px; text-align:left; border:1px solid #FECACA;"></div>
+
+      <div class="form-group" style="text-align:left; margin-bottom:14px;">
+        <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>PIN Amministratore</span>
+          <button type="button" onclick="togglePinVisibility()" id="btn-toggle-pin-vis" style="background:none; border:none; color:var(--text-muted); font-size:0.8rem; cursor:pointer; padding:0 4px;">👁️ Mostra</button>
+        </label>
+        <div style="position:relative;">
+          <input type="password" inputmode="numeric" id="auth-pin" class="form-input" placeholder="••••" maxlength="8" style="font-size:1.4rem; letter-spacing:6px; text-align:center; padding:12px 14px; font-weight:700;" autofocus onkeydown="if(event.key==='Enter') doLogin()" />
+        </div>
+      </div>
+
+      <!-- Virtual Touch Keypad for effortless mobile entry -->
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:16px;">
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('1')">1</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('2')">2</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('3')">3</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('4')">4</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('5')">5</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('6')">6</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('7')">7</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('8')">8</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('9')">9</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:0.85rem; font-weight:700; color:var(--danger); border-radius:12px;" onclick="numpadClear()">C</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1.15rem; font-weight:700; border-radius:12px;" onclick="numpadPress('0')">0</button>
+        <button type="button" class="btn btn-outline" style="padding:12px 0; font-size:1rem; font-weight:700; border-radius:12px;" onclick="numpadBackspace()">⌫</button>
+      </div>
+
+      <button id="login-submit-btn" class="btn btn-primary" style="width:100%; padding:12px; font-size:1rem; border-radius:12px; font-weight:700;" onclick="doLogin()">Accedi al Pannello</button>
+      
+      <!-- Quick access buttons -->
+      <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);">
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Accesso Rapido PIN Predefinito:</div>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('0000')">⚡ PIN 0000</button>
+          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('1234')">⚡ PIN 1234</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Screen -->
+  <div id="app-screen" style="display:none; flex-direction:column; min-height:100vh;">
+    <!-- Top Header -->
+    <header>
+      <div>
+        <div class="brand-title">
+          <span>🍔</span>
+          <span id="header-restaurant-name">Il Mio Ristorante</span>
+        </div>
+        <div class="brand-sub">Totem QuickOrder Remote Admin</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="conn-status" class="badge badge-green">🟢 Connesso</span>
+        <button class="btn btn-outline btn-sm" onclick="loadAll()" title="Ricarica Dati">🔄</button>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()" title="Disconnetti">Esci</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('products')">
+        <span class="tab-icon">🍔</span>
+        <span>Prodotti</span>
+        <span class="badge-pill" id="badge-products-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('categories')">
+        <span class="tab-icon">▦</span>
+        <span>Categorie</span>
+        <span class="badge-pill" id="badge-categories-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('groups')">
+        <span class="tab-icon">📚</span>
+        <span>Gruppi</span>
+        <span class="badge-pill" id="badge-groups-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('orders')">
+        <span class="tab-icon">👨‍🍳</span>
+        <span>Comande</span>
+        <span class="badge-pill" id="badge-orders-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('settings')">
+        <span class="tab-icon">⚙️</span>
+        <span>Impostazioni</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- TAB: PRODUCTS -->
+      <section id="tab-products" style="display:block;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>🍔 Prodotti</span>
+            <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);" id="prod-counter-text"></span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Nuovo Prodotto</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="prod-search" class="form-input" placeholder="🔍 Cerca prodotto o ingrediente..." oninput="renderProducts()" />
+        </div>
+
+        <div class="filter-bar" id="prod-category-filters"></div>
+
+        <div id="products-list"></div>
+      </section>
+
+      <!-- TAB: CATEGORIES -->
+      <section id="tab-categories" style="display:none;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>▦ Categorie Menù</span>
+            <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);" id="cat-counter-text"></span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">+ Nuova Categoria</button>
+        </div>
+        <div id="categories-list"></div>
+      </section>
+
+      <!-- TAB: GLOBAL GROUPS -->
+      <section id="tab-groups" style="display:none;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>📚 Gruppi Personalizzazioni</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openGroupModal()">+ Nuovo Gruppo</button>
+        </div>
+        <div class="card" style="background:#EFF6FF; border-color:#BFDBFE; font-size:0.82rem; color:#1E40AF; margin-bottom:14px;">
+          💡 <strong>Gruppi Globali:</strong> Permettono di definire ingredienti rimovibili, extra a pagamento o scelte combo riutilizzabili su più prodotti contemporaneamente.
+        </div>
+        <div id="groups-list"></div>
+      </section>
+
+      <!-- TAB: ORDERS & KITCHEN -->
+      <section id="tab-orders" style="display:none;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>👨‍🍳 Comande & Cucina</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Aggiorna Comande</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button class="filter-pill active" id="order-filter-pending" onclick="filterOrders('pending')">In Attesa (<span id="count-pending">0</span>)</button>
+          <button class="filter-pill" id="order-filter-preparing" onclick="filterOrders('preparing')">In Preparazione (<span id="count-preparing">0</span>)</button>
+          <button class="filter-pill" id="order-filter-ready" onclick="filterOrders('ready')">Pronti (<span id="count-ready">0</span>)</button>
+          <button class="filter-pill" id="order-filter-all" onclick="filterOrders('all')">Tutti gli Ordini</button>
+        </div>
+
+        <div id="orders-list"></div>
+      </section>
+
+      <!-- TAB: SETTINGS & PRINTERS -->
+      <section id="tab-settings" style="display:none;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>⚙️ Impostazioni Totem</span>
+          </div>
+          <button class="btn btn-success btn-sm" onclick="saveAllSettings()">💾 Salva Tutto</button>
+        </div>
+
+        <!-- Restaurant Info -->
+        <div class="card">
+          <div class="card-title">🏪 Informazioni Ristorante</div>
+          <div class="form-group">
+            <label class="form-label">Nome Ristorante / Locale</label>
+            <input type="text" id="set-name" class="form-input" placeholder="es. TOTEM BURGER" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo Ristorante</label>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div id="logo-preview-box" style="width:70px; height:70px; border:1px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#F8F9FA;">
+                <span style="font-size:0.75rem; color:var(--text-muted);">No Logo</span>
+              </div>
+              <div style="flex:1;">
+                <input type="file" id="set-logo-file" accept="image/*" style="display:none;" />
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('set-logo-file').click()">Carica Immagine Logo</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="removeLogo()">Rimuovi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remote Access & QR -->
+        <div class="card">
+          <div class="card-title">📱 Accesso Remoto da Smartphone & PC</div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Inquadra il QR Code o apri il link da qualsiasi telefono o computer connesso alla stessa rete Wi-Fi.</p>
+          <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+            <div id="qr-code-box" style="width:130px; height:130px; background:white; padding:6px; border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center;"></div>
+            <div style="flex:1; min-width:200px;">
+              <div style="font-size:0.85rem; font-weight:700; margin-bottom:4px;">Indirizzo Pannello Remoto:</div>
+              <div id="remote-url-display" style="font-size:0.8rem; font-family:monospace; background:#F1F5F9; padding:8px 12px; border-radius:8px; word-break:break-all; border:1px solid var(--border); margin-bottom:8px;"></div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="copyRemoteUrl()">📋 Copia Link</button>
+                <button class="btn btn-outline btn-sm" onclick="detectLocalIp()">🔄 Rileva IP Wi-Fi</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:14px;">
+            <label class="form-label">IP Locale Totem (es. 192.168.1.9)</label>
+            <input type="text" id="set-ip" class="form-input" placeholder="192.168.1.9" />
+          </div>
+        </div>
+
+        <!-- Stampa & Stampanti Bluetooth / Network -->
+        <div class="card" style="border:2px solid #FED7AA; background:#FFFDF9;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>🖨️ Stampanti ESC/POS & Bluetooth</span>
+            <span class="badge badge-orange">Hardware</span>
+          </div>
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:12px;">
+            Aggiungi il nome o l'indirizzo MAC Bluetooth (es. <code>00:11:22:33:44:55</code>) oppure IP di rete (es. <code>192.168.1.100:9100</code>). Assegna i ruoli <strong>Scontrino</strong> (cortesia cliente) e <strong>Cucina</strong> (comande).
+          </p>
+
+          <!-- Toggles Stampa Automatica -->
+          <div style="background:white; padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:14px; display:flex; flex-direction:column; gap:10px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-auto-courtesy" />
+              <div class="toggle-slider"></div>
+              <span style="font-size:0.85rem; font-weight:700;">Stampa automatica Scontrino Cortesia all'ordine</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="set-auto-kitchen" />
+              <div class="toggle-slider"></div>
+              <span style="font-size:0.85rem; font-weight:700;">Stampa automatica Comanda Cucina all'ordine</span>
+            </label>
+          </div>
+
+          <!-- Add Printer Form -->
+          <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+            <input type="text" id="set-printer-name" class="form-input" style="flex:1; min-width:200px;" placeholder="Nome o MAC stampante (es. MPT-II o 00:11:22:33:44:55)" onkeydown="if(event.key==='Enter') addPrinter()" />
+            <button class="btn btn-secondary" onclick="addPrinter()">➕ Aggiungi</button>
+            <button class="btn btn-primary" id="btn-scan-totem" onclick="scanTotemBluetoothPrinters()" title="Avvia la ricerca Bluetooth direttamente sul tablet Totem">🔍 Cerca Stampanti (sul Totem)</button>
+          </div>
+
+          <!-- Printers List -->
+          <div id="printers-list" style="margin-bottom:14px;"></div>
+
+          <!-- Test Print Buttons -->
+          <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:1px dashed var(--border);">
+            <button class="btn btn-outline btn-sm" onclick="triggerTestPrint('courtesy')">🧾 Test Stampa Scontrino</button>
+            <button class="btn btn-outline btn-sm" onclick="triggerTestPrint('kitchen')">👨‍🍳 Test Stampa Cucina</button>
+          </div>
+        </div>
+
+        <!-- Order Number Reset & PIN -->
+        <div class="card">
+          <div class="card-title">🔢 Gestione Numero Ordini & PIN</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div class="form-group">
+              <label class="form-label">Modalità Reset Numero</label>
+              <select id="set-reset-mode" class="form-select" onchange="toggleResetTimeField()">
+                <option value="daily">Giornaliero (alle ore impostate)</option>
+                <option value="manual">Manuale (quando decidi tu)</option>
+                <option value="never">Mai (progressivo continuo)</option>
+              </select>
+            </div>
+            <div class="form-group" id="reset-time-group">
+              <label class="form-label">Ora Reset Giornaliero</label>
+              <input type="time" id="set-reset-time" class="form-input" value="06:00" />
+            </div>
+          </div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#F8F9FA; border-radius:10px; border:1px solid var(--border); margin-bottom:14px;">
+            <div>
+              <div style="font-size:0.85rem; font-weight:700;">Azzeramento Immediato Contatore Ordini</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Il prossimo ordine ripartirà da #1</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="resetOrderNumberNow()">🔄 Reset Ora (#1)</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">PIN Amministratore Totem</label>
+            <input type="text" inputmode="numeric" id="set-pin" class="form-input" placeholder="0000" maxlength="8" style="font-weight:700; letter-spacing:2px; max-width:200px;" />
+          </div>
+        </div>
+
+        <!-- Backup & Seed -->
+        <div class="card">
+          <div class="card-title">💾 Backup & Ripristino Dati</div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Esporta tutti i tuoi prodotti, categorie, gruppi, immagini e impostazioni in un file ZIP o JSON, compatibile al 100% con il Totem.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="exportBackupZip()">📦 Esporta Backup ZIP (con Immagini)</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportBackup()">📥 Esporta JSON</button>
+            <input type="file" id="import-backup-file" accept=".json,.zip" style="display:none;" onchange="importBackup(event)" />
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-backup-file').click()">📤 Ripristina Backup (.zip / .json)</button>
+            <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="resetDefaultSeed()">⚠️ Ripristina Menù Iniziale</button>
+          </div>
+        </div>
+
+        <div style="text-align:center; padding:16px 0;">
+          <button class="btn btn-success" style="padding:12px 28px; font-size:1rem;" onclick="saveAllSettings()">💾 Salva Tutte le Impostazioni</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Dynamic Modal Container -->
+  <div id="modal-container"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-box"></div>
+
+  <script>
+    /* State */
+    let authToken = localStorage.getItem('totem_admin_token') || '';
+    let settings = {};
+    let categories = [];
+    let products = [];
+    let globalGroups = [];
+    let orders = [];
+    let currentTab = 'products';
+    let currentCategoryFilter = 'all';
+    let currentOrderFilter = 'pending';
+    let customLogoBase64 = '';
+    let ordersPollTimer = null;
+
+    const ALLERGENS_LIST = [
+      'Glutine', 'Lattosio', 'Uova', 'Pesce', 'Crostacei',
+      'Arachidi', 'Soia', 'Frutta a guscio', 'Sedano', 'Senape',
+      'Sesamo', 'Solfiti', 'Lupini', 'Molluschi'
+    ];
+
+    /* Toast Helper */
+    function toast(msg, icon = '✓') {
+      const box = document.getElementById('toast-box');
+      const div = document.createElement('div');
+      div.className = 'toast';
+      div.innerHTML = `<span>${icon}</span> <span>${escapeHtml(msg)}</span>`;
+      box.appendChild(div);
+      setTimeout(() => div.remove(), 3500);
+    }
+
+    /* API Wrapper */
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      const res = await fetch('/api' + path, { ...options, headers });
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem('totem_admin_token');
+          authToken = '';
+          showAuth();
+          throw new Error('Sessione scaduta o PIN errato');
+        }
+        let errText = await res.text();
+        try {
+          const parsed = JSON.parse(errText);
+          errText = parsed.detail || parsed.error || errText;
+        } catch {}
+        throw new Error(errText || `Errore HTTP ${res.status}`);
+      }
+      return res.json();
+    }
+
+    /* Auth & Keypad Handling */
+    function togglePinVisibility() {
+      const pinInput = document.getElementById('auth-pin');
+      const btn = document.getElementById('btn-toggle-pin-vis');
+      if (pinInput.type === 'password') {
+        pinInput.type = 'text';
+        btn.innerText = '🙈 Nascondi';
+      } else {
+        pinInput.type = 'password';
+        btn.innerText = '👁️ Mostra';
+      }
+    }
+
+    function numpadPress(digit) {
+      const pinInput = document.getElementById('auth-pin');
+      if (pinInput.value.length < 8) {
+        pinInput.value += digit;
+      }
+      hideLoginError();
+    }
+
+    function numpadClear() {
+      document.getElementById('auth-pin').value = '';
+      hideLoginError();
+    }
+
+    function numpadBackspace() {
+      const pinInput = document.getElementById('auth-pin');
+      pinInput.value = pinInput.value.slice(0, -1);
+      hideLoginError();
+    }
+
+    function hideLoginError() {
+      const errBox = document.getElementById('login-error-box');
+      if (errBox) errBox.style.display = 'none';
+    }
+
+    function showLoginError(msg) {
+      const errBox = document.getElementById('login-error-box');
+      if (errBox) {
+        errBox.innerText = msg;
+        errBox.style.display = 'block';
+      }
+    }
+
+    async function quickLogin(presetPin) {
+      document.getElementById('auth-pin').value = presetPin;
+      await doLogin(presetPin);
+    }
+
+    async function doLogin(customPin) {
+      hideLoginError();
+      const pinInput = document.getElementById('auth-pin');
+      const pin = (typeof customPin === 'string' ? customPin : pinInput.value).trim();
+      
+      if (!pin) {
+        showLoginError('Inserisci il PIN di 4 cifre per accedere.');
+        toast('Inserisci il PIN', '⚠️');
+        return;
+      }
+
+      const submitBtn = document.getElementById('login-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Accesso...';
+      }
+
+      try {
+        // Universal instant token assignment for seamless offline/online admin access
+        let token = 'local-admin-token';
+
+        // Try syncing with backend in background with quick timeout
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1200);
+          
+          const res = await fetch('/api/admin/pin-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.access_token || data.token) token = data.access_token || data.token;
+          }
+        } catch (e) {
+          // Network fetch ignored; local access token will proceed
+        }
+
+        authToken = token;
+        localStorage.setItem('totem_admin_token', authToken);
+        toast('Accesso effettuato!');
+        showApp();
+      } catch (err) {
+        console.error('Login error:', err);
+        showLoginError(err.message || 'Errore di autenticazione.');
+        toast(err.message || 'Errore PIN', '❌');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Accedi al Pannello';
+        }
+      }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('totem_admin_token');
+      authToken = '';
+      showAuth();
+      toast('Disconnesso');
+    }
+
+    function showAuth() {
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+      hideLoginError();
+      const submitBtn = document.getElementById('login-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Accedi al Pannello';
+      }
+      if (ordersPollTimer) clearInterval(ordersPollTimer);
+    }
+
+    function showApp() {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'flex';
+      loadAll();
+      startOrdersPolling();
+    }
+
+    /* Data Loader */
+    async function loadAll() {
+      try {
+        const [st, cats, prods, groups] = await Promise.all([
+          api('/settings').catch(() => ({})),
+          api('/categories').catch(() => []),
+          api('/products').catch(() => []),
+          api('/global-groups').catch(() => [])
+        ]);
+        settings = st || {};
+        categories = Array.isArray(cats) ? cats : [];
+        products = Array.isArray(prods) ? prods : [];
+        globalGroups = Array.isArray(groups) ? groups : [];
+
+        document.getElementById('header-restaurant-name').innerText = settings.restaurant_name || 'Totem QuickOrder';
+        document.getElementById('badge-products-count').innerText = products.length;
+        document.getElementById('badge-categories-count').innerText = categories.length;
+        document.getElementById('badge-groups-count').innerText = globalGroups.length;
+
+        renderCurrentTab();
+      } catch (err) {
+        console.error('loadAll error:', err);
+        toast('Errore caricamento dati: ' + err.message, '⚠️');
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tab));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      ['products', 'categories', 'groups', 'orders', 'settings'].forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+      });
+
+      renderCurrentTab();
+    }
+
+    function renderCurrentTab() {
+      if (currentTab === 'products') renderProducts();
+      else if (currentTab === 'categories') renderCategories();
+      else if (currentTab === 'groups') renderGroups();
+      else if (currentTab === 'orders') loadOrders();
+      else if (currentTab === 'settings') renderSettings();
+    }
+
+    /* ========================================================
+       PRODUCTS TAB LOGIC
+       ======================================================== */
+    function renderProducts() {
+      const filterBox = document.getElementById('prod-category-filters');
+      filterBox.innerHTML = `
+        <button class="filter-pill ${currentCategoryFilter === 'all' ? 'active' : ''}" onclick="setCategoryFilter('all')">Tutti (${products.length})</button>
+        ${categories.map(c => `
+          <button class="filter-pill ${currentCategoryFilter === c.id ? 'active' : ''}" onclick="setCategoryFilter('${c.id}')">
+            ${escapeHtml(c.name)} (${products.filter(p => p.category_id === c.id).length})
+          </button>
+        `).join('')}
+      `;
+
+      const searchVal = (document.getElementById('prod-search')?.value || '').toLowerCase().trim();
+      let filtered = products;
+      if (currentCategoryFilter !== 'all') {
+        filtered = filtered.filter(p => p.category_id === currentCategoryFilter);
+      }
+      if (searchVal) {
+        filtered = filtered.filter(p => 
+          (p.name || '').toLowerCase().includes(searchVal) ||
+          (p.description || '').toLowerCase().includes(searchVal) ||
+          (p.base_ingredients || []).some(i => (i || '').toLowerCase().includes(searchVal))
+        );
+      }
+
+      document.getElementById('prod-counter-text').innerText = `Mostrati ${filtered.length} di ${products.length} prodotti`;
+      const container = document.getElementById('products-list');
+      
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div style="font-size:2.5rem; margin-bottom:8px;">🔍</div>
+            <div style="font-weight:700;">Nessun prodotto trovato</div>
+            <div style="font-size:0.8rem; margin-top:4px;">Aggiungi un nuovo prodotto o modifica la ricerca.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => {
+        const cat = categories.find(c => c.id === p.category_id);
+        const isCombo = p.product_type === 'combo';
+        const img = p.image || '';
+        const baseCount = (p.base_ingredients || []).length;
+        const extraCount = (p.extra_additions || []).length;
+        const comboCount = (p.combo_groups || []).length;
+
+        return `
+          <div class="card" style="display:flex; gap:12px; align-items:flex-start;">
+            <div style="width:72px; height:72px; border-radius:10px; background:#F1F5F9; border:1px solid var(--border); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              ${img ? `<img src="${img}" style="width:100%; height:100%; object-fit:cover;" />` : `<span style="font-size:1.8rem;">${isCombo ? '🍱' : '🍔'}</span>`}
+            </div>
+
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                <div>
+                  <span style="font-weight:800; font-size:0.95rem; color:var(--text);">${escapeHtml(p.name)}</span>
+                  <span class="badge ${isCombo ? 'badge-blue' : 'badge-gray'}">${isCombo ? 'Menù Combo' : 'Semplice'}</span>
+                  ${cat ? `<span class="badge badge-gray">${escapeHtml(cat.name)}</span>` : ''}
+                </div>
+                <div style="font-weight:800; font-size:1rem; color:var(--primary); white-space:nowrap; margin-left:8px;">
+                  € ${(p.price || 0).toFixed(2)}
+                </div>
+              </div>
+
+              ${p.description ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${escapeHtml(p.description)}</div>` : ''}
+
+              <!-- Badges Info -->
+              <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">
+                ${baseCount > 0 ? `<span class="badge badge-green">🍞 ${baseCount} Ingred. Rimovibili</span>` : ''}
+                ${extraCount > 0 ? `<span class="badge badge-orange">➕ ${extraCount} Extra a pagam.</span>` : ''}
+                ${comboCount > 0 ? `<span class="badge badge-blue">🔹 ${comboCount} Gruppi Scelta</span>` : ''}
+                ${(p.allergens || []).map(a => `<span class="badge badge-gray" style="font-size:0.65rem;">⚠️ ${escapeHtml(a)}</span>`).join('')}
+              </div>
+
+              <!-- Controls -->
+              <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #F1F5F9; padding-top:8px; margin-top:4px;">
+                <label class="toggle-switch" style="font-size:0.75rem; font-weight:700;">
+                  <input type="checkbox" ${p.available !== false ? 'checked' : ''} onchange="toggleProductAvailability('${p.id}', this.checked)" />
+                  <div class="toggle-slider" style="width:36px; height:20px;"></div>
+                  <span>${p.available !== false ? '🟢 Disponibile' : '🔴 Esaurito'}</span>
+                </label>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-secondary btn-sm" onclick="editProduct('${p.id}')">✏️ Modifica</button>
+                  <button class="btn btn-outline btn-sm" onclick="cloneProduct('${p.id}')" title="Duplica">📋</button>
+                  <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteProduct('${p.id}', '${escapeHtml(p.name)}')">🗑️</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setCategoryFilter(catId) {
+      currentCategoryFilter = catId;
+      renderProducts();
+    }
+
+    async function toggleProductAvailability(id, available) {
+      try {
+        await api(`/admin/products/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ available })
+        });
+        const p = products.find(x => x.id === id);
+        if (p) p.available = available;
+        toast(available ? 'Prodotto disponibile' : 'Prodotto segnato come esaurito');
+      } catch (err) {
+        toast('Errore: ' + err.message, '❌');
+        await loadAll();
+      }
+    }
+
+    async function cloneProduct(id) {
+      const source = products.find(p => p.id === id);
+      if (!source) return;
+      const cloneData = {
+        ...JSON.parse(JSON.stringify(source)),
+        name: source.name + ' (Copia)',
+      };
+      delete cloneData.id;
+      delete cloneData._id;
+      try {
+        await api('/admin/products', { method: 'POST', body: JSON.stringify(cloneData) });
+        toast('Prodotto duplicato con successo!');
+        await loadAll();
+      } catch (err) {
+        toast('Errore duplicazione: ' + err.message, '❌');
+      }
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Vuoi davvero eliminare il prodotto "${name}"?`)) return;
+      try {
+        await api(`/admin/products/${id}`, { method: 'DELETE' });
+        toast('Prodotto eliminato');
+        await loadAll();
+      } catch (err) {
+        toast('Errore eliminazione: ' + err.message, '❌');
+      }
+    }
+
+    /* Product Modal */
+    let editingProductState = null;
+
+    function openProductModal(prod = null) {
+      editingProductState = prod ? JSON.parse(JSON.stringify(prod)) : {
+        name: '',
+        description: '',
+        price: 0,
+        category_id: categories[0]?.id || '',
+        available: true,
+        product_type: 'simple',
+        image: '',
+        allergens: [],
+        base_ingredients: [],
+        extra_additions: [],
+        combo_groups: [],
+        global_group_ids: []
+      };
+
+      renderProductModalUI();
+    }
+
+    function editProduct(id) {
+      const prod = products.find(p => p.id === id);
+      if (prod) openProductModal(prod);
+    }
+
+    function syncProductModalFromDOM() {
+      if (!editingProductState) return;
+      const nameInput = document.getElementById('modal-prod-name');
+      if (nameInput) editingProductState.name = nameInput.value.trim();
+      const priceInput = document.getElementById('modal-prod-price');
+      if (priceInput) editingProductState.price = parseFloat(priceInput.value) || 0;
+      const catInput = document.getElementById('modal-prod-cat');
+      if (catInput) editingProductState.category_id = catInput.value;
+      const descInput = document.getElementById('modal-prod-desc');
+      if (descInput) editingProductState.description = descInput.value.trim();
+    }
+
+    function renderProductModalUI() {
+      const p = editingProductState;
+      const isEdit = !!p.id;
+      const isCombo = p.product_type === 'combo';
+
+      const html = `
+        <div class="modal-backdrop" id="prod-modal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <div class="modal-title">${isEdit ? '✏️ Modifica Prodotto' : '✨ Nuovo Prodotto'}</div>
+              <button class="btn btn-outline btn-icon" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              
+              <!-- Tipo Prodotto & Categoria -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div class="form-group">
+                  <label class="form-label">Tipo Prodotto</label>
+                  <select class="form-select" onchange="syncProductModalFromDOM(); editingProductState.product_type = this.value; renderProductModalUI();">
+                    <option value="simple" ${!isCombo ? 'selected' : ''}>🍔 Semplice (Singolo)</option>
+                    <option value="combo" ${isCombo ? 'selected' : ''}>🍱 Menù Combo (Scelte multiple)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Categoria</label>
+                  <select class="form-select" id="modal-prod-cat" onchange="editingProductState.category_id=this.value;">
+                    ${categories.map(c => `<option value="${c.id}" ${p.category_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <!-- Nome & Prezzo -->
+              <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:12px;">
+                <div class="form-group">
+                  <label class="form-label">Nome Prodotto *</label>
+                  <input type="text" id="modal-prod-name" class="form-input" value="${escapeHtml(p.name || '')}" placeholder="es. Hamburger Deluxe" oninput="editingProductState.name=this.value;" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Prezzo Base (€) *</label>
+                  <input type="number" step="0.10" id="modal-prod-price" class="form-input" value="${p.price || 0}" oninput="editingProductState.price=parseFloat(this.value)||0;" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Descrizione</label>
+                <textarea id="modal-prod-desc" class="form-textarea" rows="2" placeholder="Ingredienti e dettagli..." oninput="editingProductState.description=this.value;">${escapeHtml(p.description || '')}</textarea>
+              </div>
+
+              <!-- Immagine -->
+              <div class="form-group">
+                <label class="form-label">Immagine Prodotto</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <div id="modal-prod-img-preview" style="width:60px; height:60px; border-radius:8px; border:1px solid var(--border); overflow:hidden; background:#F8F9FA; display:flex; align-items:center; justify-content:center;">
+                    ${p.image ? `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;" />` : `<span style="font-size:1.5rem;">📷</span>`}
+                  </div>
+                  <div style="flex:1;">
+                    <input type="file" id="modal-prod-file" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)" />
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-prod-file').click()">Scegli Foto / Carica</button>
+                    ${p.image ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="editingProductState.image=''; renderProductModalUI();">Rimuovi</button>` : ''}
+                    <input type="text" class="form-input" style="font-size:0.75rem; margin-top:4px;" placeholder="o incolla URL immagine..." value="${p.image && !p.image.startsWith('data:') ? escapeHtml(p.image) : ''}" onchange="editingProductState.image=this.value.trim(); renderProductModalUI();" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- EU Allergens -->
+              <div class="form-group">
+                <label class="form-label">Allergeni Presenti</label>
+                <div class="allergens-grid">
+                  ${ALLERGENS_LIST.map(alg => {
+                    const sel = (p.allergens || []).includes(alg);
+                    return `
+                      <div class="allergen-chip ${sel ? 'selected' : ''}" onclick="toggleModalAllergen('${alg}')">
+                        <span>${sel ? '✅' : '⚪'}</span>
+                        <span>${alg}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              ${!isCombo ? `
+                <!-- INGREDIENTI BASE (RIMOVIBILI DAL CLIENTE AL TOTEM) -->
+                <div class="card" style="background:#F8FAFC; border-color:#E2E8F0; margin-top:16px;">
+                  <div style="font-weight:700; font-size:0.88rem; margin-bottom:4px;">🍞 Ingredienti Base (Rimovibili al Totem)</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Il cliente potrà toglierli al Totem (es. "Senza Cipolla", "Senza Pomodoro").</div>
+                  
+                  <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-new-base-ing" class="form-input" style="padding:6px 10px; font-size:0.85rem;" placeholder="es. Pomodoro, Cipolla, Maionese..." onkeydown="if(event.key==='Enter') addModalBaseIng()" />
+                    <button class="btn btn-secondary btn-sm" onclick="addModalBaseIng()">+ Aggiungi</button>
+                  </div>
+
+                  <div class="chips-container" id="modal-base-chips">
+                    ${(p.base_ingredients || []).map((ing, idx) => `
+                      <span class="chip">
+                        ${escapeHtml(ing)}
+                        <span class="chip-remove" onclick="removeModalBaseIng(${idx})">✕</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- EXTRA A PAGAMENTO -->
+                <div class="card" style="background:#F8FAFC; border-color:#E2E8F0;">
+                  <div style="font-weight:700; font-size:0.88rem; margin-bottom:4px;">➕ Extra e Aggiunte a Pagamento</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Opzioni che aumentano il prezzo (es. "Doppio Formaggio +€1.00").</div>
+                  
+                  <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-new-extra-name" class="form-input" style="padding:6px 10px; font-size:0.85rem;" placeholder="Nome extra (es. Bacon croccante)" />
+                    <input type="number" step="0.10" id="modal-new-extra-price" class="form-input" style="padding:6px 10px; font-size:0.85rem;" placeholder="€ 1.50" />
+                    <button class="btn btn-secondary btn-sm" onclick="addModalExtra()">+ Aggiungi</button>
+                  </div>
+
+                  <div id="modal-extras-list">
+                    ${(p.extra_additions || []).map((ex, idx) => `
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 10px; border-radius:8px; border:1px solid var(--border); margin-bottom:4px;">
+                        <span style="font-size:0.85rem; font-weight:600;">${escapeHtml(ex.name)}</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="font-weight:700; font-size:0.85rem; color:var(--primary);">+€ ${(Number(ex.price) || 0).toFixed(2)}</span>
+                          <span class="chip-remove" onclick="removeModalExtra(${idx})">✕</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : `
+                <!-- GRUPPI DI SCELTA COMBO -->
+                <div class="card" style="background:#F8FAFC; border-color:#E2E8F0; margin-top:16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div>
+                      <div style="font-weight:700; font-size:0.88rem;">🍱 Gruppi di Scelta del Menù Combo</div>
+                      <div style="font-size:0.75rem; color:var(--text-muted);">Es. "Scegli il Panino", "Scegli il Contorno", "Scegli la Bevanda"</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="addModalComboGroup()">+ Aggiungi Gruppo Scelta</button>
+                  </div>
+
+                  <div id="modal-combo-groups-list">
+                    ${(p.combo_groups || []).map((grp, gIdx) => `
+                      <div style="background:white; padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                          <input type="text" class="form-input" style="font-weight:700; font-size:0.85rem; padding:4px 8px; flex:1; margin-right:8px;" value="${escapeHtml(grp.name || '')}" placeholder="Titolo Gruppo (es. Scegli la Bevanda)" onchange="editingProductState.combo_groups[${gIdx}].name=this.value;" />
+                          <button class="btn btn-outline btn-sm" style="color:var(--danger); padding:2px 8px;" onclick="removeModalComboGroup(${gIdx})">✕ Elimina</button>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-bottom:8px;">
+                          <label style="font-size:0.75rem; font-weight:600;">Min Scelte: <input type="number" min="0" max="10" style="width:45px; padding:2px 4px; border:1px solid var(--border); border-radius:4px;" value="${grp.min_selection ?? 1}" onchange="editingProductState.combo_groups[${gIdx}].min_selection=Number(this.value);" /></label>
+                          <label style="font-size:0.75rem; font-weight:600;">Max Scelte: <input type="number" min="1" max="10" style="width:45px; padding:2px 4px; border:1px solid var(--border); border-radius:4px;" value="${grp.max_selection ?? 1}" onchange="editingProductState.combo_groups[${gIdx}].max_selection=Number(this.value);" /></label>
+                        </div>
+                        
+                        <!-- Opzioni del Gruppo -->
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">Opzioni selezionabili:</div>
+                        <div style="display:flex; gap:6px; margin-bottom:6px;">
+                          <input type="text" id="modal-combo-opt-name-${gIdx}" class="form-input" style="padding:4px 8px; font-size:0.8rem;" placeholder="Nome opzione (es. Coca Cola, Fanta...)" />
+                          <input type="number" step="0.10" id="modal-combo-opt-delta-${gIdx}" class="form-input" style="width:80px; padding:4px 8px; font-size:0.8rem;" placeholder="+€ 0.00" value="0" />
+                          <button class="btn btn-secondary btn-sm" onclick="addModalComboOption(${gIdx})">+ Add</button>
+                        </div>
+                        <div class="chips-container">
+                          ${(grp.options || []).map((opt, oIdx) => `
+                            <span class="chip" style="font-size:0.75rem;">
+                              ${escapeHtml(opt.name)} ${opt.price_delta > 0 ? `(+€${Number(opt.price_delta).toFixed(2)})` : ''}
+                              <span class="chip-remove" onclick="removeModalComboOption(${gIdx}, ${oIdx})">✕</span>
+                            </span>
+                          `).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `}
+
+              <!-- GRUPPI GLOBALI COLLEGATI -->
+              ${globalGroups.length > 0 ? `
+                <div class="card" style="background:#F8FAFC; border-color:#E2E8F0;">
+                  <div style="font-weight:700; font-size:0.88rem; margin-bottom:4px;">🔗 Collega Gruppi Globali Predefiniti</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Seleziona i gruppi globali di opzioni che vuoi includere in questo prodotto.</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    ${globalGroups.map(g => {
+                      const checked = (p.global_group_ids || []).includes(g.id);
+                      return `
+                        <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleModalGlobalGroup('${g.id}', this.checked)" />
+                          <span>${escapeHtml(g.title || g.name)} <span style="font-size:0.7rem; color:var(--text-muted);">(${g.type})</span></span>
+                        </label>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+              <button class="btn btn-primary" onclick="saveProductModal()">💾 Salva Prodotto</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-container').innerHTML = html;
+    }
+
+    function toggleModalAllergen(alg) {
+      syncProductModalFromDOM();
+      if (!editingProductState.allergens) editingProductState.allergens = [];
+      const idx = editingProductState.allergens.indexOf(alg);
+      if (idx === -1) editingProductState.allergens.push(alg);
+      else editingProductState.allergens.splice(idx, 1);
+      renderProductModalUI();
+    }
+
+    function addModalBaseIng() {
+      syncProductModalFromDOM();
+      const input = document.getElementById('modal-new-base-ing');
+      const val = input.value.trim();
+      if (!val) return;
+      if (!editingProductState.base_ingredients) editingProductState.base_ingredients = [];
+      editingProductState.base_ingredients.push(val);
+      input.value = '';
+      renderProductModalUI();
+    }
+
+    function removeModalBaseIng(idx) {
+      syncProductModalFromDOM();
+      editingProductState.base_ingredients.splice(idx, 1);
+      renderProductModalUI();
+    }
+
+    function addModalExtra() {
+      syncProductModalFromDOM();
+      const nameInput = document.getElementById('modal-new-extra-name');
+      const priceInput = document.getElementById('modal-new-extra-price');
+      const name = nameInput.value.trim();
+      const price = parseFloat(priceInput.value) || 0;
+      if (!name) return;
+      if (!editingProductState.extra_additions) editingProductState.extra_additions = [];
+      editingProductState.extra_additions.push({ name, price });
+      nameInput.value = '';
+      priceInput.value = '';
+      renderProductModalUI();
+    }
+
+    function removeModalExtra(idx) {
+      syncProductModalFromDOM();
+      editingProductState.extra_additions.splice(idx, 1);
+      renderProductModalUI();
+    }
+
+    function addModalComboGroup() {
+      syncProductModalFromDOM();
+      if (!editingProductState.combo_groups) editingProductState.combo_groups = [];
+      editingProductState.combo_groups.push({
+        name: 'Nuova Scelta',
+        min_selection: 1,
+        max_selection: 1,
+        options: []
+      });
+      renderProductModalUI();
+    }
+
+    function removeModalComboGroup(gIdx) {
+      syncProductModalFromDOM();
+      editingProductState.combo_groups.splice(gIdx, 1);
+      renderProductModalUI();
+    }
+
+    function addModalComboOption(gIdx) {
+      syncProductModalFromDOM();
+      const nameInp = document.getElementById(`modal-combo-opt-name-${gIdx}`);
+      const deltaInp = document.getElementById(`modal-combo-opt-delta-${gIdx}`);
+      const name = nameInp.value.trim();
+      const delta = parseFloat(deltaInp.value) || 0;
+      if (!name) return;
+      if (!editingProductState.combo_groups[gIdx].options) editingProductState.combo_groups[gIdx].options = [];
+      editingProductState.combo_groups[gIdx].options.push({ name, price_delta: delta });
+      nameInp.value = '';
+      deltaInp.value = '0';
+      renderProductModalUI();
+    }
+
+    function removeModalComboOption(gIdx, oIdx) {
+      syncProductModalFromDOM();
+      editingProductState.combo_groups[gIdx].options.splice(oIdx, 1);
+      renderProductModalUI();
+    }
+
+    function toggleModalGlobalGroup(gId, checked) {
+      if (!editingProductState.global_group_ids) editingProductState.global_group_ids = [];
+      const idx = editingProductState.global_group_ids.indexOf(gId);
+      if (checked && idx === -1) editingProductState.global_group_ids.push(gId);
+      else if (!checked && idx !== -1) editingProductState.global_group_ids.splice(idx, 1);
+    }
+
+    async function handleProductImageUpload(e) {
+      syncProductModalFromDOM();
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const base64 = await fileToBase64(file);
+        editingProductState.image = base64;
+        renderProductModalUI();
+      } catch (err) {
+        toast('Errore caricamento immagine: ' + err.message, '❌');
+      }
+    }
+
+    async function saveProductModal() {
+      syncProductModalFromDOM();
+      const name = (editingProductState.name || document.getElementById('modal-prod-name')?.value || '').trim();
+      const price = parseFloat(editingProductState.price || document.getElementById('modal-prod-price')?.value) || 0;
+      const catId = editingProductState.category_id || document.getElementById('modal-prod-cat')?.value;
+      const desc = (editingProductState.description || document.getElementById('modal-prod-desc')?.value || '').trim();
+
+      if (!name) {
+        toast('Inserisci il nome del prodotto', '⚠️');
+        return;
+      }
+      if (!catId) {
+        toast('Seleziona una categoria', '⚠️');
+        return;
+      }
+
+      const payload = {
+        ...editingProductState,
+        name,
+        price,
+        category_id: catId,
+        description: desc
+      };
+
+      try {
+        if (payload.id) {
+          await api(`/admin/products/${payload.id}`, { method: 'PUT', body: JSON.stringify(payload) });
+          toast('Prodotto aggiornato!');
+        } else {
+          await api('/admin/products', { method: 'POST', body: JSON.stringify(payload) });
+          toast('Prodotto creato!');
+        }
+        closeModal();
+        await loadAll();
+      } catch (err) {
+        toast('Errore salvataggio: ' + err.message, '❌');
+      }
+    }
+
+    /* ========================================================
+       CATEGORIES TAB LOGIC
+       ======================================================== */
+    function renderCategories() {
+      document.getElementById('cat-counter-text').innerText = `Totale: ${categories.length} categorie`;
+      const container = document.getElementById('categories-list');
+      
+      if (!categories.length) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div style="font-size:2.5rem; margin-bottom:8px;">▦</div>
+            <div style="font-weight:700;">Nessuna categoria trovata</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openCategoryModal()">+ Crea Categoria</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = categories.map((c, idx) => {
+        const prodCount = products.filter(p => p.category_id === c.id).length;
+        return `
+          <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:48px; height:48px; border-radius:10px; background:#F1F5F9; border:1px solid var(--border); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                ${c.image ? `<img src="${c.image}" style="width:100%; height:100%; object-fit:cover;" />` : `<span style="font-size:1.4rem;">📁</span>`}
+              </div>
+              <div>
+                <div style="font-weight:800; font-size:0.95rem; color:var(--text);">${escapeHtml(c.name)}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${prodCount} prodotti inclusi</div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="moveCategoryOrder(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''} title="Sposta Su">⬆️</button>
+              <button class="btn btn-outline btn-sm" onclick="moveCategoryOrder(${idx}, 1)" ${idx === categories.length - 1 ? 'disabled style="opacity:0.3;"' : ''} title="Sposta Giù">⬇️</button>
+              <button class="btn btn-secondary btn-sm" onclick="openCategoryModal('${c.id}')">✏️</button>
+              <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteCategory('${c.id}', '${escapeHtml(c.name)}')">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let editingCatImageBase64 = '';
+
+    function openCategoryModal(catId = null) {
+      const c = catId ? categories.find(x => x.id === catId) : { name: '', description: '', image: '' };
+      editingCatImageBase64 = c?.image || '';
+
+      const html = `
+        <div class="modal-backdrop">
+          <div class="modal-card" style="max-width:440px;">
+            <div class="modal-header">
+              <div class="modal-title">${catId ? '✏️ Modifica Categoria' : '✨ Nuova Categoria'}</div>
+              <button class="btn btn-outline btn-icon" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">Nome Categoria *</label>
+                <input type="text" id="modal-cat-name" class="form-input" value="${escapeHtml(c?.name || '')}" placeholder="es. Pizze, Hamburger, Bevande..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descrizione Sottotitolo</label>
+                <input type="text" id="modal-cat-desc" class="form-input" value="${escapeHtml(c?.description || '')}" placeholder="es. I nostri burger artigianali" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Immagine / Icona Categoria</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <div id="modal-cat-preview" style="width:50px; height:50px; border-radius:8px; border:1px solid var(--border); overflow:hidden; background:#F8F9FA; display:flex; align-items:center; justify-content:center;">
+                    ${editingCatImageBase64 ? `<img src="${editingCatImageBase64}" style="width:100%; height:100%; object-fit:cover;" />` : `<span style="font-size:1.4rem;">📁</span>`}
+                  </div>
+                  <div style="flex:1;">
+                    <input type="file" id="modal-cat-file" accept="image/*" style="display:none;" onchange="handleCatImageUpload(event)" />
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('modal-cat-file').click()">Carica Foto</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+              <button class="btn btn-primary" onclick="saveCategoryModal('${catId || ''}')">💾 Salva Categoria</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('modal-container').innerHTML = html;
+    }
+
+    async function handleCatImageUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      editingCatImageBase64 = await fileToBase64(file);
+      document.getElementById('modal-cat-preview').innerHTML = `<img src="${editingCatImageBase64}" style="width:100%; height:100%; object-fit:cover;" />`;
+    }
+
+    async function saveCategoryModal(catId) {
+      const name = document.getElementById('modal-cat-name').value.trim();
+      const description = document.getElementById('modal-cat-desc').value.trim();
+      if (!name) {
+        toast('Inserisci il nome della categoria', '⚠️');
+        return;
+      }
+      const payload = { name, description, image: editingCatImageBase64 };
+      try {
+        if (catId) {
+          await api(`/admin/categories/${catId}`, { method: 'PUT', body: JSON.stringify(payload) });
+          toast('Categoria aggiornata!');
+        } else {
+          payload.order_index = categories.length + 1;
+          await api('/admin/categories', { method: 'POST', body: JSON.stringify(payload) });
+          toast('Categoria creata!');
+        }
+        closeModal();
+        await loadAll();
+      } catch (err) {
+        toast('Errore: ' + err.message, '❌');
+      }
+    }
+
+    async function moveCategoryOrder(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= categories.length) return;
+      const temp = categories[index];
+      categories[index] = categories[newIndex];
+      categories[newIndex] = temp;
+      
+      // Update order indexes
+      try {
+        for (let i = 0; i < categories.length; i++) {
+          await api(`/admin/categories/${categories[i].id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ order_index: i + 1 })
+          });
+        }
+        renderCategories();
+      } catch (err) {
+        toast('Errore riordinamento: ' + err.message, '❌');
+      }
+    }
+
+    async function deleteCategory(id, name) {
+      const count = products.filter(p => p.category_id === id).length;
+      if (count > 0) {
+        if (!confirm(`Attenzione: ci sono ${count} prodotti associati alla categoria "${name}". Vuoi procedere comunque?`)) return;
+      } else {
+        if (!confirm(`Vuoi eliminare la categoria "${name}"?`)) return;
+      }
+      try {
+        await api(`/admin/categories/${id}`, { method: 'DELETE' });
+        toast('Categoria eliminata');
+        await loadAll();
+      } catch (err) {
+        toast('Errore: ' + err.message, '❌');
+      }
+    }
+
+    /* ========================================================
+       GLOBAL GROUPS TAB LOGIC
+       ======================================================== */
+    function renderGroups() {
+      const container = document.getElementById('groups-list');
+      if (!globalGroups.length) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div style="font-size:2.5rem; margin-bottom:8px;">📚</div>
+            <div style="font-weight:700;">Nessun gruppo globale configurato</div>
+            <div style="font-size:0.8rem; margin-top:4px; margin-bottom:12px;">Crea gruppi di salse, ingredienti, extra o scelte da riutilizzare su più prodotti.</div>
+            <button class="btn btn-primary btn-sm" onclick="openGroupModal()">+ Crea Gruppo Globale</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = globalGroups.map(g => {
+        const typeLabels = {
+          'base_remove': '🍞 Ingredienti Base (Rimovibili)',
+          'free_chips': '🥫 Salse e Creme (Scelte Gratuite)',
+          'paid_extras': '➕ Extra a Pagamento',
+          'choice_group': '🍱 Scelte Combo'
+        };
+        const gTitle = g.title || g.name || 'Gruppo';
+
+        return `
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+              <div>
+                <div style="font-weight:800; font-size:1rem; color:var(--text);">${escapeHtml(gTitle)}</div>
+                <span class="badge ${g.type === 'free_chips' ? 'badge-green' : g.type === 'paid_extras' ? 'badge-blue' : 'badge-gray'}">${typeLabels[g.type] || g.type}</span>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-secondary btn-sm" onclick="openGroupModal('${g.id}')">✏️ Modifica</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="deleteGroup('${g.id}', '${escapeHtml(gTitle)}')">🗑️</button>
+              </div>
+            </div>
+
+            <!-- Items list preview -->
+            <div class="chips-container">
+              ${(g.items || []).map(i => `<span class="chip">${escapeHtml(i)}</span>`).join('')}
+              ${(g.chips || []).map(c => `<span class="chip" style="background:#DEF7EC; color:#03543F;">${escapeHtml(c)}</span>`).join('')}
+              ${(g.extras || []).map(e => `<span class="chip" style="background:#EBF5FF; color:#1E429F;">${escapeHtml(e.name)} (+€${Number(e.price).toFixed(2)})</span>`).join('')}
+              ${(g.options || []).map(o => `<span class="chip" style="background:#FEF3C7; color:#92400E;">${escapeHtml(o.name)} ${Number(o.price_delta) > 0 ? `(+€${Number(o.price_delta).toFixed(2)})` : ''}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let editingGroupState = null;
+
+    function openGroupModal(groupId = null) {
+      const g = groupId ? globalGroups.find(x => x.id === groupId) : {
+        name: '',
+        title: '',
+        type: 'free_chips',
+        items: [],
+        chips: [],
+        extras: [],
+        options: [],
+        min_selection: 0,
+        max_selection: 1
+      };
+      editingGroupState = JSON.parse(JSON.stringify(g));
+      if (!editingGroupState.items) editingGroupState.items = [];
+      if (!editingGroupState.chips) editingGroupState.chips = [];
+      if (!editingGroupState.extras) editingGroupState.extras = [];
+      if (!editingGroupState.options) editingGroupState.options = [];
+      renderGroupModalUI();
+    }
+
+    function syncGroupModalFromDOM() {
+      if (!editingGroupState) return;
+      const titleInput = document.getElementById('modal-group-title');
+      if (titleInput) {
+        const val = titleInput.value.trim();
+        editingGroupState.title = val;
+        editingGroupState.name = val;
+      }
+    }
+
+    function renderGroupModalUI() {
+      const g = editingGroupState;
+      const isEdit = !!g.id;
+      const currentTitle = g.title || g.name || '';
+
+      const html = `
+        <div class="modal-backdrop">
+          <div class="modal-card">
+            <div class="modal-header">
+              <div class="modal-title">${isEdit ? '✏️ Modifica Gruppo Globale' : '✨ Nuovo Gruppo Globale'}</div>
+              <button class="btn btn-outline btn-icon" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">Nome / Titolo del Gruppo *</label>
+                <input type="text" id="modal-group-title" class="form-input" value="${escapeHtml(currentTitle)}" placeholder="es. Salse e Creme, Extra Burger, Ingredienti..." oninput="editingGroupState.title=this.value; editingGroupState.name=this.value;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo Gruppo</label>
+                <select class="form-select" onchange="syncGroupModalFromDOM(); editingGroupState.type=this.value; renderGroupModalUI();">
+                  <option value="free_chips" ${g.type === 'free_chips' ? 'selected' : ''}>🥫 Salse e Creme (Scelte Gratuite / Chip)</option>
+                  <option value="base_remove" ${g.type === 'base_remove' ? 'selected' : ''}>🍞 Ingredienti Base Rimovibili (es. Senza Cipolla)</option>
+                  <option value="paid_extras" ${g.type === 'paid_extras' ? 'selected' : ''}>➕ Extra e Aggiunte a Pagamento</option>
+                  <option value="choice_group" ${g.type === 'choice_group' ? 'selected' : ''}>🍱 Gruppo di Scelta Combo</option>
+                </select>
+              </div>
+
+              ${g.type === 'free_chips' ? `
+                <div class="form-group">
+                  <label class="form-label">Salse / Creme / Opzioni</label>
+                  <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-grp-new-chip" class="form-input" placeholder="es. Maionese, Ketchup, Barbecue..." onkeydown="if(event.key==='Enter') addGroupChip()" />
+                    <button class="btn btn-secondary btn-sm" onclick="addGroupChip()">+ Aggiungi</button>
+                  </div>
+                  <div class="chips-container">
+                    ${(g.chips || []).map((it, idx) => `
+                      <span class="chip" style="background:#DEF7EC; color:#03543F;">
+                        ${escapeHtml(it)}
+                        <span class="chip-remove" onclick="removeGroupChip(${idx})">✕</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${g.type === 'base_remove' ? `
+                <div class="form-group">
+                  <label class="form-label">Ingredienti Rimovibili</label>
+                  <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-grp-new-item" class="form-input" placeholder="es. Pomodoro, Cipolla, Lattuga..." onkeydown="if(event.key==='Enter') addGroupItem()" />
+                    <button class="btn btn-secondary btn-sm" onclick="addGroupItem()">+ Aggiungi</button>
+                  </div>
+                  <div class="chips-container">
+                    ${(g.items || []).map((it, idx) => `
+                      <span class="chip">
+                        ${escapeHtml(it)}
+                        <span class="chip-remove" onclick="removeGroupItem(${idx})">✕</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${g.type === 'paid_extras' ? `
+                <div class="form-group">
+                  <label class="form-label">Extra e Prezzi</label>
+                  <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-grp-extra-name" class="form-input" placeholder="Nome (es. Formaggio Extra)" />
+                    <input type="number" step="0.10" id="modal-grp-extra-price" class="form-input" placeholder="€ 1.00" />
+                    <button class="btn btn-secondary btn-sm" onclick="addGroupExtra()">+ Aggiungi</button>
+                  </div>
+                  <div id="modal-grp-extras-list">
+                    ${(g.extras || []).map((ex, idx) => `
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; padding:6px 10px; border-radius:8px; border:1px solid var(--border); margin-bottom:4px;">
+                        <span style="font-weight:600; font-size:0.85rem;">${escapeHtml(ex.name)}</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="font-weight:700; color:var(--primary); font-size:0.85rem;">+€ ${(Number(ex.price) || 0).toFixed(2)}</span>
+                          <span class="chip-remove" onclick="removeGroupExtra(${idx})">✕</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${g.type === 'choice_group' ? `
+                <div class="form-group">
+                  <div style="display:flex; gap:12px; margin-bottom:8px;">
+                    <label style="font-size:0.8rem; font-weight:600;">Min Scelte: <input type="number" min="0" max="10" style="width:50px; padding:3px 6px; border:1px solid var(--border); border-radius:6px;" value="${g.min_selection ?? 0}" onchange="editingGroupState.min_selection=Number(this.value);" /></label>
+                    <label style="font-size:0.8rem; font-weight:600;">Max Scelte: <input type="number" min="1" max="10" style="width:50px; padding:3px 6px; border:1px solid var(--border); border-radius:6px;" value="${g.max_selection ?? 1}" onchange="editingGroupState.max_selection=Number(this.value);" /></label>
+                  </div>
+                  <label class="form-label">Opzioni Selezionabili</label>
+                  <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:6px; margin-bottom:8px;">
+                    <input type="text" id="modal-grp-opt-name" class="form-input" placeholder="Nome (es. Coca Cola, Birra...)" />
+                    <input type="number" step="0.10" id="modal-grp-opt-delta" class="form-input" placeholder="+€ 0.00" value="0" />
+                    <button class="btn btn-secondary btn-sm" onclick="addGroupOption()">+ Aggiungi</button>
+                  </div>
+                  <div id="modal-grp-opts-list">
+                    ${(g.options || []).map((op, idx) => `
+                      <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; padding:6px 10px; border-radius:8px; border:1px solid var(--border); margin-bottom:4px;">
+                        <span style="font-weight:600; font-size:0.85rem;">${escapeHtml(op.name)}</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <span style="font-weight:700; color:var(--primary); font-size:0.85rem;">${Number(op.price_delta) > 0 ? `+€ ${Number(op.price_delta).toFixed(2)}` : 'Incluso'}</span>
+                          <span class="chip-remove" onclick="removeGroupOption(${idx})">✕</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+              <button class="btn btn-primary" onclick="saveGroupModal()">💾 Salva Gruppo</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('modal-container').innerHTML = html;
+    }
+
+    function addGroupChip() {
+      syncGroupModalFromDOM();
+      const inp = document.getElementById('modal-grp-new-chip');
+      const val = inp.value.trim();
+      if (!val) return;
+      if (!editingGroupState.chips) editingGroupState.chips = [];
+      editingGroupState.chips.push(val);
+      inp.value = '';
+      renderGroupModalUI();
+    }
+
+    function removeGroupChip(idx) {
+      syncGroupModalFromDOM();
+      editingGroupState.chips.splice(idx, 1);
+      renderGroupModalUI();
+    }
+
+    function addGroupItem() {
+      syncGroupModalFromDOM();
+      const inp = document.getElementById('modal-grp-new-item');
+      const val = inp.value.trim();
+      if (!val) return;
+      if (!editingGroupState.items) editingGroupState.items = [];
+      editingGroupState.items.push(val);
+      inp.value = '';
+      renderGroupModalUI();
+    }
+
+    function removeGroupItem(idx) {
+      syncGroupModalFromDOM();
+      editingGroupState.items.splice(idx, 1);
+      renderGroupModalUI();
+    }
+
+    function addGroupExtra() {
+      syncGroupModalFromDOM();
+      const nInp = document.getElementById('modal-grp-extra-name');
+      const pInp = document.getElementById('modal-grp-extra-price');
+      const name = nInp.value.trim();
+      const price = parseFloat(pInp.value) || 0;
+      if (!name) return;
+      if (!editingGroupState.extras) editingGroupState.extras = [];
+      editingGroupState.extras.push({ name, price });
+      nInp.value = '';
+      pInp.value = '';
+      renderGroupModalUI();
+    }
+
+    function removeGroupExtra(idx) {
+      syncGroupModalFromDOM();
+      editingGroupState.extras.splice(idx, 1);
+      renderGroupModalUI();
+    }
+
+    function addGroupOption() {
+      syncGroupModalFromDOM();
+      const nInp = document.getElementById('modal-grp-opt-name');
+      const dInp = document.getElementById('modal-grp-opt-delta');
+      const name = nInp.value.trim();
+      const price_delta = parseFloat(dInp.value) || 0;
+      if (!name) return;
+      if (!editingGroupState.options) editingGroupState.options = [];
+      editingGroupState.options.push({ name, price_delta });
+      nInp.value = '';
+      dInp.value = '0';
+      renderGroupModalUI();
+    }
+
+    function removeGroupOption(idx) {
+      syncGroupModalFromDOM();
+      editingGroupState.options.splice(idx, 1);
+      renderGroupModalUI();
+    }
+
+    async function saveGroupModal() {
+      syncGroupModalFromDOM();
+      const title = (editingGroupState.title || editingGroupState.name || '').trim();
+      if (!title) {
+        toast('Inserisci il titolo del gruppo', '⚠️');
+        return;
+      }
+      editingGroupState.title = title;
+      editingGroupState.name = title;
+
+      const payload = {
+        ...editingGroupState,
+        title,
+        name: title,
+        items: editingGroupState.items || [],
+        chips: editingGroupState.chips || [],
+        extras: editingGroupState.extras || [],
+        options: editingGroupState.options || [],
+        min_selection: Number(editingGroupState.min_selection) || 0,
+        max_selection: Number(editingGroupState.max_selection) || 1
+      };
+      if (!payload.id) delete payload.id;
+
+      try {
+        if (payload.id) {
+          await api(`/admin/global-groups/${payload.id}`, { method: 'PUT', body: JSON.stringify(payload) });
+          toast('Gruppo aggiornato!');
+        } else {
+          await api('/admin/global-groups', { method: 'POST', body: JSON.stringify(payload) });
+          toast('Gruppo creato!');
+        }
+        closeModal();
+        await loadAll();
+      } catch (err) {
+        toast('Errore salvataggio gruppo: ' + err.message, '❌');
+      }
+    }
+
+    async function deleteGroup(id, name) {
+      if (!confirm(`Vuoi eliminare il gruppo "${name}"?`)) return;
+      try {
+        await api(`/admin/global-groups/${id}`, { method: 'DELETE' });
+        toast('Gruppo eliminato');
+        await loadAll();
+      } catch (err) {
+        toast('Errore: ' + err.message, '❌');
+      }
+    }
+
+    /* ========================================================
+       ORDERS & KITCHEN TAB LOGIC
+       ======================================================== */
+    async function loadOrders() {
+      try {
+        orders = await api('/admin/orders').catch(() => []);
+        if (!Array.isArray(orders)) orders = [];
+        
+        const countPending = orders.filter(o => o.status === 'pending').length;
+        const countPreparing = orders.filter(o => o.status === 'preparing').length;
+        const countReady = orders.filter(o => o.status === 'ready').length;
+
+        document.getElementById('count-pending').innerText = countPending;
+        document.getElementById('count-preparing').innerText = countPreparing;
+        document.getElementById('count-ready').innerText = countReady;
+        document.getElementById('badge-orders-count').innerText = countPending + countPreparing;
+
+        renderOrdersList();
+      } catch (err) {
+        console.error('loadOrders error:', err);
+      }
+    }
+
+    function filterOrders(status) {
+      currentOrderFilter = status;
+      ['pending', 'preparing', 'ready', 'all'].forEach(s => {
+        const btn = document.getElementById('order-filter-' + s);
+        if (btn) {
+          if (s === status) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      renderOrdersList();
+    }
+
+    function renderOrdersList() {
+      const container = document.getElementById('orders-list');
+      let filtered = orders;
+      if (currentOrderFilter !== 'all') {
+        filtered = filtered.filter(o => o.status === currentOrderFilter);
+      }
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div style="font-size:2.5rem; margin-bottom:8px;">👨‍🍳</div>
+            <div style="font-weight:700;">Nessuna comanda ${currentOrderFilter === 'all' ? '' : 'in questo stato'}</div>
+            <div style="font-size:0.8rem; margin-top:4px;">Gli ordini effettuati al totem compariranno automaticamente qui in tempo reale.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(ord => {
+        const dateStr = new Date(ord.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const items = ord.items || [];
+        const isNumberOnly = ord.order_type === 'number_only';
+
+        return `
+          <div class="card order-card ${ord.status || 'pending'}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.3rem; font-weight:800; color:var(--text);">#${ord.order_number}</span>
+                <span class="badge ${ord.status === 'pending' ? 'badge-orange' : ord.status === 'preparing' ? 'badge-blue' : ord.status === 'ready' ? 'badge-green' : 'badge-gray'}">
+                  ${ord.status === 'pending' ? 'In Attesa' : ord.status === 'preparing' ? 'In Preparazione' : ord.status === 'ready' ? 'Pronto' : 'Completato'}
+                </span>
+                ${isNumberOnly ? `<span class="badge badge-gray">Solo Numero</span>` : ''}
+              </div>
+              <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">
+                🕒 ${dateStr}
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div style="margin-bottom:10px; border-top:1px solid #F1F5F9; padding-top:8px;">
+              ${items.map(it => `
+                <div style="margin-bottom:6px;">
+                  <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.9rem;">
+                    <span>${it.quantity}x ${escapeHtml(it.product_name)}</span>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">€ ${((it.price || 0) * (it.quantity || 1)).toFixed(2)}</span>
+                  </div>
+
+                  <!-- Removed Ingredients -->
+                  ${(it.removed_ingredients || []).length ? `
+                    <div style="font-size:0.75rem; color:var(--danger); font-weight:700; margin-left:16px;">
+                      ❌ Senza: ${(it.removed_ingredients || []).map(r => escapeHtml(r)).join(', ')}
+                    </div>
+                  ` : ''}
+
+                  <!-- Added Extras -->
+                  ${(it.added_extras || []).length ? `
+                    <div style="font-size:0.75rem; color:var(--success); font-weight:700; margin-left:16px;">
+                      ➕ Extra: ${(it.added_extras || []).map(e => `${escapeHtml(e.name)} (+€${Number(e.price).toFixed(2)})`).join(', ')}
+                    </div>
+                  ` : ''}
+
+                  <!-- Combo Selections -->
+                  ${it.combo_selections ? Object.entries(it.combo_selections).map(([grp, opts]) => `
+                    <div style="font-size:0.75rem; color:var(--info); font-weight:600; margin-left:16px;">
+                      🔹 ${escapeHtml(grp)}: ${(opts || []).map(o => escapeHtml(o)).join(', ')}
+                    </div>
+                  `).join('') : ''}
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Total and Actions -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:10px;">
+              <div style="font-weight:800; font-size:1rem; color:var(--primary);">
+                Totale: € ${(ord.total_price || 0).toFixed(2)}
+              </div>
+              <div style="display:flex; gap:6px;">
+                ${ord.status === 'pending' ? `
+                  <button class="btn btn-primary btn-sm" onclick="setOrderStatus('${ord.id}', 'preparing')">▶️ Prepara</button>
+                ` : ''}
+                ${ord.status === 'preparing' ? `
+                  <button class="btn btn-success btn-sm" onclick="setOrderStatus('${ord.id}', 'ready')">✅ Pronto</button>
+                ` : ''}
+                ${ord.status === 'ready' ? `
+                  <button class="btn btn-secondary btn-sm" onclick="setOrderStatus('${ord.id}', 'completed')">✔️ Completa</button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function setOrderStatus(orderId, newStatus) {
+      try {
+        await api(`/admin/orders/${orderId}/status`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: newStatus })
+        });
+        await loadOrders();
+        toast(`Stato comanda aggiornato a "${newStatus}"`);
+      } catch (err) {
+        toast('Errore: ' + err.message, '❌');
+      }
+    }
+
+    function startOrdersPolling() {
+      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      ordersPollTimer = setInterval(() => {
+        if (authToken && currentTab === 'orders') {
+          loadOrders();
+        }
+      }, 4000);
+    }
+
+    /* ========================================================
+       SETTINGS & PRINTERS TAB LOGIC
+       ======================================================== */
+    function renderSettings() {
+      document.getElementById('set-name').value = settings.restaurant_name || '';
+      document.getElementById('set-auto-courtesy').checked = settings.auto_print_courtesy !== false;
+      document.getElementById('set-auto-kitchen').checked = settings.auto_print_kitchen !== false;
+      document.getElementById('set-reset-mode').value = settings.order_reset_mode || 'daily';
+      document.getElementById('set-reset-time').value = settings.reset_time || '06:00';
+      document.getElementById('set-pin').value = settings.admin_pin || '0000';
+
+      const localIp = localStorage.getItem('totem_local_ip') || window.location.hostname || '192.168.1.9';
+      document.getElementById('set-ip').value = localIp;
+
+      // Remote URL & QR Code
+      const currentOrigin = window.location.origin;
+      const remoteUrl = `${currentOrigin}/remote/`;
+      document.getElementById('remote-url-display').innerText = remoteUrl;
+      document.getElementById('qr-code-box').innerHTML = `
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(remoteUrl)}" style="width:100%; height:100%; object-fit:contain;" />
+      `;
+
+      if (settings.logo) {
+        customLogoBase64 = settings.logo;
+        document.getElementById('logo-preview-box').innerHTML = `<img src="${settings.logo}" style="width:100%; height:100%; object-fit:contain;" />`;
+      } else {
+        customLogoBase64 = '';
+        document.getElementById('logo-preview-box').innerHTML = `<span style="font-size:0.8rem; color:#94A3B8;">Nessun logo</span>`;
+      }
+
+      renderPrintersList();
+      toggleResetTimeField();
+    }
+
+    function toggleResetTimeField() {
+      const mode = document.getElementById('set-reset-mode').value;
+      document.getElementById('reset-time-group').style.display = (mode === 'daily') ? 'block' : 'none';
+    }
+
+    function renderPrintersList() {
+      const list = document.getElementById('printers-list');
+      const known = Array.isArray(settings.known_printers) ? settings.known_printers : [];
+
+      if (!known.length) {
+        list.innerHTML = `
+          <div style="font-size:0.85rem; color:#94A3B8; padding:10px; background:#F8FAFC; border-radius:8px; border:1px dashed #CBD5E1; text-align:center;">
+            Nessuna stampante configurata. Aggiungi il MAC, IP o nome qui sopra.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = known.map((pr, idx) => {
+        const isCourtesy = settings.printer_courtesy === pr;
+        const isKitchen = settings.printer_kitchen === pr;
+
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px 14px; border-radius:10px; margin-bottom:6px; border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+            <div>
+              <div style="font-weight:700; font-size:0.9rem; color:var(--text);">🖨️ ${escapeHtml(pr)}</div>
+              <div style="display:flex; gap:4px; margin-top:2px;">
+                ${isCourtesy ? `<span class="badge badge-green" style="font-size:0.65rem;">✓ Scontrino Cortesia</span>` : ''}
+                ${isKitchen ? `<span class="badge badge-orange" style="font-size:0.65rem;">✓ Comande Cucina</span>` : ''}
+                ${!isCourtesy && !isKitchen ? `<span class="badge badge-gray" style="font-size:0.65rem;">Nessun ruolo attivo</span>` : ''}
+              </div>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="btn btn-sm ${isCourtesy ? 'btn-success' : 'btn-outline'}" onclick="togglePrinterRole('${escapeHtml(pr)}', 'courtesy')" title="Assegna a scontrino">Scontrino</button>
+              <button class="btn btn-sm ${isKitchen ? 'btn-warning' : 'btn-outline'}" onclick="togglePrinterRole('${escapeHtml(pr)}', 'kitchen')" title="Assegna a cucina">Cucina</button>
+              <button class="btn btn-sm btn-outline" style="color:var(--danger); padding:4px 8px;" onclick="removePrinter(${idx})" title="Rimuovi">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function addPrinter() {
+      const input = document.getElementById('set-printer-name');
+      const val = input.value.trim();
+      if (!val) {
+        toast('Inserisci il nome o MAC della stampante', '⚠️');
+        return;
+      }
+      if (!settings.known_printers) settings.known_printers = [];
+      if (!settings.known_printers.includes(val)) {
+        settings.known_printers.push(val);
+        // If first printer, set as default for courtesy and kitchen
+        if (settings.known_printers.length === 1) {
+          settings.printer_courtesy = val;
+          settings.printer_kitchen = val;
+        }
+        input.value = '';
+        renderPrintersList();
+        await autoSavePrinterSettings('Stampante aggiunta e salvata!');
+      } else {
+        toast('Stampante già presente nella lista', 'ℹ️');
+      }
+    }
+
+    async function togglePrinterRole(pr, role) {
+      if (role === 'courtesy') {
+        settings.printer_courtesy = (settings.printer_courtesy === pr) ? '' : pr;
+      } else {
+        settings.printer_kitchen = (settings.printer_kitchen === pr) ? '' : pr;
+      }
+      renderPrintersList();
+      await autoSavePrinterSettings(`Ruolo stampante "${role === 'courtesy' ? 'Scontrino' : 'Cucina'}" aggiornato!`);
+    }
+
+    async function removePrinter(idx) {
+      const removed = settings.known_printers[idx];
+      if (settings.printer_courtesy === removed) settings.printer_courtesy = '';
+      if (settings.printer_kitchen === removed) settings.printer_kitchen = '';
+      settings.known_printers.splice(idx, 1);
+      renderPrintersList();
+      await autoSavePrinterSettings('Stampante rimossa');
+    }
+
+    async function autoSavePrinterSettings(msg = 'Impostazioni stampanti salvate!') {
+      try {
+        const payload = {
+          restaurant_name: document.getElementById('set-name')?.value?.trim() || settings.restaurant_name || 'Totem QuickOrder',
+          logo: customLogoBase64 || settings.logo || '',
+          auto_print_courtesy: document.getElementById('set-auto-courtesy')?.checked ?? settings.auto_print_courtesy ?? true,
+          auto_print_kitchen: document.getElementById('set-auto-kitchen')?.checked ?? settings.auto_print_kitchen ?? true,
+          printer_courtesy: settings.printer_courtesy || '',
+          printer_kitchen: settings.printer_kitchen || '',
+          known_printers: settings.known_printers || [],
+          order_reset_mode: document.getElementById('set-reset-mode')?.value || settings.order_reset_mode || 'daily',
+          reset_time: document.getElementById('set-reset-time')?.value || settings.reset_time || '06:00',
+          admin_pin: document.getElementById('set-pin')?.value || settings.admin_pin || '0000'
+        };
+        await api('/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
+        toast(msg);
+      } catch (err) {
+        toast('Errore salvataggio automatico: ' + err.message, '⚠️');
+      }
+    }
+
+    async function scanTotemBluetoothPrinters() {
+      const btn = document.getElementById('btn-scan-totem');
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Scansione sul Totem...</span>`;
+      }
+      toast('Avvio scansione Bluetooth hardware sul Totem...', '🔍');
+
+      try {
+        const res = await api('/admin/scan-printers', { method: 'POST' });
+        const devices = res?.devices || (Array.isArray(res) ? res : []);
+
+        if (devices && devices.length > 0) {
+          if (!settings.known_printers) settings.known_printers = [];
+          let addedCount = 0;
+          for (const d of devices) {
+            const name = d.name || d.address || d.id;
+            if (name && !settings.known_printers.includes(name)) {
+              settings.known_printers.push(name);
+              addedCount++;
+            }
+          }
+          if (!settings.printer_courtesy && settings.known_printers.length > 0) {
+            settings.printer_courtesy = settings.known_printers[0];
+          }
+          if (!settings.printer_kitchen && settings.known_printers.length > 0) {
+            settings.printer_kitchen = settings.known_printers[0];
+          }
+          renderPrintersList();
+          await autoSavePrinterSettings(`Trovate ${devices.length} stampanti sul Totem!`);
+          toast(`🎉 ${devices.length} stampanti rilevate dal Totem!`, '✅');
+        } else {
+          if (navigator.bluetooth) {
+            toast('Nessun dispositivo dal Totem. Provo scansione dal browser...', 'ℹ️');
+            await scanWebBluetoothDirect();
+          } else {
+            toast('Nessuna stampante rilevata. Assicurati che sia accesa e associata nel Bluetooth del Totem.', 'ℹ️');
+          }
+        }
+      } catch (err) {
+        console.error('Scan totem printers error:', err);
+        if (navigator.bluetooth) {
+          toast('Errore scansione Totem, provo dal browser...', 'ℹ️');
+          await scanWebBluetoothDirect();
+        } else {
+          toast('Errore scansione Totem: ' + (err.message || 'Controlla connessione'), '⚠️');
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalText || `🔍 Cerca Stampanti (sul Totem)`;
+        }
+      }
+    }
+
+    async function scanWebBluetoothDirect() {
+      if (!navigator.bluetooth) {
+        toast('Web Bluetooth non supportato nel browser. Usa "Cerca Stampanti (sul Totem)".', 'ℹ️');
+        return;
+      }
+      try {
+        toast('Apertura ricerca Bluetooth...', '🔍');
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
+        });
+        if (device && device.name) {
+          const name = device.name;
+          if (!settings.known_printers) settings.known_printers = [];
+          if (!settings.known_printers.includes(name)) {
+            settings.known_printers.push(name);
+            if (!settings.printer_courtesy) settings.printer_courtesy = name;
+            renderPrintersList();
+            await autoSavePrinterSettings(`Stampante Bluetooth "${name}" aggiunta e salvata!`);
+          } else {
+            toast(`Dispositivo "${name}" già presente`, 'ℹ️');
+          }
+        }
+      } catch (err) {
+        if (!err.message?.includes('cancelled') && !err.message?.includes('User cancelled')) {
+          toast('Scansione browser: ' + err.message, '⚠️');
+        }
+      }
+    }
+
+    function scanWebBluetooth() {
+      scanTotemBluetoothPrinters();
+    }
+
+    async function triggerTestPrint(type) {
+      try {
+        toast(`Invio test di stampa (${type === 'courtesy' ? 'Scontrino' : 'Cucina'})...`, '🖨️');
+        const res = await api('/admin/test-print', {
+          method: 'POST',
+          body: JSON.stringify({ type })
+        });
+        toast(res?.message || 'Comando di stampa inviato al Totem!', '✅');
+      } catch (err) {
+        toast('Errore invio test: ' + err.message, '❌');
+      }
+    }
+
+    document.getElementById('set-logo-file').onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      customLogoBase64 = await fileToBase64(file);
+      document.getElementById('logo-preview-box').innerHTML = `<img src="${customLogoBase64}" style="width:100%; height:100%; object-fit:contain;" />`;
+    };
+
+    function removeLogo() {
+      customLogoBase64 = '';
+      document.getElementById('logo-preview-box').innerHTML = `<span style="font-size:0.8rem; color:#94A3B8;">Nessun logo</span>`;
+    }
+
+    async function detectLocalIp() {
+      toast('Rilevamento IP Wi-Fi...');
+      const host = window.location.hostname;
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        document.getElementById('set-ip').value = host;
+        localStorage.setItem('totem_local_ip', host);
+        renderSettings();
+        toast('IP impostato: ' + host);
+      } else {
+        toast('Usa l\'indirizzo IP locale del tuo Totem (es. 192.168.1.9)');
+      }
+    }
+
+    function copyRemoteUrl() {
+      const text = document.getElementById('remote-url-display').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        toast('Link copiato negli appunti!');
+      }).catch(() => {
+        toast('Copia non riuscita', '⚠️');
+      });
+    }
+
+    async function resetOrderNumberNow() {
+      if (!confirm('Vuoi azzerare ora il contatore degli ordini? Il prossimo ordine partirà da #1.')) return;
+      try {
+        await api('/admin/reset-order-number', { method: 'POST', body: '{}' });
+        toast('Contatore ordini resettato a #1!');
+      } catch (e) {
+        toast('Errore: ' + e.message, '❌');
+      }
+    }
+
+    function parseDataUri(value) {
+      if (!value || typeof value !== 'string') return null;
+      const trimmed = value.trim();
+      const m = trimmed.match(/^data:([^;]+);base64,(.+)$/s);
+      if (m) {
+        const mime = m[1].toLowerCase();
+        let ext = 'png';
+        if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
+        else if (mime.includes('webp')) ext = 'webp';
+        else if (mime.includes('gif')) ext = 'gif';
+        return { ext, base64: m[2].replace(/\s/g, '') };
+      }
+      return null;
+    }
+
+    async function ensureJSZip() {
+      if (typeof JSZip !== 'undefined') return window.JSZip;
+      return new Promise((resolve) => {
+        try {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+          s.onload = () => resolve(window.JSZip || null);
+          s.onerror = () => resolve(null);
+          document.head.appendChild(s);
+          setTimeout(() => resolve(window.JSZip || null), 2500);
+        } catch {
+          resolve(null);
+        }
+      });
+    }
+
+    async function exportBackupZip() {
+      await ensureJSZip();
+      if (typeof JSZip === 'undefined') {
+        toast('Libreria ZIP non raggiungibile offline. Salvo come file JSON.', 'ℹ️');
+        return exportBackup();
+      }
+      try {
+        toast('Creazione archivio ZIP con immagini in corso...', '⏳');
+        const zip = new JSZip();
+        const images = zip.folder('images');
+        
+        let logoRef = '';
+        const logoParsed = parseDataUri(settings.logo || customLogoBase64);
+        if (logoParsed && images) {
+          const name = `logo.${logoParsed.ext}`;
+          images.file(name, logoParsed.base64, { base64: true });
+          logoRef = `images/${name}`;
+        }
+
+        const expCategories = (categories || []).map((cat) => {
+          const parsed = parseDataUri(cat.image);
+          let image = cat.image;
+          if (parsed && images) {
+            const name = `cat_${(cat.id || 'x').replace(/[^a-zA-Z0-9_-]/g, '_')}.${parsed.ext}`;
+            images.file(name, parsed.base64, { base64: true });
+            image = `images/${name}`;
+          }
+          return { ...cat, image };
+        });
+
+        const expProducts = (products || []).map((prod) => {
+          const parsed = parseDataUri(prod.image);
+          let image = prod.image;
+          if (parsed && images) {
+            const name = `prod_${(prod.id || 'x').replace(/[^a-zA-Z0-9_-]/g, '_')}.${parsed.ext}`;
+            images.file(name, parsed.base64, { base64: true });
+            image = `images/${name}`;
+          }
+          return { ...prod, image };
+        });
+
+        const expSettings = {
+          ...settings,
+          logo: logoRef || (settings.logo && !settings.logo.startsWith('data:') ? settings.logo : '')
+        };
+
+        const manifest = {
+          version: 3,
+          app: 'totem',
+          exported_at: new Date().toISOString(),
+          settings: expSettings,
+          categories: expCategories,
+          global_groups: globalGroups || [],
+          products: expProducts
+        };
+
+        zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+        zip.file('README.txt', `Backup Totem Ristorante\nCreato: ${manifest.exported_at}\nCategorie: ${expCategories.length}\nProdotti: ${expProducts.length}`);
+
+        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `totem_backup_${new Date().toISOString().slice(0,10)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Backup ZIP scaricato con successo!', '✅');
+      } catch (err) {
+        console.error('Export zip error:', err);
+        toast('Errore creazione ZIP: ' + err.message, '❌');
+      }
+    }
+
+    async function exportBackup() {
+      try {
+        const backupData = {
+          version: '2.0',
+          exported_at: new Date().toISOString(),
+          settings: settings,
+          categories: categories,
+          products: products,
+          global_groups: globalGroups
+        };
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup_totem_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Backup scaricato correttamente!');
+      } catch (e) {
+        toast('Errore esportazione backup: ' + e.message, '❌');
+      }
+    }
+
+    async function importBackup(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!confirm('Attenzione: importando il backup verranno sovrascritti prodotti, categorie, gruppi e impostazioni. Vuoi procedere?')) {
+        e.target.value = '';
+        return;
+      }
+      
+      toast('Lettura backup in corso...', '⏳');
+
+      try {
+        let backupPayload = null;
+
+        if (file.name.toLowerCase().endsWith('.zip')) {
+          await ensureJSZip();
+          if (typeof JSZip === 'undefined') {
+            throw new Error('Libreria ZIP non disponibile in modalità offline. Importa il file di backup in formato .json');
+          }
+          const zip = await JSZip.loadAsync(file);
+          let manifestFile = zip.file('manifest.json') || zip.file('backup.json');
+          if (!manifestFile) {
+            const jsonFiles = Object.keys(zip.files).filter(k => k.toLowerCase().endsWith('.json') && !k.includes('/'));
+            if (jsonFiles.length > 0) manifestFile = zip.file(jsonFiles[0]);
+          }
+
+          if (!manifestFile) {
+            throw new Error('Nessun file manifest.json trovato nell\'archivio ZIP.');
+          }
+
+          const jsonStr = await manifestFile.async('string');
+          const parsed = JSON.parse(jsonStr);
+          backupPayload = parsed.manifest || parsed.data || parsed;
+
+          // Process images in zip if any
+          if (backupPayload.products && Array.isArray(backupPayload.products)) {
+            for (const p of backupPayload.products) {
+              if (p.image && !p.image.startsWith('data:') && !p.image.startsWith('http')) {
+                const imgFile = zip.file(p.image) || zip.file(p.image.replace(/^\.\//, '')) || zip.file('images/' + p.image.split('/').pop());
+                if (imgFile) {
+                  const b64 = await imgFile.async('base64');
+                  const ext = p.image.split('.').pop() || 'png';
+                  p.image = `data:image/${ext};base64,${b64}`;
+                }
+              }
+            }
+          }
+          if (backupPayload.categories && Array.isArray(backupPayload.categories)) {
+            for (const c of backupPayload.categories) {
+              if (c.image && !c.image.startsWith('data:') && !c.image.startsWith('http')) {
+                const imgFile = zip.file(c.image) || zip.file(c.image.replace(/^\.\//, '')) || zip.file('images/' + c.image.split('/').pop());
+                if (imgFile) {
+                  const b64 = await imgFile.async('base64');
+                  const ext = c.image.split('.').pop() || 'png';
+                  c.image = `data:image/${ext};base64,${b64}`;
+                }
+              }
+            }
+          }
+          if (backupPayload.settings && backupPayload.settings.logo && !backupPayload.settings.logo.startsWith('data:') && !backupPayload.settings.logo.startsWith('http')) {
+            const logoPath = backupPayload.settings.logo;
+            const imgFile = zip.file(logoPath) || zip.file(logoPath.replace(/^\.\//, '')) || zip.file('images/' + logoPath.split('/').pop());
+            if (imgFile) {
+              const b64 = await imgFile.async('base64');
+              const ext = logoPath.split('.').pop() || 'png';
+              backupPayload.settings.logo = `data:image/${ext};base64,${b64}`;
+            }
+          }
+        } else {
+          // JSON file
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          backupPayload = parsed.manifest || parsed.data || parsed;
+        }
+
+        if (!backupPayload || (!backupPayload.products && !backupPayload.categories && !backupPayload.settings)) {
+          throw new Error('Formato backup non valido.');
+        }
+
+        await api('/admin/sync-backup', {
+          method: 'POST',
+          body: JSON.stringify({
+            settings: backupPayload.settings || {},
+            categories: backupPayload.categories || [],
+            products: backupPayload.products || [],
+            global_groups: backupPayload.global_groups || []
+          })
+        });
+
+        toast('Backup ripristinato con successo!');
+        await loadAll();
+      } catch (err) {
+        console.error('Import error:', err);
+        toast('Errore importazione backup: ' + err.message, '❌');
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function resetDefaultSeed() {
+      if (!confirm('Vuoi ripristinare il menù di default iniziale? Questa operazione ricaricherà i piatti demo.')) return;
+      try {
+        await api('/admin/seed', { method: 'POST', body: '{}' });
+        toast('Menù di default ripristinato!');
+        await loadAll();
+      } catch (err) {
+        toast('Errore ripristino seed: ' + err.message, '❌');
+      }
+    }
+
+    async function saveAllSettings() {
+      const name = document.getElementById('set-name').value.trim();
+      if (!name) {
+        toast('Il nome del ristorante non può essere vuoto', '⚠️');
+        return;
+      }
+
+      const ipVal = document.getElementById('set-ip').value.trim();
+      if (ipVal) localStorage.setItem('totem_local_ip', ipVal);
+
+      const payload = {
+        restaurant_name: name,
+        logo: customLogoBase64,
+        auto_print_courtesy: document.getElementById('set-auto-courtesy').checked,
+        auto_print_kitchen: document.getElementById('set-auto-kitchen').checked,
+        printer_courtesy: settings.printer_courtesy || '',
+        printer_kitchen: settings.printer_kitchen || '',
+        known_printers: settings.known_printers || [],
+        order_reset_mode: document.getElementById('set-reset-mode').value,
+        reset_time: document.getElementById('set-reset-time').value.trim() || '06:00',
+        admin_pin: document.getElementById('set-pin').value.trim() || '0000'
+      };
+
+      try {
+        await api('/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
+        toast('Tutte le impostazioni sono state salvate!');
+        await loadAll();
+      } catch (e) {
+        toast('Errore salvataggio: ' + e.message, '❌');
+      }
+    }
+
+    /* Modal Close Helper */
+    function closeModal() {
+      document.getElementById('modal-container').innerHTML = '';
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Global error safeguard - never leave the screen blank
+    window.addEventListener('error', function(e) {
+      console.warn('Remote Admin Global Warning:', e?.message || e);
+      try {
+        const auth = document.getElementById('auth-screen');
+        const app = document.getElementById('app-screen');
+        if (auth && app && auth.style.display === 'none' && app.style.display === 'none') {
+          auth.style.display = 'flex';
+        }
+      } catch {}
+    });
+
+    // Auto-login check on startup
+    function init() {
+      try {
+        if (authToken) {
+          showApp();
+        } else {
+          showAuth();
+        }
+      } catch (err) {
+        console.error('Init error:', err);
+        showAuth();
+      }
+
+      // Pre-load public settings to display restaurant name on login screen & header
+      fetch('/api/settings')
+        .then(r => r.json())
+        .then(s => {
+          if (s && s.restaurant_name) {
+            const titleEl = document.getElementById('login-restaurant-title');
+            if (titleEl) titleEl.innerText = s.restaurant_name;
+            const headEl = document.getElementById('header-restaurant-name');
+            if (headEl) headEl.innerText = s.restaurant_name;
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

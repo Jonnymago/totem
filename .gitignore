@@ -37,6 +37,7 @@ node_modules/
 dist/
 web-build/
 node_modules
+.vite/
 
 # One-off patch / hotfix scripts
 fix_*.py

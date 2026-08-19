@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 logger = logging.getLogger(__name__)
@@ -67,6 +67,16 @@ def register_remote_admin(app: FastAPI) -> None:
             len(sanitized),
         )
         return HTMLResponse(sanitized, media_type="text/html; charset=utf-8")
+
+    @app.get("/remote/{full_path:path}", include_in_schema=False)
+    async def serve_remote_subroutes(full_path: str):
+        candidate = REMOTE_ADMIN_DIR / full_path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        if index_path.is_file():
+            raw = index_path.read_text(encoding="utf-8")
+            return HTMLResponse(sanitize_remote_html(raw), media_type="text/html; charset=utf-8")
+        raise HTTPException(status_code=404, detail="Pannello remoto non trovato")
 
     if assets_dir.is_dir():
         app.mount("/remote/assets", StaticFiles(directory=str(assets_dir)), name="remote_admin_assets")

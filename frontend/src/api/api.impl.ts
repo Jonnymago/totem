@@ -363,7 +363,8 @@ export function getBackendBaseUrl(): string {
 }
 
 export function getRemoteAdminUrl(localIp?: string): string {
-  const custom = localDb.settings?.custom_backend_url?.trim();
+  // Leggi l'IP dal localDb se disponibile, altrimenti stringa vuota (non hardcoded)
+  const custom = localDb?.settings?.custom_backend_url?.trim();
   if (custom) {
     const clean = custom.replace(/\/+$/, '');
     if (clean.endsWith('/remote') || clean.endsWith('/admin')) {
@@ -378,7 +379,7 @@ export function getRemoteAdminUrl(localIp?: string): string {
   if (cleanIp && cleanIp !== 'localhost' && cleanIp !== '127.0.0.1' && cleanIp !== '0.0.0.0' && cleanIp !== 'IP_DEL_TABLET' && !cleanIp.startsWith('0.')) {
     return `http://${cleanIp}:3000/remote/`;
   }
-  return 'http://192.168.1.9:3000/remote/';
+  return '';
 }
 
 async function getRemoteJson<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -506,6 +507,13 @@ export const updateSettings = async (data: Partial<Settings>): Promise<Settings>
   await ensureLocalDbLoaded();
   localDb.settings = { ...localDb.settings, ...data };
   await saveLocalDb();
+  // Forza verifica: rileggi da storage per confermare il salvataggio
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!raw) throw new Error('Save verification failed');
+  } catch (e) {
+    console.error('Settings save verification failed:', e);
+  }
   return clone(localDb.settings);
 };
 
@@ -792,17 +800,23 @@ export const scanBluetoothPrinters = async (): Promise<{ devices: any[]; setting
     const devices = await scanPrinters();
     await ensureLocalDbLoaded();
     if (!localDb.settings) localDb.settings = { ...DEFAULT_SETTINGS };
-    const currentKnown = new Set(localDb.settings.known_printers || []);
+
+    const existingMap = new Map(
+      (localDb.settings.known_printers || []).map((p: any) => {
+        const key = (typeof p === 'string') ? p : (p.address || p.name || p.id);
+        return [key, (typeof p === 'string') ? { name: p, address: p, id: p } : p];
+      })
+    );
     for (const d of devices) {
-      const id = d.name || d.address || d.id;
-      if (id) currentKnown.add(id);
+      const key = d.address || d.name || d.id;
+      if (key) existingMap.set(key, { name: d.name || key, address: d.address || key, id: d.id || key });
     }
-    localDb.settings.known_printers = Array.from(currentKnown);
+    localDb.settings.known_printers = Array.from(existingMap.values());
     if (!localDb.settings.printer_courtesy && devices.length > 0) {
-      localDb.settings.printer_courtesy = devices[0].name || devices[0].address || devices[0].id;
+      localDb.settings.printer_courtesy = devices[0].address || devices[0].name || devices[0].id;
     }
     if (!localDb.settings.printer_kitchen && devices.length > 0) {
-      localDb.settings.printer_kitchen = devices[0].name || devices[0].address || devices[0].id;
+      localDb.settings.printer_kitchen = devices[0].address || devices[0].name || devices[0].id;
     }
     await saveLocalDb();
     return { devices: devices || [], settings: clone(localDb.settings) };

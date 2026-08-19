@@ -12,6 +12,7 @@ import os
 from bson import ObjectId
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
@@ -578,6 +579,46 @@ if register_extra_routes:
 app.include_router(api_router)
 if register_remote_admin:
     register_remote_admin(app)
+
+
+# Serve index.html per tutte le route non-API (React / SPA client-side routing)
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_react_app(full_path: str):
+    if full_path.startswith("api/") or full_path == "api":
+        raise HTTPException(status_code=404, detail="API endpoint non trovato")
+
+    static_remote_dir = ROOT_DIR / "static" / "remote"
+    static_dir = ROOT_DIR / "static"
+    dist_dir = ROOT_DIR.parent / "dist"
+
+    # 1. Controlla file statici esistenti
+    remote_file = static_remote_dir / full_path
+    if remote_file.is_file():
+        return FileResponse(remote_file)
+
+    static_file = static_dir / full_path
+    if static_file.is_file():
+        return FileResponse(static_file)
+
+    dist_file = dist_dir / full_path
+    if dist_file.is_file():
+        return FileResponse(dist_file)
+
+    # 2. Fallback a index.html (client-side routing)
+    remote_index = static_remote_dir / "index.html"
+    if remote_index.is_file():
+        return FileResponse(remote_index)
+
+    static_index = static_dir / "index.html"
+    if static_index.is_file():
+        return FileResponse(static_index)
+
+    dist_index = dist_dir / "index.html"
+    if dist_index.is_file():
+        return FileResponse(dist_index)
+
+    return {"error": "Frontend not built. Run: npm run build"}
+
 
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
