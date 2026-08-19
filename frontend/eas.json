@@ -11,7 +11,7 @@
     "preview": {
       "android": {
         "buildType": "apk",
-        "prebuildCommand": "npm run bundle:remote"
+        "prebuildCommand": "node ./scripts/bundle-web.js"
       },
       "env": {
         "EXPO_PUBLIC_EAS_BUILD": "1"
@@ -19,7 +19,7 @@
     },
     "production": {
       "autoIncrement": true,
-      "prebuildCommand": "npm run bundle:remote"
+      "prebuildCommand": "node ./scripts/bundle-web.js"
     }
   }
 }
