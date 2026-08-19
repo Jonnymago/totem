@@ -22,7 +22,7 @@
     "dayjs": "1.11.13",
     "expo": "54.0.36",
     "expo-blur": "15.0.8",
-    "expo-build-properties": "~0.14.0",
+    "expo-build-properties": "~1.0.10",
     "expo-constants": "18.0.13",
     "expo-document-picker": "~14.0.7",
     "expo-file-system": "~19.0.21",
@@ -69,5 +69,23 @@
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "install": {
+      "exclude": [
+        "react-native-web",
+        "@react-navigation/bottom-tabs"
+      ]
+    },
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false,
+        "exclude": [
+          "react-native-tcp-socket",
+          "kiosk-mode",
+          "react-native-thermal-printer-driver"
+        ]
+      }
+    }
+  }
 }

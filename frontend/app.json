@@ -41,7 +41,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.READ_MEDIA_IMAGES"
       ],
-      "versionCode": 122
+      "versionCode": 123
     },
     "web": {
       "bundler": "metro",
@@ -54,8 +54,8 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
             "minSdkVersion": 24
           }
         }
