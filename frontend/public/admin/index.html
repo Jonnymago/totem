@@ -173,14 +173,7 @@
 
       <button id="login-submit-btn" class="btn btn-primary" style="width:100%; padding:12px; font-size:1rem; border-radius:12px; font-weight:700;" onclick="doLogin()">Accedi al Pannello</button>
       
-      <!-- Quick access buttons -->
-      <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);">
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Accesso Rapido PIN Predefinito:</div>
-        <div style="display:flex; gap:8px; justify-content:center;">
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('0000')">⚡ PIN 0000</button>
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1; border-radius:8px; font-weight:700;" onclick="quickLogin('1234')">⚡ PIN 1234</button>
-        </div>
-      </div>
+
     </div>
   </div>
 
@@ -449,7 +442,7 @@
 
   <script>
     /* State */
-    let authToken = localStorage.getItem('totem_admin_token') || '';
+    let authToken = '';
     let settings = {};
     let categories = [];
     let products = [];
@@ -486,7 +479,7 @@
       const res = await fetch('/api' + path, { ...options, headers });
       if (!res.ok) {
         if (res.status === 401) {
-          localStorage.removeItem('totem_admin_token');
+          
           authToken = '';
           showAuth();
           throw new Error('Sessione scaduta o PIN errato');
@@ -546,60 +539,46 @@
       }
     }
 
-    async function quickLogin(presetPin) {
-      document.getElementById('auth-pin').value = presetPin;
-      await doLogin(presetPin);
-    }
-
     async function doLogin(customPin) {
       hideLoginError();
       const pinInput = document.getElementById('auth-pin');
-      const pin = (typeof customPin === 'string' ? customPin : pinInput.value).trim();
-      
+      const pin = (typeof customPin === 'string' ? customPin : (pinInput ? pinInput.value : '')).trim();
       if (!pin) {
-        showLoginError('Inserisci il PIN di 4 cifre per accedere.');
-        toast('Inserisci il PIN', '⚠️');
+        showLoginError('Inserisci PIN o password per accedere.');
+        toast('Inserisci PIN o password', '⚠️');
         return;
       }
-
       const submitBtn = document.getElementById('login-submit-btn');
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerText = 'Accesso...';
       }
-
       try {
-        // Universal instant token assignment for seamless offline/online admin access
-        let token = 'local-admin-token';
-
-        // Try syncing with backend in background with quick timeout
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1200);
-          
-          const res = await fetch('/api/admin/pin-login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin }),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.access_token || data.token) token = data.access_token || data.token;
-          }
-        } catch (e) {
-          // Network fetch ignored; local access token will proceed
+        const res = await fetch('/api/admin/pin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        if (!res.ok) {
+          let detail = 'Credenziali non valide';
+          try { const err = await res.json(); detail = err.detail || detail; } catch (e) {}
+          showLoginError(detail);
+          toast(detail, '❌');
+          return;
         }
-
+        const data = await res.json();
+        const token = data.access_token || data.token;
+        if (!token) {
+          showLoginError('Risposta login non valida');
+          return;
+        }
         authToken = token;
-        localStorage.setItem('totem_admin_token', authToken);
         toast('Accesso effettuato!');
         showApp();
       } catch (err) {
         console.error('Login error:', err);
-        showLoginError(err.message || 'Errore di autenticazione.');
-        toast(err.message || 'Errore PIN', '❌');
+        showLoginError(err.message || 'Rete non disponibile. Riprova.');
+        toast(err.message || 'Errore di rete', '❌');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -608,8 +587,14 @@
       }
     }
 
+    function stopOrdersPolling() {
+      if (typeof ordersPollTimer !== 'undefined' && ordersPollTimer) {
+        clearInterval(ordersPollTimer);
+        ordersPollTimer = null;
+      }
+    }
     function doLogout() {
-      localStorage.removeItem('totem_admin_token');
+      stopOrdersPolling();
       authToken = '';
       showAuth();
       toast('Disconnesso');
@@ -624,7 +609,7 @@
         submitBtn.disabled = false;
         submitBtn.innerText = 'Accedi al Pannello';
       }
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
     }
 
     function showApp() {
@@ -1695,7 +1680,7 @@
     /* ========================================================
        ORDERS & KITCHEN TAB LOGIC
        ======================================================== */
-    async function loadOrders() {
+    async function loadOrders() {\n      if (!authToken) return;
       try {
         orders = await api('/admin/orders').catch(() => []);
         if (!Array.isArray(orders)) orders = [];
@@ -1834,7 +1819,7 @@
     }
 
     function startOrdersPolling() {
-      if (ordersPollTimer) clearInterval(ordersPollTimer);
+      stopOrdersPolling();
       ordersPollTimer = setInterval(() => {
         if (authToken && currentTab === 'orders') {
           loadOrders();
@@ -1991,8 +1976,13 @@
       toast('Avvio scansione Bluetooth hardware sul Totem...', '🔍');
 
       try {
-        const res = await api('/admin/scan-printers', { method: 'POST' });
-        const devices = res?.devices || (Array.isArray(res) ? res : []);
+        let res;
+        try {
+          res = await api('/admin/bt/printers');
+        } catch (e) {
+          res = await api('/admin/scan-printers', { method: 'POST' });
+        }
+        const devices = res?.printers || res?.devices || (Array.isArray(res) ? res : []);
 
         if (devices && devices.length > 0) {
           if (!settings.known_printers) settings.known_printers = [];

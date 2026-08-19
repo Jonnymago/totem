@@ -34,7 +34,7 @@ export default function SettingsScreen() {
   const [btScanning, setBtScanning] = useState(false);
   const [printerCourtesy, setPrinterCourtesy] = useState('');
   const [printerKitchen, setPrinterKitchen] = useState('');
-  const [knownPrinters, setKnownPrinters] = useState<string[]>([]);
+  const [knownPrinters, setKnownPrinters] = useState<any[]>([]);
   const [newPrinterName, setNewPrinterName] = useState('');
   const [localIp, setLocalIp] = useState('192.168.1.9');
   const [ipDetecting, setIpDetecting] = useState(false);
@@ -166,8 +166,12 @@ export default function SettingsScreen() {
       if (manual) setIpDetecting(true);
       const ip = await Network.getIpAddressAsync();
       if (ip && ip !== '0.0.0.0' && !ip.startsWith('0.') && ip !== '127.0.0.1' && ip !== 'localhost') {
-        setLocalIp(ip);
-        await AsyncStorage.setItem('totem_local_ip', ip);
+        // Salva SOLO se non c'è già un IP manuale dell'utente
+        const saved = await AsyncStorage.getItem('totem_local_ip');
+        if (!saved || saved === '192.168.1.9' || saved === '0.0.0.0') {
+          setLocalIp(ip);
+          await AsyncStorage.setItem('totem_local_ip', ip);
+        }
         return ip;
       }
     } catch (e) {
@@ -208,7 +212,14 @@ export default function SettingsScreen() {
       setKitchenDisplayEnabled(data.kitchen_display_enabled);
       setPrinterCourtesy(data.printer_courtesy || '');
       setPrinterKitchen(data.printer_kitchen || '');
-      setKnownPrinters(data.known_printers || []);
+      const normalized = (data.known_printers || []).map((p: any) =>
+        typeof p === 'string' ? p : (p.address || p.name || p.id || p)
+      ).filter(Boolean);
+      setKnownPrinters(normalized);
+      const savedIp = await AsyncStorage.getItem('totem_local_ip');
+      if (savedIp && savedIp !== '0.0.0.0' && !savedIp.startsWith('0.') && savedIp !== '127.0.0.1') {
+        setLocalIp(savedIp);
+      }
       setOrderResetMode((data.order_reset_mode as any) || 'daily');
       setResetTime(data.reset_time || '06:00');
       setLastResetAt(data.last_reset_at || null);
@@ -478,7 +489,7 @@ export default function SettingsScreen() {
               value={localIp}
               onChangeText={(text) => {
                 setLocalIp(text);
-                if (text && text.trim() && text !== '0.0.0.0') {
+                if (text && text.trim()) {
                   AsyncStorage.setItem('totem_local_ip', text.trim()).catch(() => {});
                 }
               }}

@@ -811,7 +811,9 @@ export const scanBluetoothPrinters = async (): Promise<{ devices: any[]; setting
       const key = d.address || d.name || d.id;
       if (key) existingMap.set(key, { name: d.name || key, address: d.address || key, id: d.id || key });
     }
-    localDb.settings.known_printers = Array.from(existingMap.values());
+    localDb.settings.known_printers = Array.from(existingMap.values()).map(
+      (p: any) => p.address || p.name || p.id
+    ).filter(Boolean);
     if (!localDb.settings.printer_courtesy && devices.length > 0) {
       localDb.settings.printer_courtesy = devices[0].address || devices[0].name || devices[0].id;
     }

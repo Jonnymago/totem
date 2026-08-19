@@ -10,14 +10,16 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "prebuildCommand": "npm run bundle:remote"
       },
       "env": {
         "EXPO_PUBLIC_EAS_BUILD": "1"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "prebuildCommand": "npm run bundle:remote"
     }
   }
 }
