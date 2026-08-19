@@ -285,12 +285,9 @@ function mapDevice(d: any): PairedPrinter | null {
   };
 }
 
-const getApiBase = () => {
+const getApiBase = (): string => {
   if (typeof process !== 'undefined' && (process as any).env?.EXPO_PUBLIC_API_URL) {
     return (process as any).env.EXPO_PUBLIC_API_URL;
-  }
-  if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_API_URL) {
-    return (import.meta as any).env.VITE_API_URL;
   }
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin;
