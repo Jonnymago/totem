@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
           setShowPinModal(false);
           setView('admin');
         }}
-        correctPin={settings?.admin_pin || '0000'}
+        correctPin={settings?.admin_pin}
       />
     </>
   );

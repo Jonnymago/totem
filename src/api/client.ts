@@ -2,10 +2,20 @@ import { Category, Product, Order, Settings, OrderItem } from '../types';
 
 const API_BASE = '/api';
 
+let _authToken = '';
+
+export function setAuthToken(t: string) {
+  _authToken = t || '';
+}
+
+export function getAuthToken(): string {
+  return _authToken;
+}
+
 const DEFAULT_SETTINGS: Settings = {
   restaurant_name: 'TOTEM RISTORANTE',
   logo: '',
-  admin_pin: '0000',
+  admin_pin: undefined,
   currency_symbol: '€',
 };
 
@@ -135,11 +145,11 @@ const DEFAULT_PRODUCTS: Product[] = [
 ];
 
 // Local state helpers for offline / preview mode
-let localOrders: Order[] = JSON.parse(localStorage.getItem('totem_local_orders') || '[]');
-let orderCounter = localOrders.length > 0 ? Math.max(...localOrders.map((o) => o.order_number)) + 1 : 1;
+let localOrders: Order[] = [];
+let orderCounter = 1;
 
 async function fetchJson<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('totem_admin_token');
+  const token = _authToken;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -213,7 +223,6 @@ export const api = {
         order_type: 'full',
       };
       localOrders.push(newOrder);
-      localStorage.setItem('totem_local_orders', JSON.stringify(localOrders));
       return newOrder;
     }
   },
@@ -234,7 +243,6 @@ export const api = {
         order_type: 'number-only',
       };
       localOrders.push(newOrder);
-      localStorage.setItem('totem_local_orders', JSON.stringify(localOrders));
       return newOrder;
     }
   },
@@ -249,18 +257,16 @@ export const api = {
 
   adminLogin: async (username: string, password: string) => {
     try {
-      return await fetchJson<{ access_token: string }>('/admin/login', {
+      const data = await fetchJson<{ access_token: string }>('/admin/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
-    } catch {
-      const u = username.toLowerCase().trim();
-      const p = password.trim();
-      const validPins = ['0000', '1234', '9999', 'admin123', 'admin'];
-      if ((u === 'admin' && validPins.includes(p)) || validPins.includes(p)) {
-        return { access_token: 'mock-admin-token' };
+      if (data?.access_token) {
+        setAuthToken(data.access_token);
       }
-      throw new Error('Credenziali non valide');
+      return data;
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -394,7 +400,6 @@ export const api = {
       const idx = localOrders.findIndex((o) => o.id === id);
       if (idx >= 0) {
         localOrders[idx].status = status as Order['status'];
-        localStorage.setItem('totem_local_orders', JSON.stringify(localOrders));
         return localOrders[idx];
       }
       throw new Error('Order not found');

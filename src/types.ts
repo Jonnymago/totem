@@ -66,7 +66,7 @@ export interface Order {
 export interface Settings {
   restaurant_name: string;
   logo?: string;
-  admin_pin: string;
+  admin_pin?: string;
   currency_symbol?: string;
   custom_backend_url?: string;
   auto_print_courtesy?: boolean;

@@ -13,7 +13,7 @@ export const PinPadModal: React.FC<PinPadModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  correctPin = '0000',
+  correctPin,
 }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
@@ -21,8 +21,8 @@ export const PinPadModal: React.FC<PinPadModalProps> = ({
   if (!isOpen) return null;
 
   const isValidPin = (enteredPin: string) => {
-    const valid = [correctPin, '0000', '1234', '9999'].filter(Boolean);
-    return valid.includes(enteredPin);
+    if (!correctPin) return true;
+    return enteredPin === correctPin;
   };
 
   const handleKeyPress = (digit: string) => {
@@ -73,8 +73,7 @@ export const PinPadModal: React.FC<PinPadModalProps> = ({
           </div>
 
           <h2 className="text-2xl font-bold text-white mb-1">Accesso Admin</h2>
-          <p className="text-sm text-zinc-400 mb-1">Inserisci il PIN per accedere al gestionale</p>
-          <p className="text-xs text-zinc-500 mb-6">Predefinito: 0000 oppure 1234</p>
+          <p className="text-sm text-zinc-400 mb-6">Inserisci il PIN di sicurezza a 4 cifre</p>
 
           {/* PIN Indicators */}
           <div className="flex justify-center gap-4 mb-6">

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Category, Product, Order, Settings, OrderItem } from '../types';
-import { api } from '../api/client';
+import { api, setAuthToken } from '../api/client';
 
 export type AppView =
   | 'welcome'
@@ -61,7 +61,7 @@ export const useStore = create<AppState>((set, get) => ({
   activeCategory: null,
   cart: [],
   lastOrder: null,
-  adminToken: localStorage.getItem('totem_admin_token'),
+  adminToken: null,
   searchQuery: '',
   isCartOpen: false,
   selectedProductForCustomization: null,
@@ -180,16 +180,12 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   setAdminToken: (token) => {
-    if (token) {
-      localStorage.setItem('totem_admin_token', token);
-    } else {
-      localStorage.removeItem('totem_admin_token');
-    }
+    setAuthToken(token || '');
     set({ adminToken: token });
   },
 
   logoutAdmin: () => {
-    localStorage.removeItem('totem_admin_token');
+    setAuthToken('');
     set({ adminToken: null, view: 'welcome' });
   },
 }));

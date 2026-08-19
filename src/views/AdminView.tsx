@@ -429,13 +429,14 @@ export const AdminView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-zinc-400 mb-1">
-                PIN Accesso Amministratore (Default 0000)
+                PIN Accesso Amministratore (4 cifre)
               </label>
               <input
                 type="text"
                 maxLength={4}
-                value={settingsForm.admin_pin || '0000'}
+                value={settingsForm.admin_pin || ''}
                 onChange={(e) => setSettingsForm({ ...settingsForm, admin_pin: e.target.value })}
+                placeholder="Es. 1234"
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white focus:outline-none focus:border-rose-500 font-mono tracking-widest text-center"
               />
             </div>
@@ -531,7 +532,7 @@ export const AdminView: React.FC = () => {
               <div className="p-4 bg-zinc-950 border border-zinc-800/80 rounded-2xl flex flex-col justify-center">
                 <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-bold block">Credenziali Admin</span>
                 <p className="text-xs text-zinc-300 mt-1">
-                  PIN predefinito: <span className="font-mono text-white font-bold bg-zinc-800 px-1.5 py-0.5 rounded">{settings?.admin_pin || settingsForm.admin_pin || '0000'}</span>
+                  PIN impostato: <span className="font-mono text-white font-bold bg-zinc-800 px-1.5 py-0.5 rounded">{settings?.admin_pin || settingsForm.admin_pin || 'Non configurato'}</span>
                 </p>
               </div>
             </div>
