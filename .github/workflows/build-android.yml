@@ -1,4 +1,4 @@
-name: Build Android APK (GitHub Actions)
+name: Build Android APK (EAS Cloud & GitHub Actions)
 
 on:
   push:
@@ -7,37 +7,33 @@ on:
       - master
   workflow_dispatch:
     inputs:
-      build_mode:
-        description: "Modalità di compilazione APK"
-        required: true
-        default: "github-actions-native"
-        type: choice
-        options:
-          - "github-actions-native"
-          - "eas-cloud"
       profile:
-        description: "Profilo EAS (usato solo se si seleziona eas-cloud)"
-        required: false
+        description: "Profilo EAS Build"
+        required: true
         default: "preview"
         type: choice
         options:
           - preview
           - production
+      wait_for_completion:
+        description: "Attendi completamento build su expo.dev"
+        required: true
+        default: "true"
+        type: boolean
 
 concurrency:
-  group: android-build-${{ github.ref }}
+  group: eas-android-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-native:
-    name: Native Gradle APK Build (GitHub Actions)
-    if: ${{ github.event.inputs.build_mode == 'github-actions-native' || github.event.inputs.build_mode == '' || github.event_name == 'push' }}
+  build-eas:
+    name: EAS Cloud Build (expo.dev)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Validate kiosk api.impl
@@ -52,14 +48,7 @@ jobs:
           grep -q "export async function ensureLocalDbLoaded" src/api/api.impl.ts
           grep -q "export const adminLogin" src/api/api.impl.ts
           grep -q "export const createProduct" src/api/api.impl.ts
-          echo "api.impl.ts OK"
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: 'gradle'
+          echo "api.impl.ts validation OK"
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -67,94 +56,6 @@ jobs:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Rebuild embedded Remote Admin
-        run: node scripts/bundle-web.js
-
-      - name: Validate Remote Admin bundle
-        run: |
-          node <<'NODE'
-          const b = require('./src/utils/web_build.json');
-          if (!b['/remote/index.html']?.data?.includes('Pannello Gestione Totem')) {
-            throw new Error('Remote Admin bundle missing');
-          }
-          if (b['/remote/index.html']?.data?.includes("let token = 'local-admin-token'")) {
-            throw new Error('Fake-token login still in Remote Admin bundle');
-          }
-          console.log('Remote Admin bundle OK');
-          NODE
-
-      - name: Expo Prebuild Android
-        run: npx expo prebuild --platform android --clean
-
-      - name: Build APK via Gradle
-        run: |
-          cd android
-          chmod +x gradlew
-          echo "Building APK via Gradle..."
-          ./gradlew assembleRelease || ./gradlew assembleDebug
-
-      - name: Locate and copy APK
-        run: |
-          mkdir -p ../dist-apk
-          APK_FILE=$(find android/app/build/outputs/apk -name '*.apk' | head -n 1)
-          if [ -z "$APK_FILE" ]; then
-            echo "❌ No APK found in android/app/build/outputs/apk"
-            exit 1
-          fi
-          echo "Found APK at: $APK_FILE"
-          cp "$APK_FILE" ../dist-apk/Totem-QuickBite.apk
-          ls -lh ../dist-apk/
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Totem-QuickBite-Android-APK
-          path: dist-apk/Totem-QuickBite.apk
-          retention-days: 30
-
-      - name: Build Summary
-        run: |
-          echo "### 🚀 APK Generato con Successo su GitHub Actions!" >> $GITHUB_STEP_SUMMARY
-          echo "- **File**: \`Totem-QuickBite.apk\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dimensioni**: $(ls -lh ../dist-apk/Totem-QuickBite.apk | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
-          echo "- Scarica l'APK direttamente dalla sezione **Artifacts** di questa esecuzione GitHub Actions." >> $GITHUB_STEP_SUMMARY
-
-  build-eas:
-    name: EAS Cloud Build (Android APK)
-    if: ${{ github.event.inputs.build_mode == 'eas-cloud' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate kiosk api.impl
-        shell: bash
-        run: |
-          SIZE=$(wc -c < src/api/api.impl.ts)
-          echo "api.impl.ts size=$SIZE"
-          if [ "$SIZE" -lt 15000 ]; then
-            echo "api.impl.ts is truncated ($SIZE bytes). Need the full local DB implementation."
-            exit 1
-          fi
-          grep -q "export async function ensureLocalDbLoaded" src/api/api.impl.ts
-          grep -q "export const adminLogin" src/api/api.impl.ts
-          grep -q "export const createProduct" src/api/api.impl.ts
-          echo "api.impl.ts OK"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
 
       - name: Setup Expo & EAS CLI
         uses: expo/expo-github-action@v8
@@ -182,15 +83,27 @@ jobs:
               throw new Error(`Fake-token login still in bundle: ${path}`);
             }
           }
-          console.log('Remote Admin bundle OK');
+          console.log('Remote Admin bundle validation OK');
           NODE
 
-      - name: Build Android APK on EAS
+      - name: Start Build on EAS Cloud (expo.dev)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE="${{ github.event.inputs.profile || 'preview' }}"
-          eas build --platform android --profile "$PROFILE" --non-interactive --no-wait
+          WAIT="${{ github.event.inputs.wait_for_completion || 'true' }}"
+          
+          echo "Avvio compilazione Android su EAS Cloud (expo.dev) - Profilo: $PROFILE..."
+          
+          if [ "$WAIT" = "false" ]; then
+            eas build --platform android --profile "$PROFILE" --non-interactive --no-wait
+          else
+            eas build --platform android --profile "$PROFILE" --non-interactive
+          fi
 
-      - name: EAS Build Info
-        run: echo "EAS Android build submitted successfully."
+      - name: EAS Build Complete Summary
+        run: |
+          echo "### 📱 Build inviata ed eseguita su expo.dev!" >> $GITHUB_STEP_SUMMARY
+          echo "- **Account Expo**: \`cejohoy727s-team\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Progetto**: \`totem\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dashboard EAS**: [expo.dev/accounts/cejohoy727s-team/projects/totem/builds](https://expo.dev/accounts/cejohoy727s-team/projects/totem/builds)" >> $GITHUB_STEP_SUMMARY
