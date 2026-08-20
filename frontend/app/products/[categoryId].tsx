@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, Image, Platform, useWindowDimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getProductsByCategory, Product, ExtraAddition, ComboGroup, UiSection, ensureProductSections } from '@/src/api/api';
+import { getProductsByCategory, Product, ExtraAddition, ComboGroup, UiSection, ensureProductSections, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 
 export default function ProductsScreen() {
@@ -30,6 +30,18 @@ export default function ProductsScreen() {
 
   useEffect(() => {
     loadProducts();
+    const unsubscribe = subscribeToDbChanges((type) => {
+      if (type === 'products' || type === 'all') {
+        loadProducts();
+      }
+    });
+    const interval = setInterval(() => {
+      loadProducts();
+    }, 2500);
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, [categoryId]);
 
   const loadProducts = async () => {
@@ -42,7 +54,7 @@ export default function ProductsScreen() {
       if (idx !== null && idx >= 0 && list[idx]) {
         const cartItem = list[idx];
         const product = data.find((p) => p.id === cartItem.product_id);
-        if (product) {
+        if (product && product.available !== false) {
           openProductModalForEdit(product, cartItem);
         }
       }
@@ -54,6 +66,7 @@ export default function ProductsScreen() {
   };
 
   const openProductModal = (product: Product) => {
+    if (product.available === false) return;
     // Nuova aggiunta: non in modifica
     if (useCartStore.getState().editingIndex !== null) {
       setEditingIndex(null);
@@ -72,6 +85,7 @@ export default function ProductsScreen() {
   };
 
   const openProductModalForEdit = (product: Product, cartItem: any) => {
+    if (product.available === false) return;
     setSelectedProduct(product);
     setRemovedIngredients(cartItem.removed_ingredients || []);
     setAddedExtras(cartItem.added_extras || []);
@@ -261,39 +275,88 @@ export default function ProductsScreen() {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {products.map((product) => (
-          <TouchableOpacity
-            key={product.id}
-            testID={`product-${product.id}`}
-            style={styles.productCard}
-            onPress={() => openProductModal(product)}
-          >
-            {product.image ? (
-              <Image source={{ uri: product.image }} style={[styles.productImage, isLarge && styles.productImageLarge]} resizeMode="cover" />
-            ) : (
-              <View style={styles.productIcon}>
-                <Ionicons
-                  name="fast-food-outline"
-                  size={40}
-                  color="#FF6B6B"
-                />
-              </View>
-            )}
-            <View style={styles.productInfo}>
-              <View style={styles.productNameRow}>
-                <Text style={styles.productName}>{product.name}</Text>
-              </View>
-              <Text style={styles.productDescription} numberOfLines={2}>{product.description}</Text>
-              {product.allergens.length > 0 && (
-                <Text style={styles.allergens}>Allergeni: {product.allergens.join(', ')}</Text>
+        {products.map((product) => {
+          const isAvailable = product.available !== false;
+          return (
+            <TouchableOpacity
+              key={product.id}
+              testID={`product-${product.id}`}
+              style={[
+                styles.productCard,
+                !isAvailable && styles.productCardDisabled
+              ]}
+              onPress={() => {
+                if (isAvailable) {
+                  openProductModal(product);
+                }
+              }}
+              activeOpacity={isAvailable ? 0.7 : 1}
+              disabled={!isAvailable}
+            >
+              {product.image ? (
+                <View style={styles.productImageContainer}>
+                  <Image
+                    source={{ uri: product.image }}
+                    style={[
+                      styles.productImage,
+                      isLarge && styles.productImageLarge,
+                      !isAvailable && styles.productImageDisabled
+                    ]}
+                    resizeMode="cover"
+                  />
+                  {!isAvailable && (
+                    <View style={styles.soldOutImageOverlay}>
+                      <Text style={styles.soldOutImageOverlayText}>ESAURITO</Text>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <View style={[styles.productIcon, !isAvailable && styles.productIconDisabled]}>
+                  <Ionicons
+                    name={isAvailable ? "fast-food-outline" : "ban-outline"}
+                    size={40}
+                    color={isAvailable ? "#FF6B6B" : "#94A3B8"}
+                  />
+                </View>
               )}
-            </View>
-            <View style={styles.priceContainer}>
-              <Text style={styles.price}>€{product.price.toFixed(2)}</Text>
-              <Ionicons name="add-circle" size={32} color="#FF6B6B" />
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View style={styles.productInfo}>
+                <View style={styles.productNameRow}>
+                  <Text style={[styles.productName, !isAvailable && styles.productNameDisabled]}>
+                    {product.name}
+                  </Text>
+                  {!isAvailable && (
+                    <View style={styles.soldOutBadge}>
+                      <Text style={styles.soldOutBadgeText}>🔴 Esaurito</Text>
+                    </View>
+                  )}
+                </View>
+                <Text
+                  style={[styles.productDescription, !isAvailable && styles.productDescriptionDisabled]}
+                  numberOfLines={2}
+                >
+                  {product.description}
+                </Text>
+                {product.allergens && product.allergens.length > 0 && (
+                  <Text style={[styles.allergens, !isAvailable && styles.allergensDisabled]}>
+                    Allergeni: {product.allergens.join(', ')}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.priceContainer}>
+                <Text style={[styles.price, !isAvailable && styles.priceDisabled]}>
+                  €{product.price.toFixed(2)}
+                </Text>
+                {isAvailable ? (
+                  <Ionicons name="add-circle" size={32} color="#FF6B6B" />
+                ) : (
+                  <View style={styles.soldOutButton}>
+                    <Text style={styles.soldOutButtonText}>Esaurito</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       <Modal
@@ -657,4 +720,69 @@ const styles = StyleSheet.create({
   },
   addButtonDisabled: { backgroundColor: '#CCC' },
   addButtonText: { fontSize: 18, fontWeight: 'bold', color: 'white' },
+  productCardDisabled: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    borderWidth: 1,
+    opacity: 0.65,
+  },
+  productImageContainer: {
+    position: 'relative',
+  },
+  productImageDisabled: {
+    opacity: 0.5,
+  },
+  soldOutImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  soldOutImageOverlayText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textAlign: 'center',
+  },
+  productIconDisabled: {
+    backgroundColor: '#F1F5F9',
+  },
+  productNameDisabled: {
+    color: '#64748B',
+  },
+  productDescriptionDisabled: {
+    color: '#94A3B8',
+  },
+  allergensDisabled: {
+    color: '#CBD5E1',
+  },
+  priceDisabled: {
+    color: '#94A3B8',
+  },
+  soldOutBadge: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  soldOutBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#DC2626',
+  },
+  soldOutButton: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  soldOutButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#64748B',
+  },
 });

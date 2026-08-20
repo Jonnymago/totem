@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Image, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getCategories, Category } from '@/src/api/api';
+import { getCategories, Category, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 
 export default function CategoriesScreen() {
@@ -21,6 +21,18 @@ export default function CategoriesScreen() {
 
   useEffect(() => {
     loadCategories();
+    const unsubscribe = subscribeToDbChanges((type) => {
+      if (type === 'categories' || type === 'all') {
+        loadCategories();
+      }
+    });
+    const interval = setInterval(() => {
+      loadCategories();
+    }, 3000);
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   const loadCategories = async () => {
@@ -228,30 +240,32 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   iconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 76,
+    height: 76,
+    borderRadius: 16,
     backgroundColor: '#FFF5F5',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#FFE4E4',
   },
   iconContainerLarge: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 96,
+    height: 96,
+    borderRadius: 20,
     marginBottom: 12,
   },
   categoryImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 76,
+    height: 76,
+    borderRadius: 16,
   },
   categoryImageLarge: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 96,
+    height: 96,
+    borderRadius: 20,
   },
   categoryName: {
     fontSize: 26,

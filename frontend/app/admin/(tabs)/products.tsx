@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput, Alert, Image } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getGlobalGroups, GlobalOptionGroup, getAllProductsAdmin, createProduct, updateProduct, deleteProduct, getCategories, Product, Category, ComboGroup, UiSection, UiSectionType, ensureProductSections, syncLegacyFromSections, newSectionId } from '@/src/api/api';
+import { getGlobalGroups, GlobalOptionGroup, getAllProductsAdmin, createProduct, updateProduct, deleteProduct, getCategories, Product, Category, ComboGroup, UiSection, UiSectionType, ensureProductSections, syncLegacyFromSections, newSectionId, subscribeToDbChanges } from '@/src/api/api';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProductsManagementScreen() {
@@ -28,6 +28,12 @@ export default function ProductsManagementScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
+      const unsubscribe = subscribeToDbChanges((type) => {
+        if (type === 'products' || type === 'categories' || type === 'all') {
+          loadData();
+        }
+      });
+      return () => unsubscribe();
     }, [])
   );
 
@@ -351,6 +357,13 @@ export default function ProductsManagementScreen() {
         {products.map((product) => (
           <View key={product.id} style={styles.productCard}>
             <View style={styles.productHeader}>
+              {product.image ? (
+                <Image
+                  source={{ uri: product.image }}
+                  style={styles.productThumbnail}
+                  resizeMode="cover"
+                />
+              ) : null}
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
                 <Text style={styles.productCategory}>{getCategoryName(product.category_id)}</Text>
@@ -372,9 +385,20 @@ export default function ProductsManagementScreen() {
               </View>
             </View>
             <View style={styles.productFooter}>
-              <View style={[styles.statusBadge, { backgroundColor: product.available ? '#4CAF50' : '#9E9E9E' }]}>
-                <Text style={styles.statusText}>{product.available ? 'Disponibile' : 'Non disponibile'}</Text>
-              </View>
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    await updateProduct(product.id, { available: product.available === false ? true : false });
+                    loadData();
+                  } catch (e) {
+                    Alert.alert('Errore', 'Impossibile aggiornare la disponibilità');
+                  }
+                }}
+                activeOpacity={0.7}
+                style={[styles.statusBadge, { backgroundColor: product.available !== false ? '#4CAF50' : '#EF4444' }]}
+              >
+                <Text style={styles.statusText}>{product.available !== false ? '🟢 Disponibile' : '🔴 Esaurito'}</Text>
+              </TouchableOpacity>
               {product.product_type === 'combo' && (
                 <View style={[styles.statusBadge, { backgroundColor: '#FF6B6B', marginLeft: 8 }]}>
                   <Text style={styles.statusText}>COMBO</Text>
@@ -822,8 +846,18 @@ const styles = StyleSheet.create({
   },
   productHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  productThumbnail: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    marginRight: 12,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
   },
   productInfo: {
     flex: 1,

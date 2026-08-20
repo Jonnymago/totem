@@ -42,6 +42,9 @@ const aliases = [
   path.join(rootDir, 'public', 'remote', 'index.html'),
   path.join(rootDir, 'frontend', 'public', 'remote.html'),
   path.join(rootDir, 'frontend', 'public', 'admin.html'),
+  path.join(rootDir, 'frontend', 'public', 'remote', 'index.html'),
+  path.join(rootDir, 'frontend', 'public', 'admin', 'index.html'),
+  path.join(rootDir, 'frontend', 'backend', 'static', 'remote', 'index.html'),
   path.join(rootDir, 'backend', 'static', 'remote', 'index.html')
 ];
 for (const target of aliases) {

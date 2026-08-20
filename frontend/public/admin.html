@@ -187,6 +187,11 @@
 
   <!-- Main App Screen -->
   <div id="app-screen" style="display:none; flex-direction:column; min-height:100vh;">
+    <!-- Disconnected Alert Banner -->
+    <div id="disconnected-banner" style="display:none; background:#FEE2E2; border-bottom:1px solid #FCA5A5; color:#991B1B; padding:10px 16px; text-align:center; font-size:0.85rem; font-weight:700; position:sticky; top:0; z-index:999; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+      ⚠️ Totem non raggiungibile (app chiusa o disconnessa). I dati mostrati sono in cache. Riapri l'app sul Totem per sincronizzare.
+    </div>
+
     <!-- Top Header -->
     <header>
       <div>
@@ -198,7 +203,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         <span id="conn-status" class="badge badge-green">🟢 Connesso</span>
-        <button class="btn btn-outline btn-sm" onclick="loadAll()" title="Ricarica Dati">🔄</button>
+        <button class="btn btn-outline btn-sm" onclick="loadAll(true)" title="Ricarica Dati">🔄</button>
         <button class="btn btn-secondary btn-sm" onclick="doLogout()" title="Disconnetti">Esci</button>
       </div>
     </header>
@@ -460,6 +465,8 @@
     /* State */
     let authToken = '';
     try { authToken = localStorage.getItem('totem_sess') || ''; } catch (e) { authToken = ''; }
+    let isTotemConnected = true;
+    let heartbeatTimer = null;
     let settings = {};
     let categories = [];
     let products = [];
@@ -477,6 +484,38 @@
       'Sesamo', 'Solfiti', 'Lupini', 'Molluschi'
     ];
 
+    /* Connection Status Helper */
+    function setConnectionStatus(connected, reason = '') {
+      const badge = document.getElementById('conn-status');
+      const banner = document.getElementById('disconnected-banner');
+      if (connected) {
+        if (!isTotemConnected) {
+          isTotemConnected = true;
+          toast('Totem ricollegato! Dati sincronizzati.', '🟢');
+          loadAll(false);
+        }
+        isTotemConnected = true;
+        if (badge) {
+          badge.className = 'badge badge-green';
+          badge.innerHTML = '🟢 Connesso';
+          badge.title = 'Totem online e raggiungibile';
+        }
+        if (banner) {
+          banner.style.display = 'none';
+        }
+      } else {
+        isTotemConnected = false;
+        if (badge) {
+          badge.className = 'badge badge-red';
+          badge.innerHTML = '🔴 Disconnesso';
+          badge.title = reason || 'Totem non raggiungibile (app chiusa o disconnessa)';
+        }
+        if (banner) {
+          banner.style.display = 'block';
+        }
+      }
+    }
+
     /* Toast Helper */
     function toast(msg, icon = '✓') {
       const box = document.getElementById('toast-box');
@@ -493,28 +532,45 @@
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
-      const res = await fetch('/api' + path, { ...options, headers });
-      const raw = await res.text();
-      const looksHtml = !raw || raw.trim().charAt(0) === '<';
-      let parsed = null;
-      if (!looksHtml) {
-        try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
-      }
-      if (!res.ok) {
-        if (res.status === 401) {
-          const inApp = document.getElementById('app-screen') && document.getElementById('app-screen').style.display === 'flex';
-          if (!inApp) {
-            authToken = '';
-            try { localStorage.removeItem('totem_sess'); } catch (e) {}
-            showAuth();
-          }
-          throw new Error('Sessione scaduta o PIN errato');
+      const timeoutMs = options.timeout || 4000;
+      const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+      try {
+        const fetchOptions = { ...options, headers };
+        if (controller) fetchOptions.signal = controller.signal;
+        const res = await fetch('/api' + path, fetchOptions);
+        if (timeoutId) clearTimeout(timeoutId);
+
+        const raw = await res.text();
+        const looksHtml = !raw || raw.trim().charAt(0) === '<';
+        let parsed = null;
+        if (!looksHtml) {
+          try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
         }
-        const errText = (parsed && (parsed.detail || parsed.error)) || (looksHtml ? 'Risposta HTML dal Totem' : (raw || ('Errore HTTP ' + res.status)));
-        throw new Error(errText);
+        if (!res.ok) {
+          if (res.status === 401) {
+            const inApp = document.getElementById('app-screen') && document.getElementById('app-screen').style.display === 'flex';
+            if (!inApp) {
+              authToken = '';
+              try { localStorage.removeItem('totem_sess'); } catch (e) {}
+              showAuth();
+            }
+            throw new Error('Sessione scaduta o PIN errato');
+          }
+          const errText = (parsed && (parsed.detail || parsed.error)) || (looksHtml ? 'Risposta HTML dal Totem' : (raw || ('Errore HTTP ' + res.status)));
+          throw new Error(errText);
+        }
+        if (looksHtml || parsed == null) throw new Error('Risposta non JSON dal Totem');
+        setConnectionStatus(true);
+        return parsed;
+      } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (err.name === 'AbortError' || (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('network') || err.message.includes('aborted') || err.message.includes('Load failed')))) {
+          setConnectionStatus(false, 'Totem non raggiungibile (app chiusa o fuori rete)');
+        }
+        throw err;
       }
-      if (looksHtml || parsed == null) throw new Error('Risposta non JSON dal Totem');
-      return parsed;
     }
 
     /* Auth & Keypad Handling */
@@ -676,8 +732,29 @@
         ordersPollTimer = null;
       }
     }
+
+    function startHeartbeat() {
+      stopHeartbeat();
+      heartbeatTimer = setInterval(async () => {
+        if (!authToken) return;
+        try {
+          await api('/health', { timeout: 2500 });
+        } catch (e) {
+          // Handled inside api() by calling setConnectionStatus(false)
+        }
+      }, 3000);
+    }
+
+    function stopHeartbeat() {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
+    }
+
     function doLogout() {
       stopOrdersPolling();
+      stopHeartbeat();
       authToken = '';
       try { localStorage.removeItem('totem_sess'); } catch (e) {}
       showAuth();
@@ -694,38 +771,58 @@
         submitBtn.innerText = 'Accedi al Pannello';
       }
       stopOrdersPolling();
+      stopHeartbeat();
     }
 
     function showApp() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'flex';
-      loadAll();
+      loadAll(false);
       startOrdersPolling();
+      startHeartbeat();
     }
 
     /* Data Loader */
-    async function loadAll() {
+    async function loadAll(showToastOnError = false) {
       try {
         const [st, cats, prods, groups] = await Promise.all([
-          api('/admin/settings').catch(() => api('/settings').catch(() => ({}))),
-          api('/categories').catch(() => []),
-          api('/products').catch(() => []),
-          api('/global-groups').catch(() => [])
+          api('/admin/settings').catch(() => api('/settings')),
+          api('/categories'),
+          api('/products'),
+          api('/global-groups')
         ]);
-        settings = st || {};
-        categories = Array.isArray(cats) ? cats : [];
-        products = Array.isArray(prods) ? prods : [];
-        globalGroups = Array.isArray(groups) ? groups : [];
 
-        document.getElementById('header-restaurant-name').innerText = settings.restaurant_name || 'Totem QuickOrder';
-        document.getElementById('badge-products-count').innerText = products.length;
-        document.getElementById('badge-categories-count').innerText = categories.length;
-        document.getElementById('badge-groups-count').innerText = globalGroups.length;
+        if (st && typeof st === 'object' && Object.keys(st).length > 0) {
+          settings = st;
+          const nameEl = document.getElementById('header-restaurant-name');
+          if (nameEl) nameEl.innerText = settings.restaurant_name || 'Totem QuickOrder';
+        }
+        if (Array.isArray(cats)) {
+          categories = cats;
+          const catEl = document.getElementById('badge-categories-count');
+          if (catEl) catEl.innerText = categories.length;
+        }
+        if (Array.isArray(prods)) {
+          products = prods;
+          const prodEl = document.getElementById('badge-products-count');
+          if (prodEl) prodEl.innerText = products.length;
+        }
+        if (Array.isArray(groups)) {
+          globalGroups = groups;
+          const grpEl = document.getElementById('badge-groups-count');
+          if (grpEl) grpEl.innerText = globalGroups.length;
+        }
 
+        setConnectionStatus(true);
         renderCurrentTab();
       } catch (err) {
         console.error('loadAll error:', err);
-        toast('Errore caricamento dati: ' + err.message, '⚠️');
+        setConnectionStatus(false, 'Totem non raggiungibile');
+        if (showToastOnError) {
+          toast('Totem non raggiungibile (app chiusa o disconnessa)', '🔴');
+        }
+        // Retain cached products & UI elements in memory
+        renderCurrentTab();
       }
     }
 
@@ -865,6 +962,7 @@
         });
         const p = products.find(x => x.id === id);
         if (p) p.available = available;
+        renderProducts();
         toast(available ? 'Prodotto disponibile' : 'Prodotto segnato come esaurito');
       } catch (err) {
         toast('Errore: ' + err.message, '❌');
@@ -1772,19 +1870,24 @@
     async function loadOrders() {
       if (!authToken) return;
       try {
-        orders = await api('/admin/orders').catch(() => []);
-        if (!Array.isArray(orders)) orders = [];
-        
-        const countPending = orders.filter(o => o.status === 'pending').length;
-        const countPreparing = orders.filter(o => o.status === 'preparing').length;
-        const countReady = orders.filter(o => o.status === 'ready').length;
+        const ords = await api('/admin/orders');
+        if (Array.isArray(ords)) {
+          orders = ords;
+          const countPending = orders.filter(o => o.status === 'pending').length;
+          const countPreparing = orders.filter(o => o.status === 'preparing').length;
+          const countReady = orders.filter(o => o.status === 'ready').length;
 
-        document.getElementById('count-pending').innerText = countPending;
-        document.getElementById('count-preparing').innerText = countPreparing;
-        document.getElementById('count-ready').innerText = countReady;
-        document.getElementById('badge-orders-count').innerText = countPending + countPreparing;
+          const pEl = document.getElementById('count-pending');
+          if (pEl) pEl.innerText = countPending;
+          const prEl = document.getElementById('count-preparing');
+          if (prEl) prEl.innerText = countPreparing;
+          const rEl = document.getElementById('count-ready');
+          if (rEl) rEl.innerText = countReady;
+          const bEl = document.getElementById('badge-orders-count');
+          if (bEl) bEl.innerText = countPending + countPreparing;
 
-        renderOrdersList();
+          renderOrdersList();
+        }
       } catch (err) {
         console.error('loadOrders error:', err);
       }

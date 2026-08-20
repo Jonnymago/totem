@@ -360,6 +360,27 @@ export async function saveLocalDb() {
   }
 }
 
+export type DbChangeType = 'products' | 'categories' | 'settings' | 'orders' | 'all';
+export type DbChangeListener = (type: DbChangeType) => void;
+const dbChangeListeners = new Set<DbChangeListener>();
+
+export function subscribeToDbChanges(listener: DbChangeListener): () => void {
+  dbChangeListeners.add(listener);
+  return () => {
+    dbChangeListeners.delete(listener);
+  };
+}
+
+export function notifyDbChanged(type: DbChangeType = 'all') {
+  dbChangeListeners.forEach((fn) => {
+    try {
+      fn(type);
+    } catch (e) {
+      console.warn('[DbChange] listener error:', e);
+    }
+  });
+}
+
 export function getBackendBaseUrl(): string {
   const custom = localDb.settings?.custom_backend_url?.trim();
   if (custom) return custom.replace(/\/+$/, '');
@@ -579,6 +600,7 @@ export const updateSettings = async (data: Partial<Settings>): Promise<Settings>
   }
   await saveLocalDb();
   await persistPrinterSidecarFromSettings();
+  notifyDbChanged('settings');
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (!raw) throw new Error('Save verification failed');
@@ -618,6 +640,7 @@ export const createOrder = async (items: OrderItem[], totalPrice: number, orderT
   };
   localDb.orders = [ord, ...localDb.orders];
   await saveLocalDb();
+  notifyDbChanged('orders');
   return clone(ord);
 };
 
@@ -631,6 +654,7 @@ export const setAdminPin = async (pin: string): Promise<void> => {
   const next = (pin || '').trim();
   if (next) localDb.settings.admin_pin = next;
   await saveLocalDb();
+  notifyDbChanged('settings');
 };
 
 export const getOrders = async (): Promise<Order[]> => {
@@ -644,6 +668,7 @@ export const updateOrderStatus = async (id: string, status: string): Promise<Ord
   if (idx !== -1) {
     localDb.orders[idx] = { ...localDb.orders[idx], status };
     await saveLocalDb();
+    notifyDbChanged('orders');
     return clone(localDb.orders[idx]);
   }
   throw new Error('Order not found');
@@ -697,6 +722,15 @@ export const createProduct = async (product: Partial<Product>): Promise<Product>
     ? product.id.trim()
     : ('prod_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6));
 
+  let isAvail = true;
+  if (product.available !== undefined) {
+    if (typeof product.available === 'string') {
+      isAvail = (product.available as any) === 'true' || (product.available as any) === '1';
+    } else {
+      isAvail = Boolean(product.available);
+    }
+  }
+
   const newProduct: Product = {
     ...product,
     id: assignedId,
@@ -704,7 +738,7 @@ export const createProduct = async (product: Partial<Product>): Promise<Product>
     description: product.description || '',
     price: Number(product.price) || 0,
     category_id: product.category_id || '',
-    available: product.available ?? true,
+    available: isAvail,
     allergens: product.allergens || [],
     customization_options: product.customization_options || [],
     product_type: product.product_type || 'simple',
@@ -717,13 +751,23 @@ export const createProduct = async (product: Partial<Product>): Promise<Product>
   };
   localDb.products = [...localDb.products, newProduct];
   await saveLocalDb();
+  notifyDbChanged('products');
   return clone(newProduct);
 };
 
 export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product> => {
   await ensureLocalDbLoaded();
-  localDb.products = localDb.products.map(p => p.id === id ? { ...p, ...product, id } : p);
+  const normalized = { ...product };
+  if (normalized.available !== undefined) {
+    if (typeof normalized.available === 'string') {
+      normalized.available = (normalized.available as any) === 'true' || (normalized.available as any) === '1';
+    } else {
+      normalized.available = Boolean(normalized.available);
+    }
+  }
+  localDb.products = localDb.products.map(p => p.id === id ? { ...p, ...normalized, id } : p);
   await saveLocalDb();
+  notifyDbChanged('products');
   const updated = localDb.products.find(p => p.id === id);
   if (!updated) throw new Error('Product not found');
   return clone(updated);
@@ -733,6 +777,7 @@ export const deleteProduct = async (id: string): Promise<void> => {
   await ensureLocalDbLoaded();
   localDb.products = localDb.products.filter(p => p.id !== id);
   await saveLocalDb();
+  notifyDbChanged('products');
 };
 
 export const createCategory = async (cat: Partial<Category>): Promise<Category> => {
@@ -751,6 +796,7 @@ export const createCategory = async (cat: Partial<Category>): Promise<Category> 
   };
   localDb.categories = [...localDb.categories, newCat];
   await saveLocalDb();
+  notifyDbChanged('categories');
   return clone(newCat);
 };
 
@@ -758,6 +804,7 @@ export const updateCategory = async (id: string, cat: Partial<Category>): Promis
   await ensureLocalDbLoaded();
   localDb.categories = localDb.categories.map(c => c.id === id ? { ...c, ...cat, id } : c);
   await saveLocalDb();
+  notifyDbChanged('categories');
   const updated = localDb.categories.find(c => c.id === id);
   if (!updated) throw new Error('Category not found');
   return clone(updated);
@@ -767,6 +814,7 @@ export const deleteCategory = async (id: string): Promise<void> => {
   await ensureLocalDbLoaded();
   localDb.categories = localDb.categories.filter(c => c.id !== id);
   await saveLocalDb();
+  notifyDbChanged('categories');
 };
 
 export const resetOrderNumber = async (): Promise<void> => {
@@ -841,6 +889,7 @@ export const restoreLocalBackupSnapshot = async (snapshot: any): Promise<{ produ
     }));
   }
   await saveLocalDb();
+  notifyDbChanged('all');
   return {
     products: localDb.products.length,
     categories: localDb.categories.length,
@@ -874,6 +923,7 @@ export const createGlobalGroup = async (group: Partial<GlobalOptionGroup>): Prom
   };
   localDb.global_groups = [...(localDb.global_groups || []), newGroup];
   await saveLocalDb();
+  notifyDbChanged('products');
   return clone(newGroup);
 };
 
@@ -881,6 +931,7 @@ export const updateGlobalGroup = async (id: string, group: Partial<GlobalOptionG
   await ensureLocalDbLoaded();
   localDb.global_groups = (localDb.global_groups || []).map(g => g.id === id ? { ...g, ...group, id } : g);
   await saveLocalDb();
+  notifyDbChanged('products');
   const updated = (localDb.global_groups || []).find(g => g.id === id);
   if (!updated) throw new Error('Global group not found');
   return clone(updated);
@@ -890,6 +941,7 @@ export const deleteGlobalGroup = async (id: string): Promise<void> => {
   await ensureLocalDbLoaded();
   localDb.global_groups = (localDb.global_groups || []).filter(g => g.id !== id);
   await saveLocalDb();
+  notifyDbChanged('products');
 };
 
 export const scanBluetoothPrinters = async (): Promise<{ devices: any[]; settings: Settings }> => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput, Alert, Image, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getCategories, createCategory, updateCategory, deleteCategory, Category } from '@/src/api/api';
+import { getCategories, createCategory, updateCategory, deleteCategory, Category, subscribeToDbChanges } from '@/src/api/api';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function CategoriesManagementScreen() {
@@ -21,6 +21,12 @@ export default function CategoriesManagementScreen() {
   useFocusEffect(
     useCallback(() => {
       loadCategories();
+      const unsubscribe = subscribeToDbChanges((type) => {
+        if (type === 'categories' || type === 'all') {
+          loadCategories();
+        }
+      });
+      return () => unsubscribe();
     }, [])
   );
 
@@ -187,7 +193,15 @@ export default function CategoriesManagementScreen() {
         {categories.map((category) => (
           <View key={category.id} style={styles.categoryCard}>
             <View style={styles.categoryIconContainer}>
-              <Ionicons name={getCategoryIcon(category.name)} size={40} color="#FF6B6B" />
+              {category.image ? (
+                <Image
+                  source={{ uri: category.image }}
+                  style={styles.categoryThumbnail}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name={getCategoryIcon(category.name)} size={32} color="#FF6B6B" />
+              )}
             </View>
             <View style={styles.categoryInfo}>
               <Text style={styles.categoryName}>{category.name}</Text>
@@ -342,13 +356,21 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   categoryIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 12,
     backgroundColor: '#FFF5F5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#FFE4E4',
+  },
+  categoryThumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
   },
   categoryInfo: {
     flex: 1,

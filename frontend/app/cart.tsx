@@ -1,23 +1,67 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
-import { getProducts } from '@/src/api/api';
+import { getProducts, subscribeToDbChanges } from '@/src/api/api';
 
 export default function CartScreen() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, setEditingIndex } = useCartStore();
+  const [unavailableIds, setUnavailableIds] = useState<Set<string>>(new Set());
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
 
+  const checkAvailability = async () => {
+    try {
+      const allProds = await getProducts();
+      const unavail = new Set<string>();
+      allProds.forEach(p => {
+        if (p.available === false) {
+          unavail.add(p.id);
+        }
+      });
+      setUnavailableIds(unavail);
+    } catch (e) {
+      console.warn('Error checking product availability:', e);
+    }
+  };
+
+  useEffect(() => {
+    checkAvailability();
+    const unsubscribe = subscribeToDbChanges((type) => {
+      if (type === 'products' || type === 'all') {
+        checkAvailability();
+      }
+    });
+    const interval = setInterval(() => {
+      checkAvailability();
+    }, 3000);
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleCheckout = () => {
+    const hasSoldOut = items.some(it => unavailableIds.has(it.product_id));
+    if (hasSoldOut) {
+      Alert.alert(
+        'Prodotti Esauriti',
+        'Uno o più articoli nel tuo carrello non sono più disponibili. Rimuovili per poter procedere.'
+      );
+      return;
+    }
     if (items.length > 0) router.push('/order-confirmation');
   };
 
   const handleEdit = async (index: number) => {
     const item = items[index];
     if (!item) return;
+    if (unavailableIds.has(item.product_id)) {
+      Alert.alert('Prodotto Esaurito', 'Questo articolo è attualmente esaurito e non può essere modificato.');
+      return;
+    }
     try {
       setEditingIndex(index);
       const products = await getProducts();
@@ -123,33 +167,66 @@ export default function CartScreen() {
       ) : (
         <>
           <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-            {items.map((item, index) => (
-              <View key={index} style={styles.cartItem}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.product_name}</Text>
-                  <Text style={styles.itemPrice}>€{item.price.toFixed(2)} x {item.quantity}</Text>
-                  {renderItemDetails(item)}
-                </View>
-                <View style={styles.itemActions}>
-                  <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(index)}>
-                    <Ionicons name="create-outline" size={24} color="white" />
-                    <Text style={styles.editButtonText}>Modifica</Text>
-                  </TouchableOpacity>
-                  <View style={styles.quantityControls}>
-                    <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantity(index, item.quantity - 1)}>
-                      <Ionicons name="remove" size={24} color="white" />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityValue}>{item.quantity}</Text>
-                    <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantity(index, item.quantity + 1)}>
-                      <Ionicons name="add" size={24} color="white" />
+            {items.map((item, index) => {
+              const isItemSoldOut = unavailableIds.has(item.product_id);
+              return (
+                <View
+                  key={index}
+                  style={[
+                    styles.cartItem,
+                    isItemSoldOut && styles.cartItemSoldOut
+                  ]}
+                >
+                  <View style={styles.itemInfo}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <Text style={[styles.itemName, isItemSoldOut && styles.itemNameSoldOut]}>
+                        {item.product_name}
+                      </Text>
+                      {isItemSoldOut && (
+                        <View style={styles.soldOutBadge}>
+                          <Text style={styles.soldOutBadgeText}>🔴 Esaurito</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.itemPrice, isItemSoldOut && styles.itemPriceSoldOut]}>
+                      €{item.price.toFixed(2)} x {item.quantity}
+                    </Text>
+                    {isItemSoldOut && (
+                      <Text style={styles.tagSoldOutAlert}>
+                        ⚠️ Questo prodotto è esaurito. Rimuovilo dal carrello.
+                      </Text>
+                    )}
+                    {renderItemDetails(item)}
+                  </View>
+                  <View style={styles.itemActions}>
+                    {!isItemSoldOut ? (
+                      <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(index)}>
+                        <Ionicons name="create-outline" size={24} color="white" />
+                        <Text style={styles.editButtonText}>Modifica</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <View />
+                    )}
+                    <View style={styles.quantityControls}>
+                      <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantity(index, item.quantity - 1)}>
+                        <Ionicons name="remove" size={24} color="white" />
+                      </TouchableOpacity>
+                      <Text style={styles.quantityValue}>{item.quantity}</Text>
+                      <TouchableOpacity
+                        style={[styles.quantityBtn, isItemSoldOut && { backgroundColor: '#CCC' }]}
+                        disabled={isItemSoldOut}
+                        onPress={() => updateQuantity(index, item.quantity + 1)}
+                      >
+                        <Ionicons name="add" size={24} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(index)}>
+                      <Ionicons name="trash-outline" size={28} color="#FF4444" />
                     </TouchableOpacity>
                   </View>
-                  <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(index)}>
-                    <Ionicons name="trash-outline" size={28} color="#FF4444" />
-                  </TouchableOpacity>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </ScrollView>
           <View style={styles.footer}>
             <View style={styles.totalContainer}>
@@ -185,9 +262,36 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   scrollContent: { padding: 20, gap: 16, paddingBottom: 12 },
   cartItem: { backgroundColor: 'white', borderRadius: 16, padding: 16 },
+  cartItemSoldOut: { backgroundColor: '#F8FAFC', borderWidth: 1.5, borderColor: '#FCA5A5' },
   itemInfo: { marginBottom: 12 },
   itemName: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 4 },
+  itemNameSoldOut: { color: '#64748B' },
   itemPrice: { fontSize: 18, color: '#FF6B6B', fontWeight: '600', marginBottom: 6 },
+  itemPriceSoldOut: { color: '#94A3B8' },
+  soldOutBadge: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  soldOutBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#DC2626',
+  },
+  tagSoldOutAlert: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#DC2626',
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
   tagRemoved: { fontSize: 15, color: '#C62828', marginBottom: 2 },
   tagCustom: { fontSize: 15, color: '#1565C0', marginBottom: 2 },
   tagExtra: { fontSize: 15, color: '#2E7D32', marginBottom: 2 },
