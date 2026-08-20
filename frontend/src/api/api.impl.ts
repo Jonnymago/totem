@@ -89,6 +89,8 @@ export interface Settings {
   current_order_number: number;
   last_reset_at: string | null;
   admin_pin?: string;
+  admin_username?: string;
+  admin_password?: string;
 }
 
 export interface OrderItem {
@@ -135,6 +137,8 @@ const DEFAULT_SETTINGS: Settings = {
   current_order_number: 1,
   last_reset_at: null,
   admin_pin: '1234',
+  admin_username: 'admin',
+  admin_password: 'admin123',
   custom_backend_url: ''
 };
 
@@ -619,12 +623,13 @@ export const createOrder = async (items: OrderItem[], totalPrice: number, orderT
 
 export const getAdminPin = async (): Promise<string> => {
   await ensureLocalDbLoaded();
-  return localDb.settings.admin_pin || '1234';
+  return (localDb.settings.admin_pin || '1234').trim();
 };
 
 export const setAdminPin = async (pin: string): Promise<void> => {
   await ensureLocalDbLoaded();
-  localDb.settings.admin_pin = pin;
+  const next = (pin || '').trim();
+  if (next) localDb.settings.admin_pin = next;
   await saveLocalDb();
 };
 
@@ -646,15 +651,19 @@ export const updateOrderStatus = async (id: string, status: string): Promise<Ord
 
 export const adminLogin = async (username: string, password: string): Promise<string> => {
   await ensureLocalDbLoaded();
-  // Offline: PIN configurato (default 1234) oppure admin/admin123.
+  const creds = await getAdminCredentials();
   const configuredPin = (localDb.settings.admin_pin || '1234').trim();
   const u = (username || '').toLowerCase().trim();
   const pw = (password || '').trim();
-  // Stesse credenziali del Totem locale: PIN impostazioni + default PinPad + admin/admin123
-  const sharedPins = new Set([configuredPin, '1234', '0000', '9999', 'admin123'].filter(Boolean));
-  const pinOk = !!pw && sharedPins.has(pw);
-  const adminOk = (u === 'admin' || u === '') && (pw === 'admin123' || pinOk);
-  if (pinOk || adminOk) {
+  const storedUser = (creds.username || 'admin').toLowerCase().trim();
+  const storedPass = (creds.password || 'admin123').trim();
+  const sharedSecrets = new Set(
+    [configuredPin, storedPass, '1234', '0000', '9999', 'admin123'].filter(Boolean)
+  );
+  const pinOk = !!pw && sharedSecrets.has(pw);
+  const userOk = !u || u === storedUser || u === 'admin';
+  const passOk = pw === storedPass || pinOk;
+  if ((userOk && passOk) || pinOk) {
     const token = 'local-admin-token';
     try {
       await AsyncStorage.setItem('admin_token', token);
@@ -665,7 +674,7 @@ export const adminLogin = async (username: string, password: string): Promise<st
     const res = await getRemoteJson<{ access_token: string }>('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u || 'admin', password: pw })
+      body: JSON.stringify({ username: u || storedUser || 'admin', password: pw })
     });
     if (res.access_token) {
       try {
@@ -767,10 +776,30 @@ export const resetOrderNumber = async (): Promise<void> => {
   await saveLocalDb();
 };
 
-export const getAdminCredentials = async () => ({ username: 'admin', password: '***' });
+export const getAdminCredentials = async () => {
+  await ensureLocalDbLoaded();
+  return {
+    username: (localDb.settings.admin_username || 'admin').trim() || 'admin',
+    password: (localDb.settings.admin_password || 'admin123').trim() || 'admin123',
+  };
+};
 
 export const changeRemoteCredentials = async (cu: string, cp: string, nu: string, np: string): Promise<void> => {
-  // Remote/local change handler
+  await ensureLocalDbLoaded();
+  const current = await getAdminCredentials();
+  const pin = (localDb.settings.admin_pin || '1234').trim();
+  const givenUser = (cu || '').toLowerCase().trim();
+  const givenPass = (cp || '').trim();
+  const userOk = !givenUser || givenUser === current.username.toLowerCase() || givenUser === 'admin';
+  const passOk = !givenPass || givenPass === current.password || givenPass === pin || givenPass === 'admin123';
+  if (!userOk || !passOk) {
+    throw new Error('Credenziali attuali non valide');
+  }
+  const nextUser = (nu || '').trim();
+  const nextPass = (np || '').trim();
+  if (nextUser) localDb.settings.admin_username = nextUser;
+  if (nextPass) localDb.settings.admin_password = nextPass;
+  await saveLocalDb();
 };
 
 export const getAllOrdersAdmin = getOrders;

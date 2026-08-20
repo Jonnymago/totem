@@ -87,11 +87,33 @@ function isAuthed(authHeader: string, cookieHeader = '', queryToken = '') {
   return token === 'local-admin-token';
 }
 
+function normalizeApiPath(path: string) {
+  let p = (path || '/').split('?')[0].trim();
+  if (!p.startsWith('/')) p = '/' + p;
+  if (p.startsWith('/remote/api/')) p = p.slice('/remote'.length);
+  if (p.startsWith('/admin/api/')) p = p.slice('/admin'.length);
+  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+  return p;
+}
+
+function isLoginPath(path: string) {
+  const p = normalizeApiPath(path);
+  return (
+    p === '/api/admin/login' ||
+    p === '/api/admin/pin-login' ||
+    p === '/api/login' ||
+    p === '/api/pin-login' ||
+    p.endsWith('/pin-login') ||
+    p.endsWith('/login')
+  );
+}
+
 function isPublicApi(method: string, path: string) {
-  if (method === 'GET' && (path === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/global-groups' || path === '/api/orders/current')) return true;
-  if (method === 'GET' && path.startsWith('/api/products/category/')) return true;
-  if (method === 'POST' && (path === '/api/orders' || path === '/api/orders/number-only')) return true;
-  if (method === 'POST' && ['/api/admin/login', '/api/admin/pin-login', '/api/login', '/api/pin-login'].includes(path)) return true;
+  const p = normalizeApiPath(path);
+  if (method === 'GET' && (p === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/global-groups' || path === '/api/orders/current')) return true;
+  if (method === 'GET' && p.startsWith('/api/products/category/')) return true;
+  if (method === 'POST' && (p === '/api/orders' || p === '/api/orders/number-only')) return true;
+  if (method === 'POST' && isLoginPath(p)) return true;
   return false;
 }
 
@@ -380,9 +402,7 @@ function handleStaticFile(socket: any, rawPath: string) {
 
 async function handleApi(socket: any, method: string, rawPath: string, bodyText: string, authHeader = '', cookieHeader = '') {
   try {
-    let path = (rawPath || '/').split('?')[0].trim();
-    if (!path.startsWith('/')) path = '/' + path;
-    if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+    let path = normalizeApiPath(rawPath || '/');
     const query = ((rawPath || '').split('?')[1] || '');
     const queryToken = (query.match(/(?:^|&)token=([^&]+)/i) || [])[1] || '';
     let json: any = null;
@@ -396,14 +416,15 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
     }
 
     let result: any;
-    if (method === 'GET' && (path === '/api/health')) {
+    const p = normalizeApiPath(path);
+  if (method === 'GET' && (p === '/api/health')) {
       result = { status: 'ok', server: 'local', port: PORT, remote_admin: true };
     } else if (method === 'GET' && path === '/api/settings') {
       const settings = await api.getSettings();
       if (isAuthed(authHeader, cookieHeader, decodeURIComponent(queryToken))) {
         result = settings;
       } else {
-        const { admin_pin, ...publicSettings } = settings as any;
+        const { admin_pin, admin_password, admin_username, ...publicSettings } = settings as any;
         result = publicSettings;
       }
     } else if (method === 'GET' && path === '/api/admin/settings') {
@@ -422,7 +443,7 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       result = await api.getProducts();
     } else if (method === 'GET' && path === '/api/admin/products') {
       result = await api.getAllProductsAdmin();
-    } else if (method === 'GET' && path.startsWith('/api/products/category/')) {
+    } else if (method === 'GET' && p.startsWith('/api/products/category/')) {
       result = await api.getProductsByCategory(path.split('/').pop() || '');
     } else if (method === 'POST' && (path === '/api/admin/products' || path === '/api/products')) {
       result = await api.createProduct(json || {});
@@ -450,7 +471,7 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
     } else if (method === 'PUT' && (path.startsWith('/api/admin/orders/') || path.startsWith('/api/orders/')) && path.endsWith('/status')) {
       const parts = path.split('/');
       result = await api.updateOrderStatus(parts[parts.length - 2] || '', json?.status || 'pending');
-    } else if (method === 'POST' && ['/api/admin/login', '/api/admin/pin-login', '/api/login', '/api/pin-login'].includes(path)) {
+    } else if (method === 'POST' && isLoginPath(path)) {
       try {
         if (!json && bodyText && bodyText.includes('=')) {
           json = Object.fromEntries(bodyText.split('&').map((part) => {
@@ -459,8 +480,10 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
           }));
         }
         const qPin = decodeURIComponent((query.match(/(?:^|&)(?:pin|password)=([^&]+)/i) || [])[1] || '');
-        const pin = String(json?.pin || json?.password || json?.admin_pin || qPin || '').trim();
-        await api.adminLogin(String(json?.username || json?.user || 'admin'), pin);
+        const qUser = decodeURIComponent((query.match(/(?:^|&)(?:username|user)=([^&]+)/i) || [])[1] || '');
+        const username = String(json?.username || json?.user || qUser || 'admin').trim();
+        const secret = String(json?.pin || json?.password || json?.admin_pin || qPin || '').trim();
+        await api.adminLogin(username || 'admin', secret);
         const token = issueSessionToken();
         writeResponse(socket, '200 OK', 'application/json; charset=utf-8', JSON.stringify({ access_token: token, token, ok: true }), `Set-Cookie: totem_session=${token}; Path=/; SameSite=Lax\r\n`);
         return;
@@ -478,6 +501,14 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       result = { message: 'Backup restored successfully', count: restored };
     } else if (method === 'POST' && (path === '/api/admin/change-credentials' || path === '/api/change-credentials')) {
       if (json?.new_pin) await api.setAdminPin(String(json.new_pin).trim());
+      if (json?.new_username || json?.new_password) {
+        await api.changeRemoteCredentials(
+          String(json.current_username || json.username || ''),
+          String(json.current_password || json.password || json.pin || ''),
+          String(json.new_username || ''),
+          String(json.new_password || '')
+        );
+      }
       result = { message: 'Credentials updated successfully' };
     } else if ((method === 'POST' || method === 'GET') && ['/api/admin/scan-printers', '/api/scan-printers', '/api/admin/scan', '/api/scan', '/api/admin/bt/printers', '/api/bt/printers'].includes(path)) {
       const scanned = await api.scanBluetoothPrinters();
