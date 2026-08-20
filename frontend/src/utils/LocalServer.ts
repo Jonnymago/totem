@@ -120,7 +120,72 @@ function isPublicApi(method: string, path: string) {
   return false;
 }
 
-function findHeaderEnd(buf: Buffer): number {
+function decodeBytes(data: any): string {
+  if (!data) return '';
+  if (typeof data === 'string') {
+    if (/^\d+(?:\s*,\s*\d+)+$/.test(data.trim())) {
+      try {
+        const nums = data.split(',').map((n) => Number.parseInt(n.trim(), 10));
+        return String.fromCharCode.apply(null, nums);
+      } catch {}
+    }
+    return data;
+  }
+  if (Buffer.isBuffer(data)) {
+    return data.toString('utf8');
+  }
+  if (data instanceof Uint8Array) {
+    try {
+      if (typeof TextDecoder !== 'undefined') {
+        return new TextDecoder('utf-8').decode(data);
+      }
+    } catch {}
+    try {
+      return Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString('utf8');
+    } catch {}
+  }
+  if (Array.isArray(data)) {
+    try {
+      return String.fromCharCode.apply(null, data);
+    } catch {}
+    try {
+      return Buffer.from(data).toString('utf8');
+    } catch {}
+  }
+  try {
+    return Buffer.from(data).toString('utf8');
+  } catch {
+    return String(data);
+  }
+}
+
+function toBuffer(data: any): Buffer {
+  if (!data) return Buffer.alloc(0);
+  if (Buffer.isBuffer(data)) return data;
+  if (data instanceof Uint8Array) {
+    return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+  }
+  if (Array.isArray(data)) {
+    return Buffer.from(data);
+  }
+  if (typeof data === 'string') {
+    if (/^\d+(?:\s*,\s*\d+)+$/.test(data.trim())) {
+      try {
+        const nums = data.split(',').map((n) => Number.parseInt(n.trim(), 10));
+        return Buffer.from(nums);
+      } catch {}
+    }
+    return Buffer.from(data, 'utf8');
+  }
+  try {
+    return Buffer.from(data);
+  } catch {
+    return Buffer.alloc(0);
+  }
+}
+
+function findHeaderEnd(buf: Buffer | Uint8Array): number {
+  if (!buf || buf.length < 2) return -1;
   for (let i = 0; i <= buf.length - 4; i++) {
     if (buf[i] === 13 && buf[i + 1] === 10 && buf[i + 2] === 13 && buf[i + 3] === 10) return i;
   }
@@ -130,8 +195,18 @@ function findHeaderEnd(buf: Buffer): number {
   return -1;
 }
 
-function writeResponse(socket: any, status: string, contentType: string, body: Buffer | string, extra = '') {
-  const data = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf8');
+function writeResponse(socket: any, status: string, contentType: string, body: Buffer | string | Uint8Array, extra = '') {
+  let data: Buffer;
+  if (Buffer.isBuffer(body)) {
+    data = body;
+  } else if (body instanceof Uint8Array) {
+    data = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+  } else if (typeof body === 'string') {
+    data = Buffer.from(body, 'utf8');
+  } else {
+    data = Buffer.from(String(body || ''), 'utf8');
+  }
+
   const header =
     `HTTP/1.1 ${status}\r\n` +
     `Content-Type: ${contentType}\r\n` +
@@ -209,7 +284,8 @@ export function startLocalServer() {
       socket.on('data', async (data: any) => {
         if (requestHandled) return;
         try {
-          const chunk = Buffer.from(data);
+          const chunk = toBuffer(data);
+          if (!chunk || chunk.length === 0) return;
           totalBytes += chunk.length;
           if (totalBytes > MAX_HEADER_BYTES + MAX_BODY_BYTES) {
             requestHandled = true;
@@ -235,13 +311,25 @@ export function startLocalServer() {
               return;
             }
 
-            const headerText = combined.subarray(0, headerEnd).toString('utf8');
+            const headerBytes = combined.subarray(0, headerEnd);
+            const headerText = decodeBytes(headerBytes);
             const lines = headerText.split(/\r\n|\n/);
             const reqLines = lines.filter((l) => l.trim().length > 0);
             const firstLine = reqLines[0] || '';
             const parts = firstLine.split(/\s+/);
-            method = (parts[0] || 'GET').toUpperCase();
+            method = (parts[0] || 'GET').toUpperCase().trim();
             rawPath = parts[1] || '/';
+
+            // Multi-layer defense if method or path was malformed or comma-separated
+            if (!/^[A-Z]+$/.test(method)) {
+              const dec = decodeBytes(method);
+              const mParts = dec.trim().split(/\s+/);
+              method = (mParts[0] || 'GET').toUpperCase().trim();
+              if (mParts.length > 1 && (!rawPath || rawPath === '/')) {
+                rawPath = mParts[1] || '/';
+              }
+            }
+
             if (/^https?:\/\//i.test(rawPath)) {
               try {
                 const u = new URL(rawPath);
@@ -283,7 +371,8 @@ export function startLocalServer() {
           const requiredTotal = headerEnd + sepLen + contentLength;
           if (headerEnd !== -1 && combined.length >= requiredTotal) {
             requestHandled = true;
-            const body = combined.subarray(headerEnd + sepLen, requiredTotal).toString('utf8');
+            const bodyBytes = combined.subarray(headerEnd + sepLen, requiredTotal);
+            const body = decodeBytes(bodyBytes);
             const pathForRoute = (rawPath.split('?')[0] || '/').trim();
             const pathLower = pathForRoute.toLowerCase();
             const looksApi = pathLower.includes('api') || pathLower.includes('login') || pathLower.includes('pin-login') || pathLower.includes('auth');
@@ -340,9 +429,17 @@ function normaliseStaticPath(rawPath: string) {
 
 function handleStaticFile(socket: any, rawPath: string, method = 'GET') {
   try {
-    const cleanPath = normaliseStaticPath(rawPath);
-    const m = (method || 'GET').toUpperCase();
-    if (m !== 'GET' && m !== 'HEAD') {
+    let cleanPath = normaliseStaticPath(rawPath);
+    let m = (method || 'GET').toUpperCase().trim();
+    if (!/^[A-Z]+$/.test(m)) {
+      const dec = decodeBytes(m).trim();
+      const parts = dec.split(/\s+/);
+      m = (parts[0] || 'GET').toUpperCase().trim();
+      if (parts.length > 1 && (!cleanPath || cleanPath === '/')) {
+        cleanPath = normaliseStaticPath(parts[1] || '/');
+      }
+    }
+    if (m !== 'GET' && m !== 'HEAD' && m !== 'OPTIONS') {
       writeResponse(socket, '405 Method Not Allowed', 'application/json; charset=utf-8', JSON.stringify({ error: 'Method not allowed for static files', method: m, path: cleanPath }));
       return;
     }
