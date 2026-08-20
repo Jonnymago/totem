@@ -466,7 +466,9 @@
     let authToken = '';
     try { authToken = localStorage.getItem('totem_sess') || ''; } catch (e) { authToken = ''; }
     let isTotemConnected = true;
+    let consecutiveConnFailures = 0;
     let heartbeatTimer = null;
+    let isHeartbeatRunning = false;
     let settings = {};
     let categories = [];
     let products = [];
@@ -484,16 +486,12 @@
       'Sesamo', 'Solfiti', 'Lupini', 'Molluschi'
     ];
 
-    /* Connection Status Helper */
+    /* Connection Status Helper (No Cascading Loops) */
     function setConnectionStatus(connected, reason = '') {
       const badge = document.getElementById('conn-status');
       const banner = document.getElementById('disconnected-banner');
       if (connected) {
-        if (!isTotemConnected) {
-          isTotemConnected = true;
-          toast('Totem ricollegato! Dati sincronizzati.', '🟢');
-          loadAll(false);
-        }
+        consecutiveConnFailures = 0;
         isTotemConnected = true;
         if (badge) {
           badge.className = 'badge badge-green';
@@ -504,14 +502,17 @@
           banner.style.display = 'none';
         }
       } else {
-        isTotemConnected = false;
-        if (badge) {
-          badge.className = 'badge badge-red';
-          badge.innerHTML = '🔴 Disconnesso';
-          badge.title = reason || 'Totem non raggiungibile (app chiusa o disconnessa)';
-        }
-        if (banner) {
-          banner.style.display = 'block';
+        consecutiveConnFailures++;
+        if (consecutiveConnFailures >= 2) {
+          isTotemConnected = false;
+          if (badge) {
+            badge.className = 'badge badge-red';
+            badge.innerHTML = '🔴 Disconnesso';
+            badge.title = reason || 'Totem non raggiungibile (app chiusa o disconnessa)';
+          }
+          if (banner) {
+            banner.style.display = 'block';
+          }
         }
       }
     }
@@ -532,16 +533,9 @@
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
-      const timeoutMs = options.timeout || 4000;
-      const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
       try {
-        const fetchOptions = { ...options, headers };
-        if (controller) fetchOptions.signal = controller.signal;
-        const res = await fetch('/api' + path, fetchOptions);
-        if (timeoutId) clearTimeout(timeoutId);
-
+        const res = await fetch('/api' + path, { ...options, headers });
         const raw = await res.text();
         const looksHtml = !raw || raw.trim().charAt(0) === '<';
         let parsed = null;
@@ -565,9 +559,8 @@
         setConnectionStatus(true);
         return parsed;
       } catch (err) {
-        if (timeoutId) clearTimeout(timeoutId);
-        if (err.name === 'AbortError' || (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('network') || err.message.includes('aborted') || err.message.includes('Load failed')))) {
-          setConnectionStatus(false, 'Totem non raggiungibile (app chiusa o fuori rete)');
+        if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('network') || err.message.includes('Load failed'))) {
+          setConnectionStatus(false, 'Totem non raggiungibile');
         }
         throw err;
       }
@@ -736,13 +729,21 @@
     function startHeartbeat() {
       stopHeartbeat();
       heartbeatTimer = setInterval(async () => {
-        if (!authToken) return;
+        if (!authToken || isHeartbeatRunning) return;
+        isHeartbeatRunning = true;
         try {
-          await api('/health', { timeout: 2500 });
+          const res = await fetch('/api/health');
+          if (res.ok) {
+            setConnectionStatus(true);
+          } else {
+            setConnectionStatus(false, 'Risposta HTTP errata dal Totem');
+          }
         } catch (e) {
-          // Handled inside api() by calling setConnectionStatus(false)
+          setConnectionStatus(false, 'Totem non raggiungibile');
+        } finally {
+          isHeartbeatRunning = false;
         }
-      }, 3000);
+      }, 5000);
     }
 
     function stopHeartbeat() {
@@ -750,6 +751,7 @@
         clearInterval(heartbeatTimer);
         heartbeatTimer = null;
       }
+      isHeartbeatRunning = false;
     }
 
     function doLogout() {
@@ -955,18 +957,21 @@
     }
 
     async function toggleProductAvailability(id, available) {
+      const p = products.find(x => x.id === id);
+      const prevAvailable = p ? p.available : !available;
+      if (p) p.available = available;
+      renderProducts();
+
       try {
         await api(`/admin/products/${id}`, {
           method: 'PUT',
           body: JSON.stringify({ available })
         });
-        const p = products.find(x => x.id === id);
-        if (p) p.available = available;
-        renderProducts();
         toast(available ? 'Prodotto disponibile' : 'Prodotto segnato come esaurito');
       } catch (err) {
+        if (p) p.available = prevAvailable;
+        renderProducts();
         toast('Errore: ' + err.message, '❌');
-        await loadAll();
       }
     }
 
