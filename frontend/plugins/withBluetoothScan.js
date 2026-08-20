@@ -1,6 +1,7 @@
 /**
+ * Configura i permessi Bluetooth per Android (legacy e Android 12+ API 31+).
  * Imposta BLUETOOTH_SCAN con usesPermissionFlags="neverForLocation"
- * cosi la scansione dei dispositivi paired non dipende dal GPS.
+ * e garantisce la presenza di BLUETOOTH_CONNECT e permessi correlati.
  */
 const { withAndroidManifest } = require('@expo/config-plugins');
 
@@ -9,21 +10,28 @@ function withBluetoothScan(config) {
     const manifest = cfg.modResults.manifest;
     if (!manifest['uses-permission']) manifest['uses-permission'] = [];
     const perms = manifest['uses-permission'];
-    let found = false;
-    for (const p of perms) {
-      if (p.$ && p.$['android:name'] === 'android.permission.BLUETOOTH_SCAN') {
-        p.$['android:usesPermissionFlags'] = 'neverForLocation';
-        found = true;
+
+    const ensurePerm = (name, extraProps = {}) => {
+      let existing = perms.find((p) => p.$ && p.$['android:name'] === name);
+      if (existing) {
+        Object.assign(existing.$, extraProps);
+      } else {
+        perms.push({
+          $: {
+            'android:name': name,
+            ...extraProps,
+          },
+        });
       }
-    }
-    if (!found) {
-      perms.push({
-        $: {
-          'android:name': 'android.permission.BLUETOOTH_SCAN',
-          'android:usesPermissionFlags': 'neverForLocation',
-        },
-      });
-    }
+    };
+
+    ensurePerm('android.permission.BLUETOOTH');
+    ensurePerm('android.permission.BLUETOOTH_ADMIN');
+    ensurePerm('android.permission.BLUETOOTH_CONNECT');
+    ensurePerm('android.permission.BLUETOOTH_SCAN', { 'android:usesPermissionFlags': 'neverForLocation' });
+    ensurePerm('android.permission.ACCESS_FINE_LOCATION');
+    ensurePerm('android.permission.ACCESS_COARSE_LOCATION');
+
     return cfg;
   });
 }

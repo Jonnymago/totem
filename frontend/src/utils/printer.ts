@@ -1,5 +1,5 @@
 import * as Print from 'expo-print';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Order, Settings } from '@/src/api/api';
 
@@ -307,7 +307,6 @@ async function requestBtPerms(): Promise<boolean> {
     version: Platform.Version,
   });
   if (Platform.OS !== 'android') {
-    console.log('[printer][perms] Non-Android platform, permissions granted by default');
     return true;
   }
   try {
@@ -316,40 +315,30 @@ async function requestBtPerms(): Promise<boolean> {
         ? Platform.Version
         : parseInt(String(Platform.Version), 10);
     if (api >= 31) {
-      const r = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ]);
-      const connectGranted = r['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED;
-      const scanGranted = r['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED;
-      const locGranted = r['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED;
-      const finalResult = connectGranted || scanGranted || locGranted;
-      console.log('[printer][perms] Android >=31 permissions result:', {
-        api,
-        BLUETOOTH_CONNECT: r['android.permission.BLUETOOTH_CONNECT'],
-        BLUETOOTH_SCAN: r['android.permission.BLUETOOTH_SCAN'],
-        ACCESS_FINE_LOCATION: r['android.permission.ACCESS_FINE_LOCATION'],
-        connectGranted,
-        scanGranted,
-        locGranted,
-        finalResult,
-      });
-      return finalResult;
+      const hasConnect = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+      const hasScan = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN);
+      if (hasConnect && hasScan) {
+        return true;
+      }
+      const toRequest: any[] = [];
+      if (!hasConnect) toRequest.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+      if (!hasScan) toRequest.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN);
+
+      if (toRequest.length > 0) {
+        const r = await PermissionsAndroid.requestMultiple(toRequest);
+        console.log('[printer][perms] Android >=31 requestMultiple results:', r);
+      }
+      return true;
+    } else {
+      const hasLoc = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      if (!hasLoc) {
+        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      }
+      return true;
     }
-    const loc = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    );
-    const finalResult = loc === PermissionsAndroid.RESULTS.GRANTED;
-    console.log('[printer][perms] Android <31 location permission result:', {
-      api,
-      ACCESS_FINE_LOCATION: loc,
-      finalResult,
-    });
-    return finalResult;
   } catch (err) {
     console.warn('[printer][perms] Exception requesting Bluetooth permissions:', err);
-    return false;
+    return true;
   }
 }
 
@@ -360,12 +349,20 @@ async function getTP(): Promise<any | null> {
   if (thermalMod) return thermalMod;
   try {
     const mod = await import('react-native-thermal-printer-driver');
-    thermalMod = mod.default ?? (mod as any).ThermalPrinter ?? mod;
-    return thermalMod;
+    thermalMod = mod?.default?.ThermalPrinter ?? mod?.ThermalPrinter ?? mod?.default ?? mod;
+    if (thermalMod) return thermalMod;
   } catch (e) {
-    console.warn('thermal driver missing', e);
-    return null;
+    console.warn('thermal driver import missing', e);
   }
+  if (NativeModules && (NativeModules as any).ThermalPrinter) {
+    thermalMod = (NativeModules as any).ThermalPrinter;
+    return thermalMod;
+  }
+  if (NativeModules && (NativeModules as any).RNThermalPrinter) {
+    thermalMod = (NativeModules as any).RNThermalPrinter;
+    return thermalMod;
+  }
+  return thermalMod || null;
 }
 
 function mapDevice(d: any): PairedPrinter | null {
@@ -436,25 +433,37 @@ export async function getPairedPrinters(token?: string): Promise<PairedPrinter[]
   }
 
   console.log('[printer][scan] Entering Android/Native Bluetooth branch');
-  const permsOk = await requestBtPerms();
-  if (!permsOk) {
-    console.warn('[printer][scan] Bluetooth permissions rejected or unavailable');
-    return [];
-  }
+  await requestBtPerms();
 
   const TP = await getTP();
   if (!TP) {
     console.warn('[printer][scan] getTP() returned null (thermal printer driver module not available)');
     return [];
   }
-  if (!TP.scan) {
-    console.warn('[printer][scan] TP.scan is undefined or not supported on this driver instance');
-    return [];
-  }
 
   try {
     console.log('[printer][scan] Calling TP.scan()...');
-    const result = await TP.scan();
+    let result: any = null;
+    if (typeof TP.scan === 'function') {
+      try {
+        result = await TP.scan();
+      } catch (scanErr) {
+        console.warn('[printer][scan] TP.scan() failed, trying alternative methods:', scanErr);
+      }
+    }
+    if (!result && typeof TP.getPairedDevices === 'function') {
+      try {
+        const paired = await TP.getPairedDevices();
+        result = { paired: Array.isArray(paired) ? paired : [] };
+      } catch {}
+    }
+    if (!result && typeof TP.getDeviceList === 'function') {
+      try {
+        const devs = await TP.getDeviceList();
+        result = { paired: Array.isArray(devs) ? devs : [] };
+      } catch {}
+    }
+
     console.log('[printer][scan] TP.scan() raw result:', result);
     const pairedCount = result?.paired?.length || 0;
     const foundCount = result?.found?.length || 0;

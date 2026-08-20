@@ -110,7 +110,7 @@ function isLoginPath(path: string) {
 
 function isPublicApi(method: string, path: string) {
   const p = normalizeApiPath(path);
-  if (method === 'GET' && (p === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/global-groups' || path === '/api/orders/current')) return true;
+  if (method === 'GET' && (p === '/api/health' || p === '/api/settings' || p === '/api/categories' || p === '/api/products' || p === '/api/global-groups' || p === '/api/orders/current')) return true;
   if (method === 'GET' && p.startsWith('/api/products/category/')) return true;
   if (method === 'POST' && (p === '/api/orders' || p === '/api/orders/number-only')) return true;
   if (isLoginPath(p)) return true;
@@ -278,11 +278,21 @@ export function startLocalServer() {
 
     nextServer.on('error', (error: any) => {
       console.warn('LocalServer error:', error?.message || error);
-      if (server === nextServer) stopServerInstance();
+      starting = false;
+      try { nextServer.close(); } catch {}
+      try { nextServer.destroy?.(); } catch {}
+      if (server === nextServer) server = null;
       setTimeout(() => startLocalServer(), 1000);
     });
 
-    nextServer.listen({ port: PORT, host: '0.0.0.0' }, () => {
+    nextServer.on('close', () => {
+      if (server === nextServer) {
+        server = null;
+        starting = false;
+      }
+    });
+
+    nextServer.listen({ port: PORT, host: '0.0.0.0', reuseAddress: true }, () => {
       server = nextServer;
       starting = false;
       console.log(`Totem Embedded Server listening on port ${PORT}`);
@@ -424,9 +434,9 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
 
     let result: any;
     const p = normalizeApiPath(path);
-  if (method === 'GET' && (p === '/api/health')) {
+    if (method === 'GET' && (p === '/api/health')) {
       result = { status: 'ok', server: 'local', port: PORT, remote_admin: true };
-    } else if (method === 'GET' && path === '/api/settings') {
+    } else if (method === 'GET' && (p === '/api/settings' || p === '/api/admin/settings')) {
       const settings = await api.getSettings();
       if (isAuthed(authHeader, cookieHeader, decodeURIComponent(queryToken))) {
         result = settings;
@@ -434,51 +444,47 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
         const { admin_pin, admin_password, admin_username, ...publicSettings } = settings as any;
         result = publicSettings;
       }
-    } else if (method === 'GET' && path === '/api/admin/settings') {
-      result = await api.getSettings();
-    } else if ((method === 'PUT' || method === 'POST') && (path === '/api/admin/settings' || path === '/api/settings')) {
+    } else if ((method === 'PUT' || method === 'POST') && (p === '/api/admin/settings' || p === '/api/settings')) {
       result = await api.updateSettings(json || {});
-    } else if (method === 'GET' && (path === '/api/categories' || path === '/api/admin/categories')) {
+    } else if (method === 'GET' && (p === '/api/categories' || p === '/api/admin/categories')) {
       result = await api.getCategories();
-    } else if (method === 'POST' && (path === '/api/admin/categories' || path === '/api/categories')) {
+    } else if (method === 'POST' && (p === '/api/admin/categories' || p === '/api/categories')) {
       result = await api.createCategory(json || {});
-    } else if (method === 'PUT' && (path.startsWith('/api/admin/categories/') || path.startsWith('/api/categories/'))) {
-      result = await api.updateCategory(path.split('/').pop() || '', json || {});
-    } else if (method === 'DELETE' && (path.startsWith('/api/admin/categories/') || path.startsWith('/api/categories/'))) {
-      result = await api.deleteCategory(path.split('/').pop() || '');
-    } else if (method === 'GET' && path === '/api/products') {
-      result = await api.getProducts();
-    } else if (method === 'GET' && path === '/api/admin/products') {
+    } else if (method === 'PUT' && (p.startsWith('/api/admin/categories/') || p.startsWith('/api/categories/'))) {
+      result = await api.updateCategory(p.split('/').pop() || '', json || {});
+    } else if (method === 'DELETE' && (p.startsWith('/api/admin/categories/') || p.startsWith('/api/categories/'))) {
+      result = await api.deleteCategory(p.split('/').pop() || '');
+    } else if (method === 'GET' && (p === '/api/products' || p === '/api/admin/products')) {
       result = await api.getAllProductsAdmin();
     } else if (method === 'GET' && p.startsWith('/api/products/category/')) {
-      result = await api.getProductsByCategory(path.split('/').pop() || '');
-    } else if (method === 'POST' && (path === '/api/admin/products' || path === '/api/products')) {
+      result = await api.getProductsByCategory(p.split('/').pop() || '');
+    } else if (method === 'POST' && (p === '/api/admin/products' || p === '/api/products')) {
       result = await api.createProduct(json || {});
-    } else if (method === 'PUT' && (path.startsWith('/api/admin/products/') || path.startsWith('/api/products/'))) {
-      result = await api.updateProduct(path.split('/').pop() || '', json || {});
-    } else if (method === 'DELETE' && (path.startsWith('/api/admin/products/') || path.startsWith('/api/products/'))) {
-      result = await api.deleteProduct(path.split('/').pop() || '');
-    } else if (method === 'GET' && (path === '/api/global-groups' || path === '/api/admin/global-groups')) {
+    } else if (method === 'PUT' && (p.startsWith('/api/admin/products/') || p.startsWith('/api/products/'))) {
+      result = await api.updateProduct(p.split('/').pop() || '', json || {});
+    } else if (method === 'DELETE' && (p.startsWith('/api/admin/products/') || p.startsWith('/api/products/'))) {
+      result = await api.deleteProduct(p.split('/').pop() || '');
+    } else if (method === 'GET' && (p === '/api/global-groups' || p === '/api/admin/global-groups')) {
       result = await api.getGlobalGroups();
-    } else if (method === 'POST' && (path === '/api/admin/global-groups' || path === '/api/global-groups')) {
+    } else if (method === 'POST' && (p === '/api/admin/global-groups' || p === '/api/global-groups')) {
       result = await api.createGlobalGroup(json || {});
-    } else if (method === 'PUT' && (path.startsWith('/api/admin/global-groups/') || path.startsWith('/api/global-groups/'))) {
-      result = await api.updateGlobalGroup(path.split('/').pop() || '', json || {});
-    } else if (method === 'DELETE' && (path.startsWith('/api/admin/global-groups/') || path.startsWith('/api/global-groups/'))) {
-      result = await api.deleteGlobalGroup(path.split('/').pop() || '');
-    } else if (method === 'GET' && (path === '/api/orders' || path === '/api/admin/orders')) {
+    } else if (method === 'PUT' && (p.startsWith('/api/admin/global-groups/') || p.startsWith('/api/global-groups/'))) {
+      result = await api.updateGlobalGroup(p.split('/').pop() || '', json || {});
+    } else if (method === 'DELETE' && (p.startsWith('/api/admin/global-groups/') || p.startsWith('/api/global-groups/'))) {
+      result = await api.deleteGlobalGroup(p.split('/').pop() || '');
+    } else if (method === 'GET' && (p === '/api/orders' || p === '/api/admin/orders')) {
       result = await api.getAllOrdersAdmin();
-    } else if (method === 'GET' && path === '/api/orders/current') {
+    } else if (method === 'GET' && p === '/api/orders/current') {
       const all = await api.getOrders();
       result = all.filter((o) => o.status !== 'completed' && o.status !== 'cancelled');
-    } else if (method === 'POST' && path === '/api/orders') {
+    } else if (method === 'POST' && p === '/api/orders') {
       result = await api.createOrder(json?.items || [], json?.total_price || 0, json?.order_type || 'totem');
-    } else if (method === 'POST' && path === '/api/orders/number-only') {
+    } else if (method === 'POST' && p === '/api/orders/number-only') {
       result = await api.createNumberOnlyOrder();
-    } else if (method === 'PUT' && (path.startsWith('/api/admin/orders/') || path.startsWith('/api/orders/')) && path.endsWith('/status')) {
-      const parts = path.split('/');
+    } else if (method === 'PUT' && (p.startsWith('/api/admin/orders/') || p.startsWith('/api/orders/')) && p.endsWith('/status')) {
+      const parts = p.split('/');
       result = await api.updateOrderStatus(parts[parts.length - 2] || '', json?.status || 'pending');
-    } else if (isLoginPath(path) || (method === 'POST' && json && (json.pin || json.password))) {
+    } else if (isLoginPath(p) || (method === 'POST' && json && (json.pin || json.password))) {
       try {
         if (!json && bodyText && bodyText.includes('=')) {
           json = Object.fromEntries(bodyText.split('&').map((part) => {
@@ -498,15 +504,15 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
         writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: e?.message || 'PIN non valido' }));
         return;
       }
-    } else if (method === 'POST' && (path === '/api/admin/reset-order-number' || path === '/api/reset-order-number')) {
+    } else if (method === 'POST' && (p === '/api/admin/reset-order-number' || p === '/api/reset-order-number')) {
       await api.resetOrderNumber();
       result = { message: 'Order number reset successfully' };
-    } else if (method === 'GET' && (path === '/api/admin/backup' || path === '/api/backup')) {
+    } else if (method === 'GET' && (p === '/api/admin/backup' || p === '/api/backup')) {
       result = await api.getLocalBackupSnapshot();
-    } else if (method === 'POST' && (path === '/api/admin/sync-backup' || path === '/api/sync-backup' || path === '/api/admin/backup' || path === '/api/backup')) {
+    } else if (method === 'POST' && (p === '/api/admin/sync-backup' || p === '/api/sync-backup' || p === '/api/admin/backup' || p === '/api/backup')) {
       const restored = await api.restoreLocalBackupSnapshot(json || {});
       result = { message: 'Backup restored successfully', count: restored };
-    } else if (method === 'POST' && (path === '/api/admin/change-credentials' || path === '/api/change-credentials')) {
+    } else if (method === 'POST' && (p === '/api/admin/change-credentials' || p === '/api/change-credentials')) {
       if (json?.new_pin) await api.setAdminPin(String(json.new_pin).trim());
       if (json?.new_username || json?.new_password) {
         await api.changeRemoteCredentials(
@@ -517,15 +523,15 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
         );
       }
       result = { message: 'Credentials updated successfully' };
-    } else if ((method === 'POST' || method === 'GET') && ['/api/admin/scan-printers', '/api/scan-printers', '/api/admin/scan', '/api/scan', '/api/admin/bt/printers', '/api/bt/printers'].includes(path)) {
+    } else if ((method === 'POST' || method === 'GET') && ['/api/admin/scan-printers', '/api/scan-printers', '/api/admin/scan', '/api/scan', '/api/admin/bt/printers', '/api/bt/printers'].includes(p)) {
       const scanned = await api.scanBluetoothPrinters();
       result = { ...scanned, printers: scanned?.devices || [] };
-    } else if (method === 'POST' && (path === '/api/admin/test-print' || path === '/api/test-print')) {
+    } else if (method === 'POST' && (p === '/api/admin/test-print' || p === '/api/test-print')) {
       result = await api.testPrintHardware(json?.type || 'courtesy');
-    } else if (method === 'POST' && (path === '/api/admin/seed' || path === '/api/seed')) {
+    } else if (method === 'POST' && (p === '/api/admin/seed' || p === '/api/seed')) {
       result = { message: 'Seed restored successfully' };
     } else {
-      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Endpoint not found', path }));
+      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Endpoint not found', path: p }));
       return;
     }
 

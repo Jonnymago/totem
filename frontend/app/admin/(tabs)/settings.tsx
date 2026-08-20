@@ -166,18 +166,9 @@ export default function SettingsScreen() {
       if (manual) setIpDetecting(true);
       const ip = await Network.getIpAddressAsync();
       if (ip && ip !== '0.0.0.0' && !ip.startsWith('0.') && ip !== '127.0.0.1' && ip !== 'localhost') {
-        if (manual) {
-          setLocalIp(ip);
-          await AsyncStorage.setItem('totem_server_ip', ip);
-          await AsyncStorage.setItem('totem_local_ip', ip);
-          return ip;
-        }
-        const saved = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
-        if (!saved || saved === '192.168.1.9' || saved === '0.0.0.0') {
-          setLocalIp(ip);
-          await AsyncStorage.setItem('totem_server_ip', ip);
-          await AsyncStorage.setItem('totem_local_ip', ip);
-        }
+        setLocalIp(ip);
+        await AsyncStorage.setItem('totem_server_ip', ip);
+        await AsyncStorage.setItem('totem_local_ip', ip);
         return ip;
       }
     } catch (e) {
@@ -238,9 +229,16 @@ export default function SettingsScreen() {
       const combinedKnown = Array.from(new Set([...baseKnown, ...extraKnown, courtesyTarget, kitchenTarget].filter(Boolean)));
       setKnownPrinters(combinedKnown);
 
-      const savedIp = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
-      if (savedIp && savedIp !== '0.0.0.0' && !savedIp.startsWith('0.') && savedIp !== '127.0.0.1') {
-        setLocalIp(savedIp);
+      const liveIp = await Network.getIpAddressAsync().catch(() => null);
+      if (liveIp && liveIp !== '0.0.0.0' && !liveIp.startsWith('0.') && liveIp !== '127.0.0.1' && liveIp !== 'localhost') {
+        setLocalIp(liveIp);
+        await AsyncStorage.setItem('totem_server_ip', liveIp);
+        await AsyncStorage.setItem('totem_local_ip', liveIp);
+      } else {
+        const savedIp = (await AsyncStorage.getItem('totem_server_ip')) || (await AsyncStorage.getItem('totem_local_ip'));
+        if (savedIp && savedIp !== '0.0.0.0' && !savedIp.startsWith('0.') && savedIp !== '127.0.0.1') {
+          setLocalIp(savedIp);
+        }
       }
       setOrderResetMode((data.order_reset_mode as any) || 'daily');
       setResetTime(data.reset_time || '06:00');
