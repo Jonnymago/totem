@@ -173,9 +173,7 @@ if (distPath) {
   setRemote('/admin.html');
 }
 
-if (!result['/index.html']) {
-  result['/index.html'] = { type: 'text', data: remoteHtml, ext: '.html' };
-}
+setRemote('/index.html');
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(result));

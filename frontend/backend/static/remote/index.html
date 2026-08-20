@@ -443,6 +443,7 @@
   <script>
     /* State */
     let authToken = '';
+    try { authToken = localStorage.getItem('totem_sess') || ''; } catch (e) { authToken = ''; }
     let settings = {};
     let categories = [];
     let products = [];
@@ -479,9 +480,12 @@
       const res = await fetch('/api' + path, { ...options, headers });
       if (!res.ok) {
         if (res.status === 401) {
-          
-          authToken = '';
-          showAuth();
+          const inApp = document.getElementById('app-screen') && document.getElementById('app-screen').style.display === 'flex';
+          if (!inApp) {
+            authToken = '';
+            try { localStorage.removeItem('totem_sess'); } catch (e) {}
+            showAuth();
+          }
           throw new Error('Sessione scaduta o PIN errato');
         }
         let errText = await res.text();
@@ -554,14 +558,26 @@
         submitBtn.innerText = 'Accesso...';
       }
       try {
-        const res = await fetch('/api/admin/pin-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pin })
-        });
-        if (!res.ok) {
-          let detail = 'Credenziali non valide';
-          try { const err = await res.json(); detail = err.detail || detail; } catch (e) {}
+        const payload = JSON.stringify({ pin: pin, password: pin, username: 'admin' });
+        const endpoints = ['/api/admin/pin-login', '/api/admin/login', '/api/pin-login', '/api/login'];
+        let loginRes = null;
+        let lastDetail = 'Credenziali non valide';
+        for (let i = 0; i < endpoints.length; i++) {
+          try {
+            const res = await fetch(endpoints[i], {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: payload
+            });
+            if (res.ok) { loginRes = res; break; }
+            try { const err = await res.json(); lastDetail = err.detail || err.error || lastDetail; } catch (e) {}
+          } catch (e) {
+            lastDetail = (e && e.message) ? e.message : 'Rete non disponibile. Riprova.';
+          }
+        }
+        const res = loginRes;
+        if (!res || !res.ok) {
+          const detail = lastDetail || 'Credenziali non valide';
           showLoginError(detail);
           toast(detail, '❌');
           return;
@@ -573,6 +589,7 @@
           return;
         }
         authToken = token;
+        try { localStorage.setItem('totem_sess', token); } catch (e) {}
         toast('Accesso effettuato!');
         showApp();
       } catch (err) {
@@ -596,6 +613,7 @@
     function doLogout() {
       stopOrdersPolling();
       authToken = '';
+      try { localStorage.removeItem('totem_sess'); } catch (e) {}
       showAuth();
       toast('Disconnesso');
     }
@@ -623,7 +641,7 @@
     async function loadAll() {
       try {
         const [st, cats, prods, groups] = await Promise.all([
-          api('/settings').catch(() => ({})),
+          api('/admin/settings').catch(() => api('/settings').catch(() => ({}))),
           api('/categories').catch(() => []),
           api('/products').catch(() => []),
           api('/global-groups').catch(() => [])
@@ -660,11 +678,16 @@
     }
 
     function renderCurrentTab() {
-      if (currentTab === 'products') renderProducts();
-      else if (currentTab === 'categories') renderCategories();
-      else if (currentTab === 'groups') renderGroups();
-      else if (currentTab === 'orders') loadOrders();
-      else if (currentTab === 'settings') renderSettings();
+      try {
+        if (currentTab === 'products') renderProducts();
+        else if (currentTab === 'categories') renderCategories();
+        else if (currentTab === 'groups') renderGroups();
+        else if (currentTab === 'orders') loadOrders();
+        else if (currentTab === 'settings') renderSettings();
+      } catch (err) {
+        console.error('renderCurrentTab error:', err);
+        toast('Errore visualizzazione: ' + (err && err.message ? err.message : err), '⚠️');
+      }
     }
 
     /* ========================================================
@@ -730,7 +753,7 @@
                   ${cat ? `<span class="badge badge-gray">${escapeHtml(cat.name)}</span>` : ''}
                 </div>
                 <div style="font-weight:800; font-size:1rem; color:var(--primary); white-space:nowrap; margin-left:8px;">
-                  € ${(p.price || 0).toFixed(2)}
+                  € ${money(p.price)}
                 </div>
               </div>
 
@@ -1680,7 +1703,8 @@
     /* ========================================================
        ORDERS & KITCHEN TAB LOGIC
        ======================================================== */
-    async function loadOrders() {\n      if (!authToken) return;
+    async function loadOrders() {
+      if (!authToken) return;
       try {
         orders = await api('/admin/orders').catch(() => []);
         if (!Array.isArray(orders)) orders = [];
@@ -1756,7 +1780,7 @@
                 <div style="margin-bottom:6px;">
                   <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.9rem;">
                     <span>${it.quantity}x ${escapeHtml(it.product_name)}</span>
-                    <span style="color:var(--text-muted); font-size:0.85rem;">€ ${((it.price || 0) * (it.quantity || 1)).toFixed(2)}</span>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">€ ${money((Number(it.price)||0)*(Number(it.quantity)||1))}</span>
                   </div>
 
                   <!-- Removed Ingredients -->
@@ -1786,7 +1810,7 @@
             <!-- Total and Actions -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:10px;">
               <div style="font-weight:800; font-size:1rem; color:var(--primary);">
-                Totale: € ${(ord.total_price || 0).toFixed(2)}
+                Totale: € ${money(ord.total_price)}
               </div>
               <div style="display:flex; gap:6px;">
                 ${ord.status === 'pending' ? `
@@ -1836,7 +1860,7 @@
       document.getElementById('set-auto-kitchen').checked = settings.auto_print_kitchen !== false;
       document.getElementById('set-reset-mode').value = settings.order_reset_mode || 'daily';
       document.getElementById('set-reset-time').value = settings.reset_time || '06:00';
-      document.getElementById('set-pin').value = settings.admin_pin || '0000';
+      document.getElementById('set-pin').value = settings.admin_pin || '';
 
       const localIp = localStorage.getItem('totem_local_ip') || window.location.hostname || '192.168.1.9';
       document.getElementById('set-ip').value = localIp;
@@ -1957,7 +1981,7 @@
           known_printers: settings.known_printers || [],
           order_reset_mode: document.getElementById('set-reset-mode')?.value || settings.order_reset_mode || 'daily',
           reset_time: document.getElementById('set-reset-time')?.value || settings.reset_time || '06:00',
-          admin_pin: document.getElementById('set-pin')?.value || settings.admin_pin || '0000'
+          admin_pin: (document.getElementById('set-pin')?.value || '').trim() || settings.admin_pin || undefined
         };
         await api('/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
         toast(msg);
@@ -2121,7 +2145,7 @@
     function parseDataUri(value) {
       if (!value || typeof value !== 'string') return null;
       const trimmed = value.trim();
-      const m = trimmed.match(/^data:([^;]+);base64,(.+)$/s);
+      const m = trimmed.match(/^data:([^;]+);base64,([\s\S]+)$/);
       if (m) {
         const mime = m[1].toLowerCase();
         let ext = 'png';
@@ -2374,7 +2398,7 @@
         known_printers: settings.known_printers || [],
         order_reset_mode: document.getElementById('set-reset-mode').value,
         reset_time: document.getElementById('set-reset-time').value.trim() || '06:00',
-        admin_pin: document.getElementById('set-pin').value.trim() || '0000'
+        admin_pin: (document.getElementById('set-pin').value || '').trim()
       };
 
       try {
@@ -2398,6 +2422,11 @@
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
       });
+    }
+
+    function money(v) {
+      const n = Number(v);
+      return (Number.isFinite(n) ? n : 0).toFixed(2);
     }
 
     function escapeHtml(text) {
@@ -2425,17 +2454,20 @@
     // Auto-login check on startup
     function init() {
       try {
-        if (authToken) {
-          showApp();
-        } else {
-          showAuth();
-        }
+        showAuth();
+        if (!authToken) return;
+        fetch('/api/admin/settings', { headers: { Authorization: 'Bearer ' + authToken, Accept: 'application/json' } })
+          .then(function(r) { if (r && r.ok) showApp(); else { authToken = ''; try { localStorage.removeItem('totem_sess'); } catch (e) {} } })
+          .catch(function() {});
       } catch (err) {
         console.error('Init error:', err);
         showAuth();
       }
 
       // Pre-load public settings to display restaurant name on login screen & header
+      fetch('/api/health').then(r => { if (!r.ok) throw new Error('health'); }).catch(() => {
+          showLoginError('Totem non raggiungibile. Apri http://IP_TOTEM:3000/remote/ sulla stessa Wi-Fi.');
+        });
       fetch('/api/settings')
         .then(r => r.json())
         .then(s => {

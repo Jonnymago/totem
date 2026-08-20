@@ -678,11 +678,16 @@
     }
 
     function renderCurrentTab() {
-      if (currentTab === 'products') renderProducts();
-      else if (currentTab === 'categories') renderCategories();
-      else if (currentTab === 'groups') renderGroups();
-      else if (currentTab === 'orders') loadOrders();
-      else if (currentTab === 'settings') renderSettings();
+      try {
+        if (currentTab === 'products') renderProducts();
+        else if (currentTab === 'categories') renderCategories();
+        else if (currentTab === 'groups') renderGroups();
+        else if (currentTab === 'orders') loadOrders();
+        else if (currentTab === 'settings') renderSettings();
+      } catch (err) {
+        console.error('renderCurrentTab error:', err);
+        toast('Errore visualizzazione: ' + (err && err.message ? err.message : err), '⚠️');
+      }
     }
 
     /* ========================================================
@@ -748,7 +753,7 @@
                   ${cat ? `<span class="badge badge-gray">${escapeHtml(cat.name)}</span>` : ''}
                 </div>
                 <div style="font-weight:800; font-size:1rem; color:var(--primary); white-space:nowrap; margin-left:8px;">
-                  € ${(p.price || 0).toFixed(2)}
+                  € ${money(p.price)}
                 </div>
               </div>
 
@@ -1775,7 +1780,7 @@
                 <div style="margin-bottom:6px;">
                   <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.9rem;">
                     <span>${it.quantity}x ${escapeHtml(it.product_name)}</span>
-                    <span style="color:var(--text-muted); font-size:0.85rem;">€ ${((it.price || 0) * (it.quantity || 1)).toFixed(2)}</span>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">€ ${money((Number(it.price)||0)*(Number(it.quantity)||1))}</span>
                   </div>
 
                   <!-- Removed Ingredients -->
@@ -1805,7 +1810,7 @@
             <!-- Total and Actions -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:10px;">
               <div style="font-weight:800; font-size:1rem; color:var(--primary);">
-                Totale: € ${(ord.total_price || 0).toFixed(2)}
+                Totale: € ${money(ord.total_price)}
               </div>
               <div style="display:flex; gap:6px;">
                 ${ord.status === 'pending' ? `
@@ -2140,7 +2145,7 @@
     function parseDataUri(value) {
       if (!value || typeof value !== 'string') return null;
       const trimmed = value.trim();
-      const m = trimmed.match(/^data:([^;]+);base64,(.+)$/s);
+      const m = trimmed.match(/^data:([^;]+);base64,([\s\S]+)$/);
       if (m) {
         const mime = m[1].toLowerCase();
         let ext = 'png';
@@ -2419,6 +2424,11 @@
       });
     }
 
+    function money(v) {
+      const n = Number(v);
+      return (Number.isFinite(n) ? n : 0).toFixed(2);
+    }
+
     function escapeHtml(text) {
       if (!text) return '';
       return String(text)
@@ -2444,11 +2454,11 @@
     // Auto-login check on startup
     function init() {
       try {
-        if (authToken) {
-          showApp();
-        } else {
-          showAuth();
-        }
+        showAuth();
+        if (!authToken) return;
+        fetch('/api/admin/settings', { headers: { Authorization: 'Bearer ' + authToken, Accept: 'application/json' } })
+          .then(function(r) { if (r && r.ok) showApp(); else { authToken = ''; try { localStorage.removeItem('totem_sess'); } catch (e) {} } })
+          .catch(function() {});
       } catch (err) {
         console.error('Init error:', err);
         showAuth();

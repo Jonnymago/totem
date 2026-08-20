@@ -279,7 +279,7 @@ function handleStaticFile(socket: any, rawPath: string) {
 
     // Root and client routes
     if (!file && ['', '/', '/totem', '/kitchen', '/categories', '/take-number', '/products', '/cart'].includes(cleanPath)) {
-      file = wb['/index.html'] || wb['/remote/index.html'] || wb['/remote.html'];
+      file = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/admin.html'] || wb['/index.html'];
     }
 
     // Stripped path for subdirectories
@@ -314,7 +314,15 @@ function handleStaticFile(socket: any, rawPath: string) {
       if (cleanPath.startsWith('/remote') || cleanPath.startsWith('/admin')) {
         file = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/index.html'];
       } else if (!cleanPath.includes('.')) {
-        file = wb['/index.html'] || wb['/remote/index.html'] || wb['/remote.html'];
+        file = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/admin.html'] || wb['/index.html'];
+      }
+    }
+
+    if (file && String(file.ext || '').toLowerCase() === '.html') {
+      const htmlText = file.type === 'base64' ? Buffer.from(file.data, 'base64').toString('utf8') : String(file.data || '');
+      if (!htmlText.includes('Pannello Gestione Totem')) {
+        const admin = wb['/remote/index.html'] || wb['/remote.html'] || wb['/admin/index.html'] || wb['/admin.html'];
+        if (admin) file = admin;
       }
     }
 

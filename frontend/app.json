@@ -3,7 +3,7 @@
     "name": "Totem QuickBite ordinazioni",
     "slug": "totem",
     "owner": "cejohoy727s-team",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "platforms": [
       "android",
       "ios",
@@ -41,7 +41,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.READ_MEDIA_IMAGES"
       ],
-      "versionCode": 124
+      "versionCode": 125
     },
     "web": {
       "bundler": "metro",
