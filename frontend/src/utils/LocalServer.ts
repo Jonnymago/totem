@@ -113,7 +113,7 @@ function isPublicApi(method: string, path: string) {
   if (method === 'GET' && (p === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/global-groups' || path === '/api/orders/current')) return true;
   if (method === 'GET' && p.startsWith('/api/products/category/')) return true;
   if (method === 'POST' && (p === '/api/orders' || p === '/api/orders/number-only')) return true;
-  if (method === 'POST' && isLoginPath(p)) return true;
+  if (isLoginPath(p)) return true;
   return false;
 }
 
@@ -258,11 +258,14 @@ export function startLocalServer() {
           if (headerEnd !== -1 && combined.length >= requiredTotal) {
             requestHandled = true;
             const body = combined.subarray(headerEnd + sepLen, requiredTotal).toString('utf8');
-            const pathForRoute = (rawPath.split('?')[0] || '/');
-            if (pathForRoute.includes('/api/') || pathForRoute.startsWith('/api')) {
-              await handleApi(socket, method, rawPath, body, authHeader, cookieHeader);
+            const pathForRoute = (rawPath.split('?')[0] || '/').trim();
+            const pathLower = pathForRoute.toLowerCase();
+            const looksApi = pathLower.includes('api') || pathLower.includes('login') || pathLower.includes('pin-login');
+            const looksLoginBody = /"pin"|"password"|"username"|"admin_pin"/.test(body || '');
+            if (looksApi || (method === 'POST' && looksLoginBody)) {
+              await handleApi(socket, method, rawPath.startsWith('/') ? rawPath : '/' + rawPath, body, authHeader, cookieHeader);
             } else {
-              handleStaticFile(socket, rawPath);
+              handleStaticFile(socket, rawPath, method);
             }
           }
         } catch (error: any) {
@@ -299,10 +302,14 @@ function normaliseStaticPath(rawPath: string) {
   return path;
 }
 
-function handleStaticFile(socket: any, rawPath: string) {
+function handleStaticFile(socket: any, rawPath: string, method = 'GET') {
   try {
     const cleanPath = normaliseStaticPath(rawPath);
-    if (cleanPath.includes('/api/') || cleanPath.startsWith('/api')) {
+    if ((method || 'GET').toUpperCase() === 'POST') {
+      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route missed', path: cleanPath }));
+      return;
+    }
+    if (cleanPath.toLowerCase().includes('api') || cleanPath.toLowerCase().includes('login')) {
       writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route missed', path: cleanPath }));
       return;
     }
@@ -471,7 +478,7 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
     } else if (method === 'PUT' && (path.startsWith('/api/admin/orders/') || path.startsWith('/api/orders/')) && path.endsWith('/status')) {
       const parts = path.split('/');
       result = await api.updateOrderStatus(parts[parts.length - 2] || '', json?.status || 'pending');
-    } else if (method === 'POST' && isLoginPath(path)) {
+    } else if (isLoginPath(path) || (method === 'POST' && json && (json.pin || json.password))) {
       try {
         if (!json && bodyText && bodyText.includes('=')) {
           json = Object.fromEntries(bodyText.split('&').map((part) => {

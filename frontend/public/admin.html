@@ -585,7 +585,17 @@
         const password = ((passEl && passEl.value) || pin || '').trim();
         const secret = pin || password;
         const payload = JSON.stringify({ pin: secret, password: password || secret, username: username });
-        const endpoints = ['/api/admin/pin-login', '/api/admin/login', '/api/pin-login', '/api/login'];
+        const origin = (window.location && window.location.origin) ? window.location.origin : '';
+        const endpoints = [
+          origin + '/api/admin/pin-login',
+          origin + '/api/admin/login',
+          origin + '/api/pin-login',
+          origin + '/api/login',
+          '/api/admin/pin-login',
+          '/api/admin/login',
+          '/api/pin-login',
+          '/api/login'
+        ];
         let loginRes = null;
         let lastDetail = 'Credenziali non valide';
         for (let i = 0; i < endpoints.length; i++) {
@@ -610,6 +620,18 @@
             lastDetail = (e && e.message) ? e.message : 'Rete non disponibile. Riprova.';
           }
         }
+
+        if ((!loginRes || !loginRes.ok) && origin) {
+          try {
+            const qs = 'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password || secret) + '&pin=' + encodeURIComponent(secret || pin);
+            const resGet = await fetch(origin + '/api/admin/pin-login?' + qs, { method: 'GET', headers: { 'Accept': 'application/json' } });
+            const probeGet = await resGet.text();
+            if (resGet.ok && probeGet && probeGet.trim().charAt(0) !== '<') {
+              loginRes = { ok: true, json: async () => JSON.parse(probeGet), text: async () => probeGet };
+            }
+          } catch (e) {}
+        }
+
         const res = loginRes;
         if (!res || !res.ok) {
           const detail = lastDetail || 'Credenziali non valide';
