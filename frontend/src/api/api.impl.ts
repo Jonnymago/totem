@@ -330,6 +330,42 @@ let localDb: LocalDbState = {
 
 let isLoaded = false;
 
+export async function checkAndApplyAutoReset(): Promise<boolean> {
+  if (!localDb || !localDb.settings) return false;
+  const mode = localDb.settings.order_reset_mode || 'daily';
+  if (mode !== 'daily') return false;
+
+  const timeParts = (localDb.settings.reset_time || '06:00').split(':');
+  const resetH = parseInt(timeParts[0] || '6', 10) || 0;
+  const resetM = parseInt(timeParts[1] || '0', 10) || 0;
+
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), resetH, resetM, 0, 0);
+  if (now.getTime() < cutoff.getTime()) {
+    cutoff.setDate(cutoff.getDate() - 1);
+  }
+  const cutoffTimestamp = cutoff.getTime();
+
+  let lastResetTimestamp = 0;
+  if (localDb.settings.last_reset_at) {
+    const parsed = new Date(localDb.settings.last_reset_at).getTime();
+    if (!isNaN(parsed)) {
+      lastResetTimestamp = parsed;
+    }
+  }
+
+  if (lastResetTimestamp < cutoffTimestamp) {
+    localDb.settings.current_order_number = 1;
+    localDb.settings.last_reset_at = now.toISOString();
+    localDb.orders = [];
+    await saveLocalDb();
+    notifyDbChanged('orders');
+    notifyDbChanged('settings');
+    return true;
+  }
+  return false;
+}
+
 export async function ensureLocalDbLoaded() {
   if (isLoaded) return;
   try {
@@ -350,6 +386,7 @@ export async function ensureLocalDbLoaded() {
     console.warn('Error loading local db:', e);
   }
   isLoaded = true;
+  await checkAndApplyAutoReset();
 }
 
 export async function saveLocalDb() {
@@ -627,6 +664,7 @@ export const getProductsByCategory = async (categoryId: string): Promise<Product
 
 export const createOrder = async (items: OrderItem[], totalPrice: number, orderType = 'totem'): Promise<Order> => {
   await ensureLocalDbLoaded();
+  await checkAndApplyAutoReset();
   const n = localDb.settings.current_order_number || 1;
   localDb.settings.current_order_number = n + 1;
   const ord: Order = {
@@ -659,6 +697,7 @@ export const setAdminPin = async (pin: string): Promise<void> => {
 
 export const getOrders = async (): Promise<Order[]> => {
   await ensureLocalDbLoaded();
+  await checkAndApplyAutoReset();
   return clone(localDb.orders).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 };
 
@@ -817,11 +856,20 @@ export const deleteCategory = async (id: string): Promise<void> => {
   notifyDbChanged('categories');
 };
 
-export const resetOrderNumber = async (): Promise<void> => {
+export const resetOrderNumber = async (): Promise<{ message: string; reset_at: string; orders_cleared: number }> => {
   await ensureLocalDbLoaded();
+  const clearedCount = localDb.orders ? localDb.orders.length : 0;
   localDb.settings.current_order_number = 1;
   localDb.settings.last_reset_at = new Date().toISOString();
+  localDb.orders = [];
   await saveLocalDb();
+  notifyDbChanged('orders');
+  notifyDbChanged('settings');
+  return {
+    message: 'Order number and orders reset successfully',
+    reset_at: localDb.settings.last_reset_at,
+    orders_cleared: clearedCount,
+  };
 };
 
 export const getAdminCredentials = async () => {

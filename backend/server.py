@@ -450,7 +450,8 @@ async def reset_order_number(username: str = Depends(verify_token)):
             "admin_pin": None,
             "updated_at": now,
         })
-    return {"message": "Order number reset successfully", "reset_at": now.isoformat()}
+    await db.orders.delete_many({})
+    return {"message": "Order number and orders reset successfully", "reset_at": now.isoformat()}
 
 
 @api_router.post("/admin/change-credentials")

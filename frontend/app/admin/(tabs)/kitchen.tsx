@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getAllOrdersAdmin, updateOrderStatus, getSettings, Order } from '@/src/api/api';
+import { getAllOrdersAdmin, updateOrderStatus, getSettings, subscribeToDbChanges, Order } from '@/src/api/api';
 import { storage } from '@/src/utils/storage';
 import { printKitchenTicket, printCourtesyTicket } from '@/src/utils/printer';
 
@@ -16,7 +16,19 @@ export default function AdminDashboardScreen() {
 
   useEffect(() => {
     checkAuth();
+    const unsub = subscribeToDbChanges((type) => {
+      if (type === 'orders' || type === 'all' || type === 'settings') {
+        loadOrders();
+      }
+    });
+    return () => unsub();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadOrders();
+    }, [])
+  );
 
   const checkAuth = async () => {
     const token = await storage.secureGet('admin_token', null);

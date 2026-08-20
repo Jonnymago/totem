@@ -797,13 +797,16 @@ export default function SettingsScreen() {
         <Modal visible={showResetConfirm} transparent animationType="fade" onRequestClose={() => setShowResetConfirm(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Reset Numero Ordini?</Text>
+              <Text style={styles.modalTitle}>Reset Numerazione e Comande?</Text>
+              <Text style={{ fontSize: 14, color: '#DDD', marginBottom: 20, textAlign: 'center', lineHeight: 20 }}>
+                Azzerando la numerazione, il prossimo ordine ripartirà da #1 e tutte le comande attuali verranno cancellate dalla schermata cucina.
+              </Text>
               <View style={styles.modalButtons}>
                 <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowResetConfirm(false)}>
                   <Text style={styles.modalCancelText}>Annulla</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalConfirmBtn} onPress={confirmResetOrderNumber}>
-                  <Text style={styles.modalConfirmText}>Reset</Text>
+                  <Text style={styles.modalConfirmText}>Conferma Reset</Text>
                 </TouchableOpacity>
               </View>
             </View>

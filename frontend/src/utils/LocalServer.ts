@@ -630,8 +630,8 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
         return;
       }
     } else if (method === 'POST' && (p === '/api/admin/reset-order-number' || p === '/api/reset-order-number')) {
-      await api.resetOrderNumber();
-      result = { message: 'Order number reset successfully' };
+      const resetResult = await api.resetOrderNumber();
+      result = { message: 'Order number and orders reset successfully', ...resetResult };
     } else if (method === 'GET' && (p === '/api/admin/backup' || p === '/api/backup')) {
       result = await api.getLocalBackupSnapshot();
     } else if (method === 'POST' && (p === '/api/admin/sync-backup' || p === '/api/sync-backup' || p === '/api/admin/backup' || p === '/api/backup')) {

@@ -2313,10 +2313,20 @@
     }
 
     async function resetOrderNumberNow() {
-      if (!confirm('Vuoi azzerare ora il contatore degli ordini? Il prossimo ordine partirà da #1.')) return;
+      if (!confirm('Vuoi azzerare la numerazione e cancellare tutte le comande correnti? Il prossimo ordine partirà da #1.')) return;
       try {
         await api('/admin/reset-order-number', { method: 'POST', body: '{}' });
-        toast('Contatore ordini resettato a #1!');
+        orders = [];
+        const pEl = document.getElementById('count-pending');
+        if (pEl) pEl.innerText = '0';
+        const prEl = document.getElementById('count-preparing');
+        if (prEl) prEl.innerText = '0';
+        const rEl = document.getElementById('count-ready');
+        if (rEl) rEl.innerText = '0';
+        const bEl = document.getElementById('badge-orders-count');
+        if (bEl) bEl.innerText = '0';
+        renderOrdersList();
+        toast('Numerazione e comande resettate con successo!');
       } catch (e) {
         toast('Errore: ' + e.message, '❌');
       }
