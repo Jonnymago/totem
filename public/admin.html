@@ -140,7 +140,7 @@
     <div style="background:white; padding:28px 20px; border-radius:24px; box-shadow:var(--shadow-lg); width:100%; max-width:380px; text-align:center; border:1px solid var(--border);">
       <div style="font-size:2.8rem; margin-bottom:6px;">🍔</div>
       <h1 style="font-size:1.35rem; font-weight:800; color:var(--text); margin-bottom:2px;" id="login-restaurant-title">Totem Admin</h1>
-      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">Pannello di controllo remoto</p>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">Stesso PIN del Totem, oppure admin / admin123</p>
       
       <!-- Inline Error Box -->
       <div id="login-error-box" style="display:none; background:#FEE2E2; color:#991B1B; padding:10px 14px; border-radius:12px; font-size:0.8rem; font-weight:600; margin-bottom:14px; text-align:left; border:1px solid #FECACA;"></div>
@@ -569,8 +569,17 @@
               headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
               body: payload
             });
-            if (res.ok) { loginRes = res; break; }
-            try { const err = await res.json(); lastDetail = err.detail || err.error || lastDetail; } catch (e) {}
+            const probe = await res.text();
+            const looksHtml = !probe || probe.trim().charAt(0) === '<';
+            if (res.ok && !looksHtml) {
+              loginRes = { ok: true, json: async () => JSON.parse(probe), text: async () => probe };
+              break;
+            }
+            if (!looksHtml) {
+              try { const err = JSON.parse(probe); lastDetail = err.detail || err.error || lastDetail; } catch (e) {}
+            } else {
+              lastDetail = 'Endpoint login non raggiungibile (HTML). Riprova dopo aggiornamento APK.';
+            }
           } catch (e) {
             lastDetail = (e && e.message) ? e.message : 'Rete non disponibile. Riprova.';
           }
@@ -582,7 +591,16 @@
           toast(detail, '❌');
           return;
         }
-        const data = await res.json();
+        const rawBody = await res.text();
+        if (!rawBody || rawBody.trim().charAt(0) === '<') {
+          showLoginError('Il Totem ha risposto HTML al login. Aggiorna l\'APK.');
+          return;
+        }
+        let data;
+        try { data = JSON.parse(rawBody); } catch (e) {
+          showLoginError('Risposta login non valida');
+          return;
+        }
         const token = data.access_token || data.token;
         if (!token) {
           showLoginError('Risposta login non valida');

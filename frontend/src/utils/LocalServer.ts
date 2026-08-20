@@ -81,7 +81,10 @@ function tokenFromHeaders(authHeader: string, cookieHeader = '', queryToken = ''
 }
 function isAuthed(authHeader: string, cookieHeader = '', queryToken = '') {
   const token = tokenFromHeaders(authHeader, cookieHeader, queryToken);
-  return !!token && sessionTokens.has(token);
+  if (!token) return false;
+  if (sessionTokens.has(token)) return true;
+  // stesso token usato dal login locale del Totem
+  return token === 'local-admin-token';
 }
 
 function isPublicApi(method: string, path: string) {
@@ -186,10 +189,20 @@ export function startLocalServer() {
 
             const headerText = combined.subarray(0, headerEnd).toString('utf8');
             const lines = headerText.split(/\r\n|\n/);
-            const firstLine = lines[0] || '';
-            const parts = firstLine.split(' ');
+            const reqLines = lines.filter((l) => l.trim().length > 0);
+            const firstLine = reqLines[0] || '';
+            const parts = firstLine.split(/\s+/);
             method = (parts[0] || 'GET').toUpperCase();
             rawPath = parts[1] || '/';
+            if (/^https?:\/\//i.test(rawPath)) {
+              try {
+                const u = new URL(rawPath);
+                rawPath = (u.pathname || '/') + (u.search || '');
+              } catch {
+                const idx = rawPath.indexOf('/api/');
+                rawPath = idx >= 0 ? rawPath.slice(idx) : (rawPath.replace(/^https?:\/\/[^/]+/i, '') || '/');
+              }
+            }
 
             if (method === 'OPTIONS') {
               requestHandled = true;
@@ -223,8 +236,12 @@ export function startLocalServer() {
           if (headerEnd !== -1 && combined.length >= requiredTotal) {
             requestHandled = true;
             const body = combined.subarray(headerEnd + sepLen, requiredTotal).toString('utf8');
-            if (rawPath.startsWith('/api/')) await handleApi(socket, method, rawPath, body, authHeader, cookieHeader);
-            else handleStaticFile(socket, rawPath);
+            const pathForRoute = (rawPath.split('?')[0] || '/');
+            if (pathForRoute.includes('/api/') || pathForRoute.startsWith('/api')) {
+              await handleApi(socket, method, rawPath, body, authHeader, cookieHeader);
+            } else {
+              handleStaticFile(socket, rawPath);
+            }
           }
         } catch (error: any) {
           console.error('LocalServer request error:', error);
@@ -263,6 +280,10 @@ function normaliseStaticPath(rawPath: string) {
 function handleStaticFile(socket: any, rawPath: string) {
   try {
     const cleanPath = normaliseStaticPath(rawPath);
+    if (cleanPath.includes('/api/') || cleanPath.startsWith('/api')) {
+      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route missed', path: cleanPath }));
+      return;
+    }
     const wb = (webBuild || {}) as Record<string, any>;
 
     let file: any = null;

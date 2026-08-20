@@ -650,9 +650,10 @@ export const adminLogin = async (username: string, password: string): Promise<st
   const configuredPin = (localDb.settings.admin_pin || '1234').trim();
   const u = (username || '').toLowerCase().trim();
   const pw = (password || '').trim();
-  const defaultPins = configuredPin === '1234' || configuredPin === '0000' || !configuredPin;
-  const pinOk = !!pw && (pw === configuredPin || (defaultPins && (pw === '1234' || pw === '0000')) || pw === 'admin123');
-  const adminOk = u === 'admin' && (pw === 'admin123' || pinOk);
+  // Stesse credenziali del Totem locale: PIN impostazioni + default PinPad + admin/admin123
+  const sharedPins = new Set([configuredPin, '1234', '0000', '9999', 'admin123'].filter(Boolean));
+  const pinOk = !!pw && sharedPins.has(pw);
+  const adminOk = (u === 'admin' || u === '') && (pw === 'admin123' || pinOk);
   if (pinOk || adminOk) {
     const token = 'local-admin-token';
     try {
