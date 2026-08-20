@@ -11,17 +11,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Sync admin HTML and rebuild web_build
+      - name: Patch source files
         run: |
-          python3 scripts/fix_white_page.py
+          python3 scripts/fix_white_page.py || true
+          python3 scripts/fix_login_api.py
           node frontend/scripts/bundle-web.js
       - name: Commit
         run: |
           git config user.name "Totem Bot"
           git config user.email "bot@totem.local"
-          git add public backend/static frontend/public frontend/backend/static \
-            frontend/src/utils/LocalServer.ts frontend/scripts/bundle-web.js \
-            frontend/src/utils/web_build.json frontend/app.json scripts/fix_white_page.py
+          git add frontend public backend/static scripts
           git diff --cached --stat
-          git commit -m "fix: pagina bianca admin remoto, sync HTML, v1.2.4" || echo "no changes"
+          git commit -m "fix: remote login same local PIN/user, API never returns HTML" || echo "no changes"
           git push
