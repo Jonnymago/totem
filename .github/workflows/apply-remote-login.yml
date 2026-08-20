@@ -1,0 +1,27 @@
+name: Apply remote login fix
+on:
+  workflow_dispatch:
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply patches
+        run: python3 scripts/apply_remote_login.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/utils/LocalServer.ts frontend/src/api/api.impl.ts frontend/app.json \
+            frontend/src/utils/web_build.json \
+            public/admin.html public/admin/index.html public/remote.html public/remote/index.html \
+            backend/static/remote/index.html backend/server.py
+          git diff --cached --stat
+          if git diff --cached --quiet; then
+            echo no changes
+          else
+            git commit -m "fix: remote admin login from phone (HTTP parser, PIN, session)"
+            git push
+          fi
