@@ -103,8 +103,11 @@ function isLoginPath(path: string) {
     p === '/api/admin/pin-login' ||
     p === '/api/login' ||
     p === '/api/pin-login' ||
+    p === '/api/auth' ||
+    p === '/api/admin/auth' ||
     p.endsWith('/pin-login') ||
-    p.endsWith('/login')
+    p.endsWith('/login') ||
+    p.endsWith('/auth')
   );
 }
 
@@ -129,8 +132,31 @@ function findHeaderEnd(buf: Buffer): number {
 
 function writeResponse(socket: any, status: string, contentType: string, body: Buffer | string, extra = '') {
   const data = Buffer.isBuffer(body) ? body : Buffer.from(body, 'utf8');
-  const header = `HTTP/1.1 ${status}\r\nContent-Type: ${contentType}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, HEAD\r\nAccess-Control-Allow-Headers: Content-Type, Authorization, Accept, Origin, X-Requested-With\r\nCache-Control: no-store\r\nConnection: close\r\nContent-Length: ${data.length}\r\n${extra}\r\n`;
-  try { socket.write(Buffer.concat([Buffer.from(header, 'utf8'), data]), () => { try { socket.end(); } catch {} }); } catch { try { socket.destroy(); } catch {} }
+  const header =
+    `HTTP/1.1 ${status}\r\n` +
+    `Content-Type: ${contentType}\r\n` +
+    `Access-Control-Allow-Origin: *\r\n` +
+    `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH\r\n` +
+    `Access-Control-Allow-Headers: *\r\n` +
+    `Access-Control-Allow-Private-Network: true\r\n` +
+    `Access-Control-Expose-Headers: *\r\n` +
+    `Access-Control-Max-Age: 86400\r\n` +
+    `Cache-Control: no-store, no-cache, must-revalidate\r\n` +
+    `Pragma: no-cache\r\n` +
+    `Connection: close\r\n` +
+    `Content-Length: ${data.length}\r\n` +
+    `${extra}\r\n`;
+
+  try {
+    const fullBuffer = Buffer.concat([Buffer.from(header, 'utf8'), data]);
+    socket.write(fullBuffer, () => {
+      setTimeout(() => {
+        try { socket.end(); } catch {}
+      }, 25);
+    });
+  } catch {
+    try { socket.destroy(); } catch {}
+  }
 }
 
 function stopServerInstance() {
@@ -260,9 +286,9 @@ export function startLocalServer() {
             const body = combined.subarray(headerEnd + sepLen, requiredTotal).toString('utf8');
             const pathForRoute = (rawPath.split('?')[0] || '/').trim();
             const pathLower = pathForRoute.toLowerCase();
-            const looksApi = pathLower.includes('api') || pathLower.includes('login') || pathLower.includes('pin-login');
-            const looksLoginBody = /"pin"|"password"|"username"|"admin_pin"/.test(body || '');
-            if (looksApi || (method === 'POST' && looksLoginBody)) {
+            const looksApi = pathLower.includes('api') || pathLower.includes('login') || pathLower.includes('pin-login') || pathLower.includes('auth');
+            const isPostOrPut = method === 'POST' || method === 'PUT' || method === 'DELETE' || method === 'PATCH';
+            if (looksApi || isPostOrPut) {
               await handleApi(socket, method, rawPath.startsWith('/') ? rawPath : '/' + rawPath, body, authHeader, cookieHeader);
             } else {
               handleStaticFile(socket, rawPath, method);
@@ -315,12 +341,14 @@ function normaliseStaticPath(rawPath: string) {
 function handleStaticFile(socket: any, rawPath: string, method = 'GET') {
   try {
     const cleanPath = normaliseStaticPath(rawPath);
-    if ((method || 'GET').toUpperCase() === 'POST') {
-      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route missed', path: cleanPath }));
+    const m = (method || 'GET').toUpperCase();
+    if (m !== 'GET' && m !== 'HEAD') {
+      writeResponse(socket, '405 Method Not Allowed', 'application/json; charset=utf-8', JSON.stringify({ error: 'Method not allowed for static files', method: m, path: cleanPath }));
       return;
     }
-    if (cleanPath.toLowerCase().includes('api') || cleanPath.toLowerCase().includes('login')) {
-      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route missed', path: cleanPath }));
+    const lower = cleanPath.toLowerCase();
+    if (lower.startsWith('/api') || lower.includes('/api/') || lower.includes('/login') || lower.includes('pin-login') || lower.includes('/auth')) {
+      writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'API route not found', path: cleanPath }));
       return;
     }
     const wb = (webBuild || {}) as Record<string, any>;
