@@ -443,6 +443,7 @@
   <script>
     /* State */
     let authToken = '';
+    try { authToken = localStorage.getItem('totem_sess') || ''; } catch (e) { authToken = ''; }
     let settings = {};
     let categories = [];
     let products = [];
@@ -479,9 +480,12 @@
       const res = await fetch('/api' + path, { ...options, headers });
       if (!res.ok) {
         if (res.status === 401) {
-          
-          authToken = '';
-          showAuth();
+          const inApp = document.getElementById('app-screen') && document.getElementById('app-screen').style.display === 'flex';
+          if (!inApp) {
+            authToken = '';
+            try { localStorage.removeItem('totem_sess'); } catch (e) {}
+            showAuth();
+          }
           throw new Error('Sessione scaduta o PIN errato');
         }
         let errText = await res.text();
@@ -554,14 +558,26 @@
         submitBtn.innerText = 'Accesso...';
       }
       try {
-        const res = await fetch('/api/admin/pin-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pin })
-        });
-        if (!res.ok) {
-          let detail = 'Credenziali non valide';
-          try { const err = await res.json(); detail = err.detail || detail; } catch (e) {}
+        const payload = JSON.stringify({ pin: pin, password: pin, username: 'admin' });
+        const endpoints = ['/api/admin/pin-login', '/api/admin/login', '/api/pin-login', '/api/login'];
+        let loginRes = null;
+        let lastDetail = 'Credenziali non valide';
+        for (let i = 0; i < endpoints.length; i++) {
+          try {
+            const res = await fetch(endpoints[i], {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: payload
+            });
+            if (res.ok) { loginRes = res; break; }
+            try { const err = await res.json(); lastDetail = err.detail || err.error || lastDetail; } catch (e) {}
+          } catch (e) {
+            lastDetail = (e && e.message) ? e.message : 'Rete non disponibile. Riprova.';
+          }
+        }
+        const res = loginRes;
+        if (!res || !res.ok) {
+          const detail = lastDetail || 'Credenziali non valide';
           showLoginError(detail);
           toast(detail, '❌');
           return;
@@ -573,6 +589,7 @@
           return;
         }
         authToken = token;
+        try { localStorage.setItem('totem_sess', token); } catch (e) {}
         toast('Accesso effettuato!');
         showApp();
       } catch (err) {
@@ -596,6 +613,7 @@
     function doLogout() {
       stopOrdersPolling();
       authToken = '';
+      try { localStorage.removeItem('totem_sess'); } catch (e) {}
       showAuth();
       toast('Disconnesso');
     }
@@ -623,7 +641,7 @@
     async function loadAll() {
       try {
         const [st, cats, prods, groups] = await Promise.all([
-          api('/settings').catch(() => ({})),
+          api('/admin/settings').catch(() => api('/settings').catch(() => ({}))),
           api('/categories').catch(() => []),
           api('/products').catch(() => []),
           api('/global-groups').catch(() => [])
@@ -1837,7 +1855,7 @@
       document.getElementById('set-auto-kitchen').checked = settings.auto_print_kitchen !== false;
       document.getElementById('set-reset-mode').value = settings.order_reset_mode || 'daily';
       document.getElementById('set-reset-time').value = settings.reset_time || '06:00';
-      document.getElementById('set-pin').value = settings.admin_pin || '0000';
+      document.getElementById('set-pin').value = settings.admin_pin || '';
 
       const localIp = localStorage.getItem('totem_local_ip') || window.location.hostname || '192.168.1.9';
       document.getElementById('set-ip').value = localIp;
@@ -1958,7 +1976,7 @@
           known_printers: settings.known_printers || [],
           order_reset_mode: document.getElementById('set-reset-mode')?.value || settings.order_reset_mode || 'daily',
           reset_time: document.getElementById('set-reset-time')?.value || settings.reset_time || '06:00',
-          admin_pin: document.getElementById('set-pin')?.value || settings.admin_pin || '0000'
+          admin_pin: (document.getElementById('set-pin')?.value || '').trim() || settings.admin_pin || undefined
         };
         await api('/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
         toast(msg);
@@ -2375,7 +2393,7 @@
         known_printers: settings.known_printers || [],
         order_reset_mode: document.getElementById('set-reset-mode').value,
         reset_time: document.getElementById('set-reset-time').value.trim() || '06:00',
-        admin_pin: document.getElementById('set-pin').value.trim() || '0000'
+        admin_pin: (document.getElementById('set-pin').value || '').trim()
       };
 
       try {
@@ -2437,6 +2455,9 @@
       }
 
       // Pre-load public settings to display restaurant name on login screen & header
+      fetch('/api/health').then(r => { if (!r.ok) throw new Error('health'); }).catch(() => {
+          showLoginError('Totem non raggiungibile. Apri http://IP_TOTEM:3000/remote/ sulla stessa Wi-Fi.');
+        });
       fetch('/api/settings')
         .then(r => r.json())
         .then(s => {

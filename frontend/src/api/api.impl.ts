@@ -557,6 +557,15 @@ export const getSettings = async (): Promise<Settings> => {
 export const updateSettings = async (data: Partial<Settings>): Promise<Settings> => {
   await ensureLocalDbLoaded();
   const next = { ...data };
+  if (typeof next.admin_pin === 'string') {
+    const incoming = next.admin_pin.trim();
+    const current = (localDb.settings.admin_pin || '1234').trim();
+    if (!incoming || (incoming === '0000' && current && current !== '0000')) {
+      delete next.admin_pin;
+    } else {
+      next.admin_pin = incoming;
+    }
+  }
   if (next.known_printers) {
     next.known_printers = normalizeKnownPrinters(next.known_printers);
   }
@@ -641,8 +650,9 @@ export const adminLogin = async (username: string, password: string): Promise<st
   const configuredPin = (localDb.settings.admin_pin || '1234').trim();
   const u = (username || '').toLowerCase().trim();
   const pw = (password || '').trim();
-  const pinOk = !!configuredPin && pw === configuredPin;
-  const adminOk = u === 'admin' && pw === 'admin123';
+  const defaultPins = configuredPin === '1234' || configuredPin === '0000' || !configuredPin;
+  const pinOk = !!pw && (pw === configuredPin || (defaultPins && (pw === '1234' || pw === '0000')) || pw === 'admin123');
+  const adminOk = u === 'admin' && (pw === 'admin123' || pinOk);
   if (pinOk || adminOk) {
     const token = 'local-admin-token';
     try {

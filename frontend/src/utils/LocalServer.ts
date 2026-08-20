@@ -45,26 +45,47 @@ const SOCKET_TIMEOUT_MS = 15_000;
 let server: any = null;
 let starting = false;
 const sessionTokens = new Set<string>();
+const SESSION_STORE_KEY = 'totem_remote_sessions';
+async function persistSessions() {
+  try { await AsyncStorage.setItem(SESSION_STORE_KEY, JSON.stringify(Array.from(sessionTokens))); } catch {}
+}
+async function restoreSessions() {
+  try {
+    const raw = await AsyncStorage.getItem(SESSION_STORE_KEY);
+    if (!raw) return;
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)) list.forEach((tok: string) => { if (tok) sessionTokens.add(String(tok)); });
+  } catch {}
+}
 
 function issueSessionToken() {
   const token = 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
   sessionTokens.add(token);
+  persistSessions();
   return token;
 }
 
 function extractBearer(authHeader: string) {
   const raw = (authHeader || '').trim();
   if (!raw) return '';
-  return raw.toLowerCase().startsWith('bearer ') ? raw.slice(7).trim() : raw;
+  const lower = raw.toLowerCase();
+  if (lower.startsWith('bearer ')) return raw.slice(7).trim();
+  return raw;
 }
-
-function isAuthed(authHeader: string) {
-  const token = extractBearer(authHeader);
+function tokenFromHeaders(authHeader: string, cookieHeader = '', queryToken = '') {
+  const fromAuth = extractBearer(authHeader);
+  if (fromAuth) return fromAuth;
+  if ((queryToken || '').trim()) return queryToken.trim();
+  const m = (cookieHeader || '').match(/(?:^|;\s*)totem_session=([^;]+)/i);
+  return m ? decodeURIComponent(m[1].trim()) : '';
+}
+function isAuthed(authHeader: string, cookieHeader = '', queryToken = '') {
+  const token = tokenFromHeaders(authHeader, cookieHeader, queryToken);
   return !!token && sessionTokens.has(token);
 }
 
 function isPublicApi(method: string, path: string) {
-  if (method === 'GET' && (path === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/orders/current')) return true;
+  if (method === 'GET' && (path === '/api/health' || path === '/api/settings' || path === '/api/categories' || path === '/api/products' || path === '/api/global-groups' || path === '/api/orders/current')) return true;
   if (method === 'GET' && path.startsWith('/api/products/category/')) return true;
   if (method === 'POST' && (path === '/api/orders' || path === '/api/orders/number-only')) return true;
   if (method === 'POST' && ['/api/admin/login', '/api/admin/pin-login', '/api/login', '/api/pin-login'].includes(path)) return true;
@@ -74,6 +95,9 @@ function isPublicApi(method: string, path: string) {
 function findHeaderEnd(buf: Buffer): number {
   for (let i = 0; i <= buf.length - 4; i++) {
     if (buf[i] === 13 && buf[i + 1] === 10 && buf[i + 2] === 13 && buf[i + 3] === 10) return i;
+  }
+  for (let i = 0; i <= buf.length - 2; i++) {
+    if (buf[i] === 10 && buf[i + 1] === 10) return i;
   }
   return -1;
 }
@@ -110,6 +134,7 @@ export function isLocalServerRunning() {
 export function startLocalServer() {
   if (server || starting) return;
   starting = true;
+  restoreSessions();
 
   try {
     const nextServer = TcpSocket.createServer((socket) => {
@@ -121,6 +146,9 @@ export function startLocalServer() {
       let contentLength = 0;
       let requestHandled = false;
       let authHeader = '';
+      let cookieHeader = '';
+      let expectContinue = false;
+      let continueSent = false;
 
       try { socket.setTimeout?.(SOCKET_TIMEOUT_MS); } catch {}
       socket.on('timeout', () => { try { socket.destroy(); } catch {} });
@@ -157,7 +185,7 @@ export function startLocalServer() {
             }
 
             const headerText = combined.subarray(0, headerEnd).toString('utf8');
-            const lines = headerText.split('\r\n');
+            const lines = headerText.split(/\r\n|\n/);
             const firstLine = lines[0] || '';
             const parts = firstLine.split(' ');
             method = (parts[0] || 'GET').toUpperCase();
@@ -169,8 +197,13 @@ export function startLocalServer() {
               return;
             }
 
-            const authLine = lines.find((l) => l.toLowerCase().startsWith('authorization:'));
-            authHeader = authLine ? authLine.split(':').slice(1).join(':').trim() : '';
+            const headerVal = (name: string) => {
+              const line = lines.find((l) => l.toLowerCase().startsWith(name.toLowerCase() + ':'));
+              return line ? line.slice(line.indexOf(':') + 1).trim() : '';
+            };
+            authHeader = headerVal('authorization') || headerVal('x-totem-token');
+            cookieHeader = headerVal('cookie');
+            expectContinue = headerVal('expect').toLowerCase().includes('100-continue');
 
             const clLine = lines.find((l) => l.toLowerCase().startsWith('content-length:'));
             contentLength = clLine ? Number.parseInt(clLine.split(':').slice(1).join(':').trim(), 10) || 0 : 0;
@@ -181,11 +214,16 @@ export function startLocalServer() {
             }
           }
 
-          const requiredTotal = headerEnd + 4 + contentLength;
+          const sepLen = (combined[headerEnd] === 13) ? 4 : 2;
+          if (expectContinue && !continueSent) {
+            continueSent = true;
+            try { socket.write('HTTP/1.1 100 Continue\r\n\r\n'); } catch {}
+          }
+          const requiredTotal = headerEnd + sepLen + contentLength;
           if (headerEnd !== -1 && combined.length >= requiredTotal) {
             requestHandled = true;
-            const body = combined.subarray(headerEnd + 4, requiredTotal).toString('utf8');
-            if (rawPath.startsWith('/api/')) await handleApi(socket, method, rawPath, body, authHeader);
+            const body = combined.subarray(headerEnd + sepLen, requiredTotal).toString('utf8');
+            if (rawPath.startsWith('/api/')) await handleApi(socket, method, rawPath, body, authHeader, cookieHeader);
             else handleStaticFile(socket, rawPath);
           }
         } catch (error: any) {
@@ -311,15 +349,19 @@ function handleStaticFile(socket: any, rawPath: string) {
   }
 }
 
-async function handleApi(socket: any, method: string, rawPath: string, bodyText: string, authHeader = '') {
+async function handleApi(socket: any, method: string, rawPath: string, bodyText: string, authHeader = '', cookieHeader = '') {
   try {
-    const path = rawPath.split('?')[0];
+    let path = (rawPath || '/').split('?')[0].trim();
+    if (!path.startsWith('/')) path = '/' + path;
+    if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+    const query = ((rawPath || '').split('?')[1] || '');
+    const queryToken = (query.match(/(?:^|&)token=([^&]+)/i) || [])[1] || '';
     let json: any = null;
     if (bodyText.trim()) {
       try { json = JSON.parse(bodyText); } catch { writeResponse(socket, '400 Bad Request', 'application/json; charset=utf-8', JSON.stringify({ error: 'Invalid JSON' })); return; }
     }
 
-    if (!isPublicApi(method, path) && !isAuthed(authHeader)) {
+    if (!isPublicApi(method, path) && !isAuthed(authHeader, cookieHeader, decodeURIComponent(queryToken))) {
       writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: 'Autenticazione richiesta' }));
       return;
     }
@@ -329,7 +371,7 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       result = { status: 'ok', server: 'local', port: PORT, remote_admin: true };
     } else if (method === 'GET' && path === '/api/settings') {
       const settings = await api.getSettings();
-      if (isAuthed(authHeader)) {
+      if (isAuthed(authHeader, cookieHeader, decodeURIComponent(queryToken))) {
         result = settings;
       } else {
         const { admin_pin, ...publicSettings } = settings as any;
@@ -381,11 +423,20 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       result = await api.updateOrderStatus(parts[parts.length - 2] || '', json?.status || 'pending');
     } else if (method === 'POST' && ['/api/admin/login', '/api/admin/pin-login', '/api/login', '/api/pin-login'].includes(path)) {
       try {
-        await api.adminLogin(String(json?.username || 'admin'), String(json?.pin || json?.password || ''));
+        if (!json && bodyText && bodyText.includes('=')) {
+          json = Object.fromEntries(bodyText.split('&').map((part) => {
+            const [k, v = ''] = part.split('=');
+            return [decodeURIComponent((k || '').replace(/\+/g, ' ')), decodeURIComponent((v || '').replace(/\+/g, ' '))];
+          }));
+        }
+        const qPin = decodeURIComponent((query.match(/(?:^|&)(?:pin|password)=([^&]+)/i) || [])[1] || '');
+        const pin = String(json?.pin || json?.password || json?.admin_pin || qPin || '').trim();
+        await api.adminLogin(String(json?.username || json?.user || 'admin'), pin);
         const token = issueSessionToken();
-        result = { access_token: token, token };
+        writeResponse(socket, '200 OK', 'application/json; charset=utf-8', JSON.stringify({ access_token: token, token, ok: true }), `Set-Cookie: totem_session=${token}; Path=/; SameSite=Lax\r\n`);
+        return;
       } catch (e: any) {
-        writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: e?.message || 'Credenziali non valide' }));
+        writeResponse(socket, '401 Unauthorized', 'application/json; charset=utf-8', JSON.stringify({ detail: e?.message || 'PIN non valido' }));
         return;
       }
     } else if (method === 'POST' && (path === '/api/admin/reset-order-number' || path === '/api/reset-order-number')) {
