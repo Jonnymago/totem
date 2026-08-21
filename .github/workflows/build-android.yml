@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 
 jobs:
@@ -34,4 +36,4 @@ jobs:
 
       - name: Build on EAS
         working-directory: ./frontend
-        run: eas build --platform android --profile preview --non-interactive
+        run: eas build --platform android --profile preview --non-interactive --no-wait
