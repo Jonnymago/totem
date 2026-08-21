@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Image, useWindowDimensions } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Image, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getCategories, Category, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 import { useI18n } from '@/src/utils/i18n';
+import { translateCustomerMenuText, useCustomerMenuGlossary } from '@/src/utils/customerMenuTranslation';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 export default function CategoriesScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  useCustomerMenuGlossary();
+  const menuText = (value?: string) => translateCustomerMenuText(value, lang);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const cartItems = useCartStore(state => state.getTotalItems());
@@ -128,11 +132,11 @@ export default function CategoriesScreen() {
                 )}
               </View>
               <Text style={[styles.categoryName, isLarge && { fontSize: 32 }]} numberOfLines={2}>
-                {category.name}
+                {menuText(category.name)}
               </Text>
               {!!category.description && (
                 <Text style={[styles.categoryDescription, isLarge && { fontSize: 20 }]} numberOfLines={2}>
-                  {category.description}
+                  {menuText(category.description)}
                 </Text>
               )}
             </TouchableOpacity>

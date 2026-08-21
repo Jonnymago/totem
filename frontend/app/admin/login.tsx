@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TextInput as NativeTextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { adminLogin } from '@/src/api/api';
 import { storage } from '@/src/utils/storage';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 export default function AdminLoginScreen() {
   const router = useRouter();
   // Precompilati: funzionano sempre anche senza backend / WiFi

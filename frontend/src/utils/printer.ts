@@ -2,6 +2,7 @@ import * as Print from 'expo-print';
 import { PermissionsAndroid, Platform, NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Order, Settings } from '@/src/api/api';
+import { getCurrentLanguage, translateSourceText } from '@/src/utils/i18n';
 
 export type PaperWidthMm = 58 | 80;
 
@@ -122,10 +123,11 @@ function wrapIndent(text: string, indent: number, width: number): string[] {
   return out;
 }
 
+const printerLocale = () => ({ it: 'it-IT', en: 'en-GB', fr: 'fr-FR', es: 'es-ES', de: 'de-DE' }[getCurrentLanguage()] || 'it-IT');
 const fmtDate = (d: Date) =>
-  d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  d.toLocaleDateString(printerLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' });
 const fmtTime = (d: Date) =>
-  d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  d.toLocaleTimeString(printerLocale(), { hour: '2-digit', minute: '2-digit' });
 
 function money(n: number): string {
   return n.toFixed(2);
@@ -144,7 +146,7 @@ function buildItems(order: Order, width: number): string[] {
   for (const item of order.items) {
     lines.push(col(item.quantity + 'x ' + item.product_name, money(item.price * item.quantity), width));
     if (item.removed_ingredients?.length) {
-      lines.push(...wrapIndent('-SENZA: ' + item.removed_ingredients.join(','), 1, width));
+      lines.push(...wrapIndent(translateSourceText('-SENZA: ') + item.removed_ingredients.join(','), 1, width));
     }
     if (item.added_extras?.length) {
       lines.push(
@@ -184,7 +186,7 @@ function buildItems(order: Order, width: number): string[] {
       );
     }
     if (item.notes) {
-      lines.push(...wrapIndent('Note:' + item.notes, 1, width));
+      lines.push(...wrapIndent(translateSourceText('Note:') + item.notes, 1, width));
     }
   }
   return lines;
@@ -202,25 +204,25 @@ export function generateCourtesyTicketText(
 
   // Nome ristorante grande (niente logo bitmap)
   L.push('@@NAME@@' + name.toUpperCase());
-  L.push(center('SCONTRINO CORTESIA', w));
+  L.push(center(translateSourceText('SCONTRINO CORTESIA').toUpperCase(), w));
   L.push(hr(w));
   L.push(center(fmtDate(date) + ' ' + fmtTime(date), w));
   L.push(hr(w));
-  L.push(center('NUMERO', w));
+  L.push(center(translateSourceText('NUMERO').toUpperCase(), w));
   L.push('@@NUM@@' + order.order_number);
   L.push(hr(w, '='));
 
   if (order.items.length > 0) {
     L.push(...buildItems(order, w));
     L.push(hr(w, '='));
-    L.push(col('TOTALE', money(order.total_price), w));
-    L.push(center('Paga in cassa al ritiro', w));
+    L.push(col(translateSourceText('TOTALE').toUpperCase(), money(order.total_price), w));
+    L.push(center(translateSourceText('Paga in cassa al ritiro'), w));
   } else {
-    L.push(center('ORDINE A VOCE', w));
-    L.push(center('Presentati al banco', w));
+    L.push(center(translateSourceText('ORDINE A VOCE').toUpperCase(), w));
+    L.push(center(translateSourceText('Presentati al banco'), w));
   }
   L.push(hr(w));
-  L.push(center('Grazie!', w));
+  L.push(center(translateSourceText('Grazie!'), w));
   return L.join('\n');
 }
 
@@ -234,7 +236,7 @@ export function generateKitchenTicketText(
 
   L.push('');
   L.push('');
-  L.push(center('*** CUCINA ***', w));
+  L.push(center(translateSourceText('*** CUCINA ***'), w));
   L.push(hr(w));
   L.push(center(fmtDate(date) + ' ' + fmtTime(date), w));
   L.push(hr(w));
@@ -244,9 +246,9 @@ export function generateKitchenTicketText(
   if (order.items.length > 0) {
     L.push(...buildItems(order, w));
     L.push(hr(w, '='));
-    L.push(col('TOTALE', money(order.total_price), w));
+    L.push(col(translateSourceText('TOTALE').toUpperCase(), money(order.total_price), w));
   } else {
-    L.push(center('ORDINE A VOCE', w));
+    L.push(center(translateSourceText('ORDINE A VOCE').toUpperCase(), w));
   }
   return L.join('\n');
 }
@@ -348,7 +350,7 @@ async function getTP(): Promise<any | null> {
   if (Platform.OS === 'web') return null;
   if (thermalMod) return thermalMod;
   try {
-    const mod = await import('react-native-thermal-printer-driver');
+    const mod: any = await import('react-native-thermal-printer-driver');
     thermalMod = mod?.default?.ThermalPrinter ?? mod?.ThermalPrinter ?? mod?.default ?? mod;
     if (thermalMod) return thermalMod;
   } catch (e) {
@@ -528,10 +530,10 @@ export async function printViaBridge(
     const res = await fetch(`${apiBase}/api/admin/bt/print`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ address, lines }),
+      body: JSON.stringify({ address, lines, language: getCurrentLanguage() }),
     });
     const data = await res.json();
-    if (!res.ok) return { success: false, error: data.detail || 'Errore stampa' };
+    if (!res.ok) return { success: false, error: data.detail?.message || data.detail || translateSourceText('Errore stampa') };
     return { success: true };
   } catch (e: any) {
     return { success: false, error: e.message };

@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 interface PinPadProps {
   title?: string;
   subtitle?: string;

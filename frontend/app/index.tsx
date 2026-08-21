@@ -1,20 +1,22 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Platform, useWindowDimensions } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, Image, Modal, Platform, useWindowDimensions } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getSettings, Settings, getAdminPin, getGlobalGroups, getProducts, getCategories } from '@/src/api/api';
 import PinPad from '@/src/components/PinPad';
+import LanguageSelector from '@/src/components/LanguageSelector';
 import { useI18n } from '@/src/utils/i18n';
 import { useKioskStore } from '@/src/store/kioskStore';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 const EDGE = Platform.OS === 'android' ? 32 : 28;
 const BOTTOM = Platform.OS === 'android' ? 40 : 32;
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, resetCustomerSessionLanguage } = useI18n();
   const config = useKioskStore((s) => s.config);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
@@ -40,8 +42,9 @@ export default function WelcomeScreen() {
   // Cold start + ogni volta che si torna sulla home (es. da Ordina al Totem)
   useFocusEffect(
     useCallback(() => {
+      resetCustomerSessionLanguage();
       loadSettings();
-    }, [loadSettings])
+    }, [loadSettings, resetCustomerSessionLanguage])
   );
 
   const handleSecretDotPress = async () => {
@@ -92,6 +95,9 @@ export default function WelcomeScreen() {
         colors={['#000', '#1a1a2e']}
         style={styles.gradient}
       >
+        <View style={styles.langBarTop}>
+          <LanguageSelector compact mode="customer-session" />
+        </View>
         <TouchableOpacity
           testID="secret-admin-dot"
           style={[

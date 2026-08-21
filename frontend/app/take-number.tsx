@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { View, Text as NativeText, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { createNumberOnlyOrder, Order, getSettings, Settings } from '@/src/api/api';
 import { printCourtesyTicket } from '@/src/utils/printer';
 import { useI18n } from '@/src/utils/i18n';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 export default function TakeNumberScreen() {
   const router = useRouter();
   const { t } = useI18n();

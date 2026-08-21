@@ -1,30 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Alert,
-  Modal,
-  ActivityIndicator,
-  Linking,
-  Platform,
-} from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, ActivityIndicator, Platform,  } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   getLicenseInfo,
-  activateWithLicenseKey,
   processPlayStoreSubscription,
   restoreGooglePlayPurchases,
   resetLicenseToTrial,
-  requestB2BLicense,
   PLAY_STORE_SUBSCRIPTIONS,
-  B2B_LIFETIME_INFO,
+  LICENSE_TRIAL_DAYS,
   LicenseInfo,
-  LicensePlan,
 } from '@/src/utils/license';
+import { Text } from '@/src/components/LocalizedPrimitives';
 import GuideHelper from '@/src/components/GuideHelper';
 
 export default function LicenseCreditsScreen() {
@@ -32,9 +18,6 @@ export default function LicenseCreditsScreen() {
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
   const [license, setLicense] = useState<LicenseInfo | null>(null);
-  const [serialInput, setSerialInput] = useState('');
-  const [activatingSerial, setActivatingSerial] = useState(false);
-  const [planFilter, setPlanFilter] = useState<'all' | 'base' | 'pro'>('all');
 
   // Modali Legali
   const [showLegalModal, setShowLegalModal] = useState(false);
@@ -56,7 +39,7 @@ export default function LicenseCreditsScreen() {
     }
   };
 
-  const handlePurchaseSubscription = async (plan: LicensePlan) => {
+  const handlePurchaseSubscription = async (plan: (typeof PLAY_STORE_SUBSCRIPTIONS)[number]) => {
     Alert.alert(
       'Abbonamento Google Play',
       `Vuoi attivare il "${plan.name}" a ${plan.price} (${plan.period}) con addebito sul tuo account Google Play Store?`,
@@ -102,33 +85,10 @@ export default function LicenseCreditsScreen() {
     }
   };
 
-  const handleActivateSerial = async () => {
-    if (!serialInput.trim()) {
-      Alert.alert('Codice Mancante', 'Inserisci un codice seriale valido o una chiave licenza (es. QKB-B2B-XXXX-XXXX).');
-      return;
-    }
-
-    try {
-      setActivatingSerial(true);
-      const res = await activateWithLicenseKey(serialInput);
-      if (res.success && res.license) {
-        setLicense(res.license);
-        setSerialInput('');
-        Alert.alert('🎉 Licenza Attivata!', res.message);
-      } else {
-        Alert.alert('Attivazione Fallita', res.message);
-      }
-    } catch (e: any) {
-      Alert.alert('Errore', 'Si è verificato un errore durante l\'attivazione: ' + (e?.message || ''));
-    } finally {
-      setActivatingSerial(false);
-    }
-  };
-
   const handleResetTrial = () => {
     Alert.alert(
       'Ripristina Prova',
-      'Vuoi ripristinare il periodo di prova (30 giorni) per questo dispositivo?',
+      `Vuoi ripristinare il periodo di prova (${LICENSE_TRIAL_DAYS} giorni) per questo dispositivo?`,
       [
         { text: 'Annulla', style: 'cancel' },
         {
@@ -144,14 +104,6 @@ export default function LicenseCreditsScreen() {
     );
   };
 
-  const openEmailSupport = () => {
-    Linking.openURL('mailto:priologiovanni82@gmail.com?subject=Supporto%20Totem%20QuickBite%20Kiosk');
-  };
-
-  const openGitHubRepo = () => {
-    Linking.openURL('https://github.com/Jonnymago/totem');
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -165,10 +117,6 @@ export default function LicenseCreditsScreen() {
   const isTrial = license?.status === 'trial';
   const isExpired = license?.status === 'expired';
 
-  const displayedPlans = PLAY_STORE_SUBSCRIPTIONS.filter(
-    (p) => planFilter === 'all' || p.category === planFilter
-  );
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       
@@ -178,8 +126,8 @@ export default function LicenseCreditsScreen() {
           <Ionicons name="ribbon" size={28} color="#FF6B6B" />
         </View>
         <View style={styles.headerTextBox}>
-          <Text style={styles.headerTitle}>Licenza, Abbonamenti & Crediti</Text>
-          <Text style={styles.headerSubtitle}>Totem QuickBite • Versione v1.2.10 (Production)</Text>
+          <Text style={styles.headerTitle}>Licenza e Abbonamenti</Text>
+          <Text style={styles.headerSubtitle}>Gestisci lo stato della prova e gli abbonamenti disponibili.</Text>
         </View>
       </View>
 
@@ -196,13 +144,13 @@ export default function LicenseCreditsScreen() {
             {isProActive && (
               <View style={[styles.badge, styles.badgeActive]}>
                 <Ionicons name="checkmark-circle" size={14} color="#166534" />
-                <Text style={styles.badgeTextActive}>LICENZA PRO ATTIVA</Text>
+                <Text style={styles.badgeTextActive}>ABBONAMENTO ATTIVO</Text>
               </View>
             )}
             {isTrial && (
               <View style={[styles.badge, styles.badgeTrial]}>
                 <Ionicons name="time" size={14} color="#854D0E" />
-                <Text style={styles.badgeTextTrial}>PROVA GRATUITA (30 GG)</Text>
+                <Text style={styles.badgeTextTrial}>PROVA GRATUITA ({LICENSE_TRIAL_DAYS} GG)</Text>
               </View>
             )}
             {isExpired && (
@@ -225,30 +173,18 @@ export default function LicenseCreditsScreen() {
             <Text style={[styles.infoVal, styles.mono]}>{license?.deviceId || 'SCONOSCIUTO'}</Text>
           </View>
 
-          {license?.expiresAt ? (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoKey}>Scadenza / Prossimo Rinnovo:</Text>
-              <Text style={styles.infoVal}>
-                {new Date(license.expiresAt).toLocaleDateString('it-IT', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoKey}>Validità:</Text>
-              <Text style={[styles.infoVal, { color: '#166534', fontWeight: '800' }]}>Perpetua (A Vita)</Text>
-            </View>
-          )}
-
-          {license?.licenseKey && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoKey}>Codice Seriale:</Text>
-              <Text style={[styles.infoVal, styles.mono]}>{license.licenseKey}</Text>
-            </View>
-          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoKey}>Scadenza / Prossimo Rinnovo:</Text>
+            <Text style={styles.infoVal}>
+              {license?.expiresAt
+                ? new Date(license.expiresAt).toLocaleDateString('it-IT', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                  })
+                : 'Non disponibile'}
+            </Text>
+          </View>
 
           {license?.isPlayStorePurchase && (
             <View style={styles.infoRow}>
@@ -292,37 +228,8 @@ export default function LicenseCreditsScreen() {
         </Text>
 
         {/* Filtri Piani */}
-        <View style={styles.filterRow}>
-          <TouchableOpacity
-            style={[styles.filterChip, planFilter === 'all' && styles.filterChipActive]}
-            onPress={() => setPlanFilter('all')}
-          >
-            <Text style={[styles.filterChipText, planFilter === 'all' && styles.filterChipTextActive]}>
-              Tutti i Piani
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, planFilter === 'base' && styles.filterChipActive]}
-            onPress={() => setPlanFilter('base')}
-          >
-            <Text style={[styles.filterChipText, planFilter === 'base' && styles.filterChipTextActive]}>
-              Singolo Totem (9,99 €)
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, planFilter === 'pro' && styles.filterChipActive]}
-            onPress={() => setPlanFilter('pro')}
-          >
-            <Text style={[styles.filterChipText, planFilter === 'pro' && styles.filterChipTextActive]}>
-              Multi-Totem Pro (19,99 €)
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.plansGrid}>
-          {displayedPlans.map((plan) => {
+          {PLAY_STORE_SUBSCRIPTIONS.map((plan) => {
             const isSelected = license?.plan === plan.id;
             const isProcessing = processingPlan === plan.id;
 
@@ -397,138 +304,12 @@ export default function LicenseCreditsScreen() {
         </View>
       </View>
 
-      {/* SEZIONE 3: LICENZA A VITA B2B (FATTURA DIRETTA - ZERO COMMISSIONI STORE) */}
-      <View style={[styles.card, styles.b2bCard]}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="business" size={22} color="#D97706" />
-          <Text style={styles.cardTitle}>Licenza a Vita B2B (Fattura Elettronica P.IVA)</Text>
-        </View>
-        <Text style={styles.sectionDesc}>
-          Per aziende, ristoranti e titolari di Partita IVA che desiderano acquistare la licenza permanente con fattura fiscale 100% deducibile, zero canoni ricorrenti e senza commissioni di terzi.
-        </Text>
-
-        <View style={styles.b2bContainer}>
-          <View style={styles.b2bHeaderRow}>
-            <View>
-              <Text style={styles.b2bTitle}>{B2B_LIFETIME_INFO.name}</Text>
-              <Text style={styles.b2bSubtitle}>Licenza permanente per singolo terminale Kiosk</Text>
-            </View>
-            <View style={styles.b2bPriceBox}>
-              <Text style={styles.b2bPrice}>{B2B_LIFETIME_INFO.price}</Text>
-              <Text style={styles.b2bPeriod}>una tantum + IVA</Text>
-            </View>
-          </View>
-
-          <View style={styles.b2bFeaturesList}>
-            {B2B_LIFETIME_INFO.features.map((feat, idx) => (
-              <View key={idx} style={styles.featRow}>
-                <Ionicons name="shield-checkmark" size={15} color="#D97706" />
-                <Text style={styles.b2bFeatText}>{feat}</Text>
-              </View>
-            ))}
-          </View>
-
-          <TouchableOpacity
-            style={styles.b2bRequestBtn}
-            onPress={() => requestB2BLicense(license?.deviceId || 'QKB-TOTEM')}
-          >
-            <Ionicons name="mail-unread" size={18} color="white" />
-            <Text style={styles.b2bRequestBtnText}>Richiedi Fattura Elettronica & Seriale B2B</Text>
-          </TouchableOpacity>
-        </View>
+      {/* SEZIONE 3: VERSIONE BUILD */}
+      <View style={styles.buildFooter}>
+        <Text style={styles.buildFooterText}>Totem QuickBite · Versione build v1.2.10</Text>
       </View>
 
-      {/* SEZIONE 4: ATTIVAZIONE CHIAVE SERIALE / VOUCHER B2B */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="key" size={22} color="#F59E0B" />
-          <Text style={styles.cardTitle}>Attivazione tramite Codice Seriale / Voucher</Text>
-        </View>
-        <Text style={styles.sectionDesc}>
-          Hai già ricevuto una chiave seriale B2B con fattura o un voucher di attivazione? Inserisci il codice qui sotto per abilitare immediatamente il totem.
-        </Text>
-
-        <View style={styles.serialInputRow}>
-          <TextInput
-            style={styles.serialInput}
-            placeholder="es. QKB-B2B-2026-XXXX-XXXX"
-            placeholderTextColor="#94A3B8"
-            value={serialInput}
-            onChangeText={setSerialInput}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-          <TouchableOpacity
-            style={styles.serialBtn}
-            onPress={handleActivateSerial}
-            disabled={activatingSerial}
-          >
-            {activatingSerial ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <>
-                <Ionicons name="arrow-forward" size={18} color="white" />
-                <Text style={styles.serialBtnText}>Attiva</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* SEZIONE 5: CREDITI SVILUPPATORE & ARCHITETTURA */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="code-slash" size={22} color="#6366F1" />
-          <Text style={styles.cardTitle}>Crediti & Informazioni Autore</Text>
-        </View>
-
-        <View style={styles.authorCard}>
-          <View style={styles.authorAvatar}>
-            <Text style={styles.authorAvatarText}>GP</Text>
-          </View>
-          <View style={styles.authorDetails}>
-            <Text style={styles.authorName}>Giovanni Priolo</Text>
-            <Text style={styles.authorRole}>Lead Software Architect & Developer</Text>
-            <Text style={styles.authorDesc}>
-              Progettazione e sviluppo dell'ecosistema Totem QuickBite: architettura Local-First, microserver Python, display comande cucina KDS, gestione stampanti termiche ESC/POS e sincronizzazione rete locale.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.contactActions}>
-          <TouchableOpacity style={styles.contactBtn} onPress={openEmailSupport}>
-            <Ionicons name="mail" size={18} color="#2563EB" />
-            <Text style={styles.contactBtnText}>priologiovanni82@gmail.com</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.contactBtn} onPress={openGitHubRepo}>
-            <Ionicons name="logo-github" size={18} color="#1E293B" />
-            <Text style={styles.contactBtnText}>GitHub: Jonnymago/totem</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Dati Tecnici Applet */}
-        <View style={styles.techSpecs}>
-          <View style={styles.techSpecItem}>
-            <Text style={styles.techSpecLabel}>Versione Build</Text>
-            <Text style={styles.techSpecVal}>v1.2.10 (Production)</Text>
-          </View>
-          <View style={styles.techSpecItem}>
-            <Text style={styles.techSpecLabel}>Runtime Engine</Text>
-            <Text style={styles.techSpecVal}>Hermes / Android Nativo</Text>
-          </View>
-          <View style={styles.techSpecItem}>
-            <Text style={styles.techSpecLabel}>Architettura</Text>
-            <Text style={styles.techSpecVal}>Local-First Offline</Text>
-          </View>
-          <View style={styles.techSpecItem}>
-            <Text style={styles.techSpecLabel}>Backend Microserver</Text>
-            <Text style={styles.techSpecVal}>FastAPI / Python Embedded</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* SEZIONE 6: NOTE LEGALI, PRIVACY & CONFORMITÀ PLAY STORE */}
+      {/* SEZIONE 4: NOTE LEGALI, PRIVACY & CONFORMITÀ PLAY STORE */}
       <View style={[styles.card, styles.legalCard]}>
         <Text style={styles.legalNoticeTitle}>Note Legali & Conformità Google Play Store</Text>
         <Text style={styles.legalNoticeText}>
@@ -594,7 +375,7 @@ export default function LicenseCreditsScreen() {
 
                   <Text style={styles.legalHeading}>2. Gestione dei Pagamenti</Text>
                   <Text style={styles.legalParagraph}>
-                    Gli abbonamenti digitali in-app sono gestiti integralmente da Google Play Billing. L'applicazione non ha accesso né memorizza carte di credito o coordinate bancarie. Le licenze B2B dirette vengono regolate tramite bonifico bancario e fatturazione elettronica italiana.
+                    Gli abbonamenti digitali in-app sono gestiti integralmente da Google Play Billing. L'applicazione non ha accesso né memorizza carte di credito o coordinate bancarie.
                   </Text>
 
                   <Text style={styles.legalHeading}>3. Permessi Hardware</Text>
@@ -604,7 +385,7 @@ export default function LicenseCreditsScreen() {
 
                   <Text style={styles.legalHeading}>4. Titolare del Trattamento</Text>
                   <Text style={styles.legalParagraph}>
-                    Per qualsiasi informazione: Giovanni Priolo (Email: priologiovanni82@gmail.com).
+                    Per qualsiasi informazione sulla gestione dei dati, contatta Totem QuickBite attraverso i canali di assistenza ufficiali.
                   </Text>
                 </View>
               ) : (
@@ -621,7 +402,7 @@ export default function LicenseCreditsScreen() {
 
                   <Text style={styles.legalHeading}>3. Supporto Tecnico e Aggiornamenti</Text>
                   <Text style={styles.legalParagraph}>
-                    Gli aggiornamenti software correttivi e le nuove funzionalità vengono rilasciati regolarmente tramite Google Play Store o build EAS dedicate.
+                    Gli aggiornamenti software correttivi e le nuove funzionalità vengono rilasciati attraverso i canali di distribuzione dell'app.
                   </Text>
                 </View>
               )}
@@ -650,6 +431,16 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
     paddingBottom: 40,
+  },
+  buildFooter: {
+    alignItems: 'center',
+    paddingTop: 4,
+    paddingBottom: 18,
+  },
+  buildFooterText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,

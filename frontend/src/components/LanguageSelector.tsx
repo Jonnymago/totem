@@ -6,10 +6,11 @@ interface LanguageSelectorProps {
   compact?: boolean;
   theme?: 'dark' | 'light';
   onSelect?: (lang: SupportedLanguage) => void;
+  mode?: 'persistent' | 'customer-session';
 }
 
-export default function LanguageSelector({ compact = false, theme = 'dark', onSelect }: LanguageSelectorProps) {
-  const { lang: currentLang, setLanguage } = useI18n();
+export default function LanguageSelector({ compact = false, theme = 'dark', onSelect, mode = 'persistent' }: LanguageSelectorProps) {
+  const { lang: currentLang, setLanguage, setCustomerSessionLanguage } = useI18n();
 
   const isDark = theme === 'dark';
 
@@ -26,7 +27,11 @@ export default function LanguageSelector({ compact = false, theme = 'dark', onSe
               isActive && (isDark ? styles.langButtonActiveDark : styles.langButtonActiveLight),
             ]}
             onPress={() => {
-              setLanguage(item.code);
+              if (mode === 'customer-session') {
+                setCustomerSessionLanguage(item.code);
+              } else {
+                void setLanguage(item.code);
+              }
               if (onSelect) onSelect(item.code);
             }}
             activeOpacity={0.7}

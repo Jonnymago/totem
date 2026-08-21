@@ -128,10 +128,24 @@ def _scan_rfcomm() -> list[dict]:
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+PRINT_MESSAGES = {
+    "it": {"missing": "Indirizzo stampante e righe di stampa sono obbligatori", "error": "Errore di stampa"},
+    "en": {"missing": "Printer address and print lines are required", "error": "Print error"},
+    "fr": {"missing": "L’adresse de l’imprimante et les lignes d’impression sont obligatoires", "error": "Erreur d’impression"},
+    "es": {"missing": "La dirección de la impresora y las líneas de impresión son obligatorias", "error": "Error de impresión"},
+    "de": {"missing": "Druckeradresse und Druckzeilen sind erforderlich", "error": "Druckfehler"},
+}
+
+
+def print_message(language: str, key: str) -> str:
+    return PRINT_MESSAGES.get((language or "it").lower(), PRINT_MESSAGES["it"])[key]
+
+
 class PrintRequest(BaseModel):
     address: str          # es. "bt:AA:BB:CC:DD:EE:FF"
     lines: list[str]      # righe di testo generate da printer.ts
     timeout: float = 10.0
+    language: str = "it"
 
 
 @app.get("/health")
@@ -160,7 +174,7 @@ async def scan_printers():
 async def print_ticket(req: PrintRequest):
     """Stampa le righe di testo sulla stampante all'indirizzo specificato."""
     if not req.address or not req.lines:
-        raise HTTPException(400, "address e lines sono obbligatori")
+        raise HTTPException(400, {"code": "print_missing_data", "message": print_message(req.language, "missing")})
 
     data = build_receipt(req.lines)
 
@@ -185,7 +199,7 @@ async def print_ticket(req: PrintRequest):
         return {"success": True, "method": "ble", "bytes_sent": len(data)}
 
     except Exception as e:
-        raise HTTPException(500, f"Errore stampa: {str(e)}")
+        raise HTTPException(500, {"code": "print_error", "message": f"{print_message(req.language, 'error')}: {str(e)}"})
 
 
 if __name__ == "__main__":

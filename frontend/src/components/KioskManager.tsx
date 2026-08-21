@@ -1,21 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Animated,
-  Platform,
-} from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, Platform,  } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useKioskStore } from '@/src/store/kioskStore';
 import { useCartStore } from '@/src/store/cartStore';
 import { getSettings, Settings } from '@/src/api/api';
 import { isNightDimmingTime } from '@/src/utils/kiosk';
+import { useI18n } from '@/src/utils/i18n';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 interface KioskManagerProps {
   children: React.ReactNode;
 }
@@ -23,6 +16,8 @@ interface KioskManagerProps {
 export default function KioskManager({ children }: KioskManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { lang, resetCustomerSessionLanguage } = useI18n();
+  const locale = { it: 'it-IT', en: 'en-GB', fr: 'fr-FR', es: 'es-ES', de: 'de-DE' }[lang];
 
   const {
     config,
@@ -106,7 +101,8 @@ export default function KioskManager({ children }: KioskManagerProps) {
         if (cartItems.length > 0) {
           useCartStore.getState().clearCart();
         }
-        // Riporta il totem alla pagina iniziale
+        // Chiude la sessione linguistica cliente e riporta il totem alla home.
+        resetCustomerSessionLanguage();
         if (pathname !== '/') {
           router.replace('/');
           recordActivity();
@@ -143,6 +139,7 @@ export default function KioskManager({ children }: KioskManagerProps) {
     router,
     triggerScreensaver,
     recordActivity,
+    resetCustomerSessionLanguage,
   ]);
 
   // Calcolo oscuramento luminosità (Dimmer Overlay)
@@ -173,8 +170,7 @@ export default function KioskManager({ children }: KioskManagerProps) {
   return (
     <View
       style={styles.rootContainer}
-      onTouchStartCapture={recordActivity}
-      onPointerDownCapture={recordActivity}
+      onTouchStart={recordActivity}
     >
       {/* Applicazione Principale */}
       {children}
@@ -227,14 +223,14 @@ export default function KioskManager({ children }: KioskManagerProps) {
               <Text style={styles.clockRestaurant}>{restaurantName}</Text>
 
               <Text style={styles.clockDigits}>
-                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                {currentTime.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </Text>
               <Text style={styles.clockDate}>
-                {currentTime.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                {currentTime.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Text>
 
               <Animated.View style={[styles.touchClockHint, { transform: [{ scale: pulseAnim }] }]}>
-                <Ionicons name="touch-app-outline" size={20} color="#94A3B8" />
+                <Ionicons name="hand-left" size={20} color="#94A3B8" />
                 <Text style={styles.touchClockText}>Tocca per iniziare ad ordinare</Text>
               </Animated.View>
             </View>

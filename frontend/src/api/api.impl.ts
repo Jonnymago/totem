@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type SupportedCatalogLanguage = 'it' | 'en' | 'fr' | 'es' | 'de';
+export type LocalTranslation = Partial<Record<SupportedCatalogLanguage, string>>;
+export type TranslationGlossary = Record<string, LocalTranslation>;
+
 export interface Category {
   id: string;
   name: string;
@@ -74,6 +78,7 @@ export interface Product {
 
 export interface Settings {
   custom_backend_url?: string;
+  language?: 'it' | 'en' | 'es' | 'fr' | 'de';
   id: string;
   restaurant_name: string;
   logo: string;
@@ -139,7 +144,8 @@ const DEFAULT_SETTINGS: Settings = {
   admin_pin: '1234',
   admin_username: 'admin',
   admin_password: 'admin123',
-  custom_backend_url: ''
+  custom_backend_url: '',
+  language: undefined
 };
 
 const DEFAULT_CATEGORIES: Category[] = [
@@ -316,6 +322,7 @@ export interface LocalDbState {
   products: Product[];
   orders: Order[];
   global_groups: GlobalOptionGroup[];
+  translation_glossary: TranslationGlossary;
 }
 
 const STORAGE_KEY = 'totem_local_db_v1';
@@ -325,7 +332,8 @@ let localDb: LocalDbState = {
   categories: DEFAULT_CATEGORIES,
   products: DEFAULT_PRODUCTS,
   orders: [],
-  global_groups: []
+  global_groups: [],
+  translation_glossary: {}
 };
 
 let isLoaded = false;
@@ -377,7 +385,8 @@ export async function ensureLocalDbLoaded() {
         categories: parsed.categories && parsed.categories.length ? parsed.categories : DEFAULT_CATEGORIES,
         products: parsed.products && parsed.products.length ? parsed.products : DEFAULT_PRODUCTS,
         orders: parsed.orders || [],
-        global_groups: parsed.global_groups || []
+        global_groups: parsed.global_groups || [],
+        translation_glossary: parsed.translation_glossary || {}
       };
     } else {
       await saveLocalDb();
@@ -397,7 +406,7 @@ export async function saveLocalDb() {
   }
 }
 
-export type DbChangeType = 'products' | 'categories' | 'settings' | 'orders' | 'all';
+export type DbChangeType = 'products' | 'categories' | 'settings' | 'orders' | 'glossary' | 'all';
 export type DbChangeListener = (type: DbChangeType) => void;
 const dbChangeListeners = new Set<DbChangeListener>();
 
@@ -609,6 +618,25 @@ async function persistPrinterSidecarFromSettings() {
     console.warn('persistPrinterSidecarFromSettings failed:', e);
   }
 }
+
+export const getTranslationGlossary = async (): Promise<TranslationGlossary> => {
+  await ensureLocalDbLoaded();
+  return clone(localDb.translation_glossary || {});
+};
+
+export const mergeTranslationGlossary = async (entries: TranslationGlossary): Promise<TranslationGlossary> => {
+  await ensureLocalDbLoaded();
+  const next = { ...(localDb.translation_glossary || {}) };
+  for (const [source, translations] of Object.entries(entries || {})) {
+    const key = String(source || '').trim();
+    if (!key || !translations || typeof translations !== 'object') continue;
+    next[key] = { ...(next[key] || {}), ...translations };
+  }
+  localDb.translation_glossary = next;
+  await saveLocalDb();
+  notifyDbChanged('glossary');
+  return clone(localDb.translation_glossary);
+};
 
 export const getSettings = async (): Promise<Settings> => {
   await ensureLocalDbLoaded();
@@ -908,7 +936,8 @@ export const getLocalBackupSnapshot = async () => {
     settings: clone(localDb.settings),
     categories: clone(localDb.categories),
     products: clone(localDb.products),
-    global_groups: clone(localDb.global_groups || [])
+    global_groups: clone(localDb.global_groups || []),
+    translation_glossary: clone(localDb.translation_glossary || {})
   };
 };
 
@@ -935,6 +964,9 @@ export const restoreLocalBackupSnapshot = async (snapshot: any): Promise<{ produ
       ...g,
       id: (g.id || g._id || 'gg_' + i).toString()
     }));
+  }
+  if (data.translation_glossary && typeof data.translation_glossary === 'object') {
+    localDb.translation_glossary = data.translation_glossary;
   }
   await saveLocalDb();
   notifyDbChanged('all');

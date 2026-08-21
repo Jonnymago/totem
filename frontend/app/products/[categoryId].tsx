@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, Image, Platform, useWindowDimensions } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, Image, Platform, useWindowDimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getProductsByCategory, Product, ExtraAddition, ComboGroup, UiSection, ensureProductSections, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 import { useI18n } from '@/src/utils/i18n';
+import { translateCustomerMenuText, useCustomerMenuGlossary } from '@/src/utils/customerMenuTranslation';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 export default function ProductsScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  useCustomerMenuGlossary();
+  const menuText = (value?: string) => translateCustomerMenuText(value, lang);
   const { categoryId } = useLocalSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -324,7 +328,7 @@ export default function ProductsScreen() {
               <View style={styles.productInfo}>
                 <View style={styles.productNameRow}>
                   <Text style={[styles.productName, !isAvailable && styles.productNameDisabled]}>
-                    {product.name}
+                    {menuText(product.name)}
                   </Text>
                   {!isAvailable && (
                     <View style={styles.soldOutBadge}>
@@ -336,11 +340,11 @@ export default function ProductsScreen() {
                   style={[styles.productDescription, !isAvailable && styles.productDescriptionDisabled]}
                   numberOfLines={2}
                 >
-                  {product.description}
+                  {menuText(product.description)}
                 </Text>
                 {product.allergens && product.allergens.length > 0 && (
                   <Text style={[styles.allergens, !isAvailable && styles.allergensDisabled]}>
-                    {t('products.allergens')}: {product.allergens.join(', ')}
+                    {t('products.allergens')}: {product.allergens.map(menuText).join(', ')}
                   </Text>
                 )}
               </View>
@@ -371,7 +375,7 @@ export default function ProductsScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.modalTitle}>{selectedProduct?.name}</Text>
+                <Text style={styles.modalTitle}>{menuText(selectedProduct?.name)}</Text>
               </View>
               <TouchableOpacity
                 onPress={() => {
@@ -395,7 +399,7 @@ export default function ProductsScreen() {
                 </View>
               ) : null}
 
-              <Text style={styles.modalDescription}>{selectedProduct?.description}</Text>
+              <Text style={styles.modalDescription}>{menuText(selectedProduct?.description)}</Text>
               <Text style={styles.modalPrice}>€{selectedProduct?.price.toFixed(2)}</Text>
 
               {(selectedProduct ? ensureProductSections(selectedProduct).filter(s => s.enabled) : []).map((section) => {
@@ -403,7 +407,7 @@ export default function ProductsScreen() {
                   return (
                     <View key={section.id} style={styles.section}>
                       <Text style={styles.sectionTitle}>
-                        <Ionicons name="remove-circle-outline" size={18} color="#0288D1" /> {section.title}
+                        <Ionicons name="remove-circle-outline" size={18} color="#0288D1" /> {menuText(section.title)}
                       </Text>
                       <View style={styles.ingredientsGrid}>
                         {(section.items || []).map((ing) => {
@@ -415,7 +419,7 @@ export default function ProductsScreen() {
                               onPress={() => toggleRemoveIngredient(ing)}
                             >
                               <Text style={[styles.ingredientText, isRemoved && styles.ingredientTextRemoved]}>
-                                {isRemoved ? '❌ ' : ''}{ing}
+                                {isRemoved ? '❌ ' : ''}{menuText(ing)}
                               </Text>
                             </TouchableOpacity>
                           );
@@ -429,7 +433,7 @@ export default function ProductsScreen() {
                   return (
                     <View key={section.id} style={styles.section}>
                       <Text style={styles.sectionTitle}>
-                        <Ionicons name="add-circle-outline" size={18} color="#060" /> {section.title}
+                        <Ionicons name="add-circle-outline" size={18} color="#060" /> {menuText(section.title)}
                       </Text>
                       {(section.extras || []).map((extra) => {
                         const isSelected = !!addedExtras.find(e => e.name === extra.name);
@@ -445,7 +449,7 @@ export default function ProductsScreen() {
                                 size={22}
                                 color={isSelected ? '#2E7D32' : '#999'}
                               />
-                              <Text style={[styles.extraText, isSelected && styles.extraTextSelected]}>{extra.name}</Text>
+                              <Text style={[styles.extraText, isSelected && styles.extraTextSelected]}>{menuText(extra.name)}</Text>
                             </View>
                             <Text style={styles.extraPrice}>+€{Number(extra.price).toFixed(2)}</Text>
                           </TouchableOpacity>
@@ -459,7 +463,7 @@ export default function ProductsScreen() {
                   return (
                     <View key={section.id} style={styles.section}>
                       <Text style={styles.sectionTitle}>
-                        <Ionicons name="water-outline" size={18} color="#FF6B6B" /> {section.title}
+                        <Ionicons name="water-outline" size={18} color="#FF6B6B" /> {menuText(section.title)}
                       </Text>
                       <View style={styles.ingredientsGrid}>
                         {(section.chips || []).map((opt) => {
@@ -470,7 +474,7 @@ export default function ProductsScreen() {
                               style={[styles.ingredientChip, selected && styles.extraOptionSelected]}
                               onPress={() => toggleCustomization(opt)}
                             >
-                              <Text style={[styles.ingredientText, selected && styles.extraTextSelected]}>{opt}</Text>
+                              <Text style={[styles.ingredientText, selected && styles.extraTextSelected]}>{menuText(opt)}</Text>
                             </TouchableOpacity>
                           );
                         })}
@@ -496,7 +500,7 @@ export default function ProductsScreen() {
                         activeOpacity={0.7}
                       >
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.sectionTitle}>{group.name}</Text>
+                          <Text style={styles.sectionTitle}>{menuText(group.name)}</Text>
                           <Text style={styles.groupHint}>
                             Min {group.min_selection}, Max {group.max_selection}
                             {selected.length ? ` · ${selected.length} scelte` : ''}
@@ -520,7 +524,7 @@ export default function ProductsScreen() {
                                     size={22}
                                     color={on ? '#2E7D32' : '#999'}
                                   />
-                                  <Text style={[styles.extraText, on && styles.extraTextSelected]}>{opt.name}</Text>
+                                  <Text style={[styles.extraText, on && styles.extraTextSelected]}>{menuText(opt.name)}</Text>
                                 </View>
                                 {opt.price_delta ? (
                                   <Text style={styles.extraPrice}>

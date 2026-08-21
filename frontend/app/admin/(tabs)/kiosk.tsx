@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Switch, TextInput as NativeTextInput, Alert, ActivityIndicator, Platform,  } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   KioskConfig,
@@ -18,6 +7,7 @@ import {
   getKioskTelemetry,
   KioskTelemetry,
 } from '@/src/utils/kiosk';
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 import { useKioskStore } from '@/src/store/kioskStore';
 
 export default function KioskHardwareScreen() {
@@ -118,35 +108,7 @@ export default function KioskHardwareScreen() {
           Blocca il tablet in modalità totem esclusiva. Nasconde la barra di navigazione Android e impedisce l'uscita non autorizzata ai clienti.
         </Text>
 
-        <View style={styles.settingRow}>
-          <View style={styles.settingTextCol}>
-            <Text style={styles.settingLabel}>Modalità Kiosk Dedicata</Text>
-            <Text style={styles.settingSub}>Abilita il blocco e l'interfaccia a schermo intero.</Text>
-          </View>
-          <Switch
-            value={config.kioskEnabled}
-            onValueChange={(val) => handleUpdate({ kioskEnabled: val })}
-            trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
-            thumbColor={config.kioskEnabled ? '#2563EB' : '#94A3B8'}
-          />
-        </View>
 
-        <View style={styles.divider} />
-
-        <View style={styles.settingRow}>
-          <View style={styles.settingTextCol}>
-            <Text style={styles.settingLabel}>Schermo Intero Immersivo (Immersive Mode)</Text>
-            <Text style={styles.settingSub}>Nasconde le barre di sistema (Home, Indietro, Notifiche).</Text>
-          </View>
-          <Switch
-            value={config.immersiveFullscreen}
-            onValueChange={(val) => handleUpdate({ immersiveFullscreen: val })}
-            trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
-            thumbColor={config.immersiveFullscreen ? '#2563EB' : '#94A3B8'}
-          />
-        </View>
-
-        <View style={styles.divider} />
 
         <View style={styles.settingRow}>
           <View style={styles.settingTextCol}>
@@ -369,37 +331,6 @@ export default function KioskHardwareScreen() {
 
         <View style={styles.divider} />
 
-        {/* Orientamento Schermo */}
-        <Text style={styles.inputGroupLabel}>Orientamento Display Forzato:</Text>
-        <View style={styles.optionsGrid}>
-          {[
-            { label: 'Verticale (Portrait - Standard Totem)', mode: 'portrait', icon: 'phone-portrait' },
-            { label: 'Orizzontale (Landscape - Bancone)', mode: 'landscape', icon: 'phone-landscape' },
-          ].map((opt) => (
-            <TouchableOpacity
-              key={opt.mode}
-              style={[
-                styles.optionCard,
-                config.screenOrientation === opt.mode && styles.optionCardActive,
-              ]}
-              onPress={() => handleUpdate({ screenOrientation: opt.mode as any })}
-            >
-              <Ionicons
-                name={opt.icon as any}
-                size={18}
-                color={config.screenOrientation === opt.mode ? '#2563EB' : '#64748B'}
-              />
-              <Text
-                style={[
-                  styles.optionCardText,
-                  config.screenOrientation === opt.mode && styles.optionCardTextActive,
-                ]}
-              >
-                {opt.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
       </View>
 
       {/* SEZIONE 4: SICUREZZA & GESTURE DI SBLOCCO */}
@@ -444,7 +375,7 @@ export default function KioskHardwareScreen() {
           {[
             { label: 'Angolo Alto a Destra', loc: 'top-right' },
             { label: 'Angolo Alto a Sinistra', loc: 'top-left' },
-            { label: 'Logo Totem Ristorante', loc: 'logo' },
+            { label: 'In Alto Centrale', loc: 'logo' },
           ].map((opt) => (
             <TouchableOpacity
               key={opt.loc}
@@ -498,7 +429,7 @@ export default function KioskHardwareScreen() {
           </View>
           <View style={styles.telemetryRow}>
             <Text style={styles.telKey}>IP Kiosk LAN:</Text>
-            <Text style={[styles.telVal, styles.mono]}>{telemetry?.ipAddress || '192.168.1.9'}</Text>
+            <Text style={[styles.telVal, styles.mono]}>{telemetry?.ipAddress || 'Rilevamento...'}</Text>
           </View>
           <View style={styles.telemetryRow}>
             <Text style={styles.telKey}>Memoria Libera:</Text>

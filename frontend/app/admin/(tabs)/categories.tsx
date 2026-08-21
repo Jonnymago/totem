@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput, Alert, Image, Platform } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput as NativeTextInput, Alert, Image, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getCategories, createCategory, updateCategory, deleteCategory, Category, subscribeToDbChanges } from '@/src/api/api';
 import * as ImagePicker from 'expo-image-picker';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 export default function CategoriesManagementScreen() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);

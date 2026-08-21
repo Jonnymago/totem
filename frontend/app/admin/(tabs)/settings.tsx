@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Alert, Image, Platform, Modal } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput as NativeTextInput, Alert, Image, Platform, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,7 +10,9 @@ import { storage } from '@/src/utils/storage';
 import { scanPrinters, getPairedPrinters, PairedPrinter } from '@/src/utils/printer';
 import * as Network from 'expo-network';
 import LanguageSelector from '@/src/components/LanguageSelector';
+import { SupportedLanguage, useI18n } from '@/src/utils/i18n';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 function deviceIdentifier(device: PairedPrinter): string {
   const addr = (device.address || '').trim();
   if (addr) return addr;
@@ -19,6 +21,7 @@ function deviceIdentifier(device: PairedPrinter): string {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { t, setLanguage } = useI18n();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -266,6 +269,11 @@ export default function SettingsScreen() {
 
   const handleRemoveLogo = () => setLogo('');
 
+  const handleLanguageChange = async (language: SupportedLanguage) => {
+    await setLanguage(language);
+    await updateSettings({ language });
+  };
+
   const handleSave = async () => {
     if (!restaurantName.trim()) {
       Alert.alert('Errore', 'Il nome del ristorante non puo essere vuoto');
@@ -405,7 +413,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>{t('settings.title')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Ionicons name="log-out-outline" size={24} color="white" />
@@ -416,10 +424,10 @@ export default function SettingsScreen() {
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            <Ionicons name="globe-outline" size={18} color="#FF6B6B" /> Customer Interface Language
+            <Ionicons name="globe-outline" size={18} color="#FF6B6B" /> {t('settings.language_section')}
           </Text>
-          <Text style={styles.label}>Select the active language displayed on the customer ordering totem:</Text>
-          <LanguageSelector theme="light" />
+          <Text style={styles.label}>{t('settings.select_language')}</Text>
+          <LanguageSelector theme="light" onSelect={handleLanguageChange} />
         </View>
 
         <View style={styles.section}>

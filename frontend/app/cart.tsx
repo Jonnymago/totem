@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
 import { getProducts, subscribeToDbChanges } from '@/src/api/api';
 import { useI18n } from '@/src/utils/i18n';
+import { translateCustomerMenuText, useCustomerMenuGlossary } from '@/src/utils/customerMenuTranslation';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 export default function CartScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  useCustomerMenuGlossary();
+  const menuText = (value?: string) => translateCustomerMenuText(value, lang);
   const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, setEditingIndex } = useCartStore();
   const [unavailableIds, setUnavailableIds] = useState<Set<string>>(new Set());
   const totalPrice = getTotalPrice();
@@ -86,7 +90,7 @@ export default function CartScreen() {
     if (item.removed_ingredients?.length > 0) {
       lines.push(
         <Text key="removed" style={styles.tagRemoved}>
-          - Senza {item.removed_ingredients.join(', ')}
+          - Senza {item.removed_ingredients.map(menuText).join(', ')}
         </Text>
       );
     }
@@ -94,7 +98,7 @@ export default function CartScreen() {
     if (item.customizations?.length > 0) {
       lines.push(
         <Text key="custom" style={styles.tagCustom}>
-          + {item.customizations.join(', ')}
+          + {item.customizations.map(menuText).join(', ')}
         </Text>
       );
     }
@@ -103,7 +107,7 @@ export default function CartScreen() {
       lines.push(
         <Text key="extras" style={styles.tagExtra}>
           + {item.added_extras.map((e: any) =>
-            e.price > 0 ? `${e.name} (€${Number(e.price).toFixed(2)})` : e.name
+            e.price > 0 ? `${menuText(e.name)} (€${Number(e.price).toFixed(2)})` : menuText(e.name)
           ).join(', ')}
         </Text>
       );
@@ -115,14 +119,14 @@ export default function CartScreen() {
         if (!byGroup[line.group]) byGroup[line.group] = [];
         byGroup[line.group].push(
           line.price_delta > 0
-            ? `${line.name} (+€${Number(line.price_delta).toFixed(2)})`
-            : line.name
+            ? `${menuText(line.name)} (+€${Number(line.price_delta).toFixed(2)})`
+            : menuText(line.name)
         );
       }
       Object.entries(byGroup).forEach(([group, opts]) => {
         lines.push(
           <Text key={`combo-${group}`} style={styles.tagCombo}>
-            {group}: {opts.join(', ')}
+            {menuText(group)}: {opts.join(', ')}
           </Text>
         );
       });
@@ -131,7 +135,7 @@ export default function CartScreen() {
         if (!opts || !(opts as string[]).length) return;
         lines.push(
           <Text key={`sel-${group}`} style={styles.tagCombo}>
-            {group}: {(opts as string[]).join(', ')}
+            {menuText(group)}: {(opts as string[]).map(menuText).join(', ')}
           </Text>
         );
       });
@@ -182,7 +186,7 @@ export default function CartScreen() {
                   <View style={styles.itemInfo}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                       <Text style={[styles.itemName, isItemSoldOut && styles.itemNameSoldOut]}>
-                        {item.product_name}
+                        {menuText(item.product_name)}
                       </Text>
                       {isItemSoldOut && (
                         <View style={styles.soldOutBadge}>

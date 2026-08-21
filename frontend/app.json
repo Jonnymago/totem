@@ -77,7 +77,8 @@
         {
           "photosPermission": "L'app ha bisogno di accedere alle foto per il logo e le immagini prodotti."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

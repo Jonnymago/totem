@@ -3,9 +3,11 @@ import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { translateSourceText, useI18n } from '@/src/utils/i18n';
 
 export default function AdminLayout() {
   const insets = useSafeAreaInsets();
+  useI18n();
   // Extra spazio sotto: gabbia totem / FydeOS taglia il bordo inferiore
   const bottomExtra = Platform.OS === 'android' ? 28 : 12;
   const padBottom = Math.max(insets.bottom, 12) + bottomExtra;
@@ -40,7 +42,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="products"
         options={{
-          title: 'Products',
+          title: translateSourceText('Products'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fast-food" size={size} color={color} />
           ),
@@ -50,7 +52,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="categories"
         options={{
-          title: 'Categories',
+          title: translateSourceText('Categories'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" size={size} color={color} />
           ),
@@ -60,7 +62,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="groups"
         options={{
-          title: 'Groups',
+          title: translateSourceText('Groups'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="layers" size={size} color={color} />
           ),
@@ -70,7 +72,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="kiosk"
         options={{
-          title: 'Kiosk',
+          title: translateSourceText('Kiosk'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="tablet-portrait" size={size} color={color} />
           ),
@@ -80,7 +82,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: translateSourceText('Settings'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
           ),
@@ -90,7 +92,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="license"
         options={{
-          title: 'License',
+          title: translateSourceText('License'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ribbon-outline" size={size} color={color} />
           ),
@@ -101,7 +103,7 @@ export default function AdminLayout() {
         name="kitchen"
         options={{
           href: null,
-          title: 'Kitchen',
+          title: translateSourceText('Kitchen'),
         }}
       />
     </Tabs>

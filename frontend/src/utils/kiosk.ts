@@ -2,9 +2,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, StatusBar as RNStatusBar } from 'react-native';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
+import * as Network from 'expo-network';
 import { startKioskMode, stopKioskMode } from '../../modules/kiosk-mode/src';
 
 const STORAGE_KEY_KIOSK = 'TOTEM_KIOSK_CONFIG_V1';
+
+async function getLocalIpAddress(): Promise<string> {
+  try {
+    const ip = await Network.getIpAddressAsync();
+    return ip && ip !== '0.0.0.0' ? ip : '127.0.0.1';
+  } catch {
+    return '127.0.0.1';
+  }
+}
 
 export interface KioskConfig {
   kioskEnabled: boolean;
@@ -196,7 +206,7 @@ export async function getKioskTelemetry(): Promise<KioskTelemetry> {
     batteryLevel: 100,
     isCharging: true,
     screenBrightness: config.brightnessLevel,
-    ipAddress: '192.168.1.9',
+    ipAddress: await getLocalIpAddress(),
     version: '1.2.10',
     lastHeartbeat: new Date().toISOString(),
   };

@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput, Alert, Image } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Modal, TextInput as NativeTextInput, Alert, Image } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getGlobalGroups, GlobalOptionGroup, getAllProductsAdmin, createProduct, updateProduct, deleteProduct, getCategories, Product, Category, ComboGroup, UiSection, UiSectionType, ensureProductSections, syncLegacyFromSections, newSectionId, subscribeToDbChanges } from '@/src/api/api';
 import * as ImagePicker from 'expo-image-picker';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 export default function ProductsManagementScreen() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);

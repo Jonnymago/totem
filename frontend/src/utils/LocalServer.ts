@@ -395,7 +395,7 @@ export function startLocalServer() {
       console.warn('LocalServer error:', error?.message || error);
       starting = false;
       try { nextServer.close(); } catch {}
-      try { nextServer.destroy?.(); } catch {}
+      try { (nextServer as any).destroy?.(); } catch {}
       if (server === nextServer) server = null;
       setTimeout(() => startLocalServer(), 1000);
     });
@@ -571,6 +571,14 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       }
     } else if ((method === 'PUT' || method === 'POST') && (p === '/api/admin/settings' || p === '/api/settings')) {
       result = await api.updateSettings(json || {});
+      if (json?.language) {
+        const { setLanguage } = await import('./i18n');
+        await setLanguage(json.language);
+      }
+    } else if (method === 'GET' && (p === '/api/admin/translation-glossary' || p === '/api/translation-glossary')) {
+      result = await api.getTranslationGlossary();
+    } else if ((method === 'PUT' || method === 'POST') && (p === '/api/admin/translation-glossary' || p === '/api/translation-glossary')) {
+      result = await api.mergeTranslationGlossary(json?.entries || json || {});
     } else if (method === 'GET' && (p === '/api/categories' || p === '/api/admin/categories')) {
       result = await api.getCategories();
     } else if (method === 'POST' && (p === '/api/admin/categories' || p === '/api/categories')) {
@@ -631,7 +639,7 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       }
     } else if (method === 'POST' && (p === '/api/admin/reset-order-number' || p === '/api/reset-order-number')) {
       const resetResult = await api.resetOrderNumber();
-      result = { message: 'Order number and orders reset successfully', ...resetResult };
+      result = { ...resetResult, message: resetResult?.message || 'Order number and orders reset successfully' };
     } else if (method === 'GET' && (p === '/api/admin/backup' || p === '/api/backup')) {
       result = await api.getLocalBackupSnapshot();
     } else if (method === 'POST' && (p === '/api/admin/sync-backup' || p === '/api/sync-backup' || p === '/api/admin/backup' || p === '/api/backup')) {

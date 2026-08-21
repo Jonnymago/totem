@@ -1,18 +1,9 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  LayoutAnimation,
-  Platform,
-  UIManager,
-  Linking,
-} from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, TextInput as NativeTextInput, LayoutAnimation, Platform, UIManager, Linking,  } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n, SUPPORTED_LANGUAGES, SupportedLanguage, GuideSection } from '@/src/utils/i18n';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 try {
   if (Platform.OS === 'android' && UIManager?.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);

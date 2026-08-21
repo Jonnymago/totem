@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getAllOrdersAdmin, updateOrderStatus, getSettings, subscribeToDbChanges, Order } from '@/src/api/api';
 import { storage } from '@/src/utils/storage';
 import { printKitchenTicket, printCourtesyTicket } from '@/src/utils/printer';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 export default function AdminDashboardScreen() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);

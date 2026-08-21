@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput, ScrollView, Platform } from 'react-native';
+import { View, Text as NativeText, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput as NativeTextInput, ScrollView, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getGlobalGroups, createGlobalGroup, updateGlobalGroup, deleteGlobalGroup, GlobalOptionGroup, UiSectionType, ExtraAddition, ComboGroupOption } from '@/src/api/api';
 
+import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 export default function GroupsManagementScreen() {
   const [groups, setGroups] = useState<GlobalOptionGroup[]>([]);
   const [loading, setLoading] = useState(true);

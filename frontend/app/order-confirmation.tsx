@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
 import { createOrder, Order, getSettings, Settings } from '@/src/api/api';
 import { printCourtesyTicket, printKitchenTicket } from '@/src/utils/printer';
-import { useI18n } from '@/src/utils/i18n';
+import { getCurrentLanguage, useI18n } from '@/src/utils/i18n';
+import { translateCustomerMenuText, useCustomerMenuGlossary } from '@/src/utils/customerMenuTranslation';
 
+import { Text } from '@/src/components/LocalizedPrimitives';
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+function displayMenuText(value?: string): string {
+  return translateCustomerMenuText(value, getCurrentLanguage());
 }
 
 function renderItemDetails(item: any) {
@@ -17,14 +23,14 @@ function renderItemDetails(item: any) {
   if (item.removed_ingredients?.length > 0) {
     item.removed_ingredients.forEach((ing: string, idx: number) => {
       lines.push(
-        <Text key={`r-${idx}`} style={styles.removedText}>- Senza {ing}</Text>
+        <Text key={`r-${idx}`} style={styles.removedText}>- Senza {displayMenuText(ing)}</Text>
       );
     });
   }
 
   if (item.customizations?.length > 0) {
     lines.push(
-      <Text key="custom" style={styles.customText}>+ {item.customizations.join(', ')}</Text>
+      <Text key="custom" style={styles.customText}>+ {item.customizations.map(displayMenuText).join(', ')}</Text>
     );
   }
 
@@ -32,7 +38,7 @@ function renderItemDetails(item: any) {
     item.added_extras.forEach((extra: any, idx: number) => {
       lines.push(
         <Text key={`e-${idx}`} style={styles.addedText}>
-          + {extra.name}{extra.price > 0 ? ` (€${Number(extra.price).toFixed(2)})` : ''}
+          + {displayMenuText(extra.name)}{extra.price > 0 ? ` (€${Number(extra.price).toFixed(2)})` : ''}
         </Text>
       );
     });
@@ -44,14 +50,14 @@ function renderItemDetails(item: any) {
       if (!byGroup[line.group]) byGroup[line.group] = [];
       byGroup[line.group].push(
         line.price_delta > 0
-          ? `${line.name} (+€${Number(line.price_delta).toFixed(2)})`
-          : line.name
+          ? `${displayMenuText(line.name)} (+€${Number(line.price_delta).toFixed(2)})`
+          : displayMenuText(line.name)
       );
     }
     Object.entries(byGroup).forEach(([group, opts]) => {
       lines.push(
         <Text key={`c-${group}`} style={styles.comboText}>
-          {group}: {opts.join(', ')}
+          {displayMenuText(group)}: {opts.join(', ')}
         </Text>
       );
     });
@@ -60,7 +66,7 @@ function renderItemDetails(item: any) {
       if (!opts || !(opts as string[]).length) return;
       lines.push(
         <Text key={`s-${group}`} style={styles.comboText}>
-          {group}: {(opts as string[]).join(', ')}
+          {displayMenuText(group)}: {(opts as string[]).map(displayMenuText).join(', ')}
         </Text>
       );
     });
@@ -75,7 +81,8 @@ function renderItemDetails(item: any) {
 
 export default function OrderConfirmationScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, resetCustomerSessionLanguage } = useI18n();
+  useCustomerMenuGlossary();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -143,6 +150,7 @@ export default function OrderConfirmationScreen() {
             await printKitchenTicket(order, s?.printer_kitchen || undefined, s || undefined);
           }
         } catch (e) { console.warn('Auto-print kitchen failed', e); }
+        finally { resetCustomerSessionLanguage(); }
       })();
     } catch (error) {
       console.error('Error creating order:', error);
@@ -167,7 +175,7 @@ export default function OrderConfirmationScreen() {
           {items.map((item, index) => (
             <View key={index} style={styles.orderItem}>
               <View style={styles.itemRow}>
-                <Text style={styles.itemName}>{item.quantity}x {item.product_name}</Text>
+                <Text style={styles.itemName}>{item.quantity}x {displayMenuText(item.product_name)}</Text>
                 <Text style={styles.itemTotal}>€{(item.price * item.quantity).toFixed(2)}</Text>
               </View>
               {renderItemDetails(item)}
