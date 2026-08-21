@@ -456,11 +456,11 @@ export default function KioskHardwareScreen() {
         </View>
       </View>
 
-      {/* SEZIONE 5: FREEKIOSK REST API & TELEMETRIA LOCALE */}
+      {/* SEZIONE 5: TOTEM KIOSK REST API & TELEMETRIA LOCALE */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Ionicons name="hardware-chip" size={22} color="#0284C7" />
-          <Text style={styles.cardTitle}>FreeKiosk REST API & Telemetria LAN</Text>
+          <Text style={styles.cardTitle}>Totem Kiosk REST API & Telemetria LAN</Text>
         </View>
         <Text style={styles.sectionDesc}>
           Permette il controllo remoto e la telemetria via rete locale LAN (compatibile con Home Assistant e pannello web).

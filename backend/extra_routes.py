@@ -135,7 +135,7 @@ def register_extra_routes(api_router: APIRouter) -> None:
         )
         return {"message": "Database seeded successfully", "admin_username": "admin"}
 
-    # --- FreeKiosk REST API Endpoints ---
+    # --- Totem Kiosk Hardware REST API Endpoints ---
     @api_router.get("/kiosk/status")
     async def get_kiosk_status():
         cfg = await db.kiosk_config.find_one({}) or {}
@@ -149,7 +149,7 @@ def register_extra_routes(api_router: APIRouter) -> None:
             "auto_reset_cart_timeout_sec": cfg.get("autoResetCartTimeoutSec", 45),
             "night_dimming_enabled": cfg.get("nightDimmingEnabled", True),
             "uptime_seconds": 3600,
-            "version": "v1.2.10-kiosk-freekiosk",
+            "version": "v1.2.10-kiosk-engine",
             "timestamp": datetime.now(UTC).isoformat(),
         }
 
@@ -187,12 +187,12 @@ def register_extra_routes(api_router: APIRouter) -> None:
 
     @api_router.post("/kiosk/wake")
     async def kiosk_wake():
-        logger.info("FreeKiosk API: wake screen triggered")
+        logger.info("Totem Kiosk API: wake screen triggered")
         return {"status": "ok", "action": "wake", "timestamp": datetime.now(UTC).isoformat()}
 
     @api_router.post("/kiosk/screensaver")
     async def kiosk_screensaver():
-        logger.info("FreeKiosk API: screensaver triggered")
+        logger.info("Totem Kiosk API: screensaver triggered")
         return {"status": "ok", "action": "screensaver", "timestamp": datetime.now(UTC).isoformat()}
 
     @api_router.post("/kiosk/brightness")
@@ -203,6 +203,6 @@ def register_extra_routes(api_router: APIRouter) -> None:
 
     @api_router.post("/kiosk/reload")
     async def kiosk_reload():
-        logger.info("FreeKiosk API: reload requested")
+        logger.info("Totem Kiosk API: reload requested")
         return {"status": "ok", "action": "reload", "timestamp": datetime.now(UTC).isoformat()}
 

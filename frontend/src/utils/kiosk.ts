@@ -27,7 +27,7 @@ export interface KioskConfig {
   secretTriggerLocation: 'top-right' | 'top-left' | 'logo';
   requirePinForExit: boolean;
 
-  // FreeKiosk REST API
+  // Kiosk REST API
   restApiEnabled: boolean;
   allowRemoteWake: boolean;
   allowRemoteReload: boolean;
@@ -105,7 +105,7 @@ export async function getKioskTelemetry(): Promise<KioskTelemetry> {
     isCharging: true,
     screenBrightness: config.brightnessLevel,
     ipAddress: '192.168.1.9',
-    version: 'v1.2.10-kiosk-freekiosk',
+    version: 'v1.2.10-kiosk-engine',
     lastHeartbeat: new Date().toISOString(),
   };
 }
