@@ -13,7 +13,7 @@ L'applicazione è interamente tradotta in **5 lingue (Italiano, Inglese, Frances
 *   **Pannello Remoto:** L'interfaccia web di gestione (categorie, prodotti, impostazioni) è completamente localizzata.
 *   **Stampe e Scontrini:** Le ricevute per i clienti e le comande per la cucina rispettano la lingua selezionata o quella di sistema.
 *   **Traduttore Temporaneo per Clienti:** I clienti possono selezionare la loro lingua dalla Home. I prodotti vengono tradotti momentaneamente per la sessione d'ordine, per poi tornare automaticamente alla lingua di sistema al termine dell'ordine o per inattività.
-*   **Glossario Offline Aggiornabile:** Le traduzioni dei prodotti sono salvate localmente. Tramite il pannello remoto, è possibile aggiornare il glossario offline con un clic (usando MyMemory API, gratuita e senza chiavi), rendendo il totem completamente indipendente da Internet durante l'uso.
+*   **Glossario Offline Aggiornabile:** Le traduzioni dei prodotti vengono salvate localmente. Tramite il pannello remoto, è possibile aggiornare il glossario offline con un clic: il sistema sfrutta un motore di traduzione automatica per generare i testi mancanti, salvandoli nel database locale per rendere il totem completamente indipendente da Internet durante l'uso.
 
 ---
 
