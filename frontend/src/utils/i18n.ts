@@ -753,7 +753,6 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
       subtitle: 'Come interagiscono Totem, Cucina KDS, Cassa e Pannello Remoto',
       badge: 'ARCHITETTURA',
       paragraphs: [
-        'Totem QuickBite è una piattaforma POS/Kiosk all-in-one creata con architettura Local-First. Funziona al 100% all\'interno della rete locale (LAN/WiFi) del ristorante, garantendo operatività continua anche in assenza di connessione internet esterna.',
         'Il sistema si compone di 4 moduli cooperanti in tempo reale:',
       ],
       bulletPoints: [
@@ -795,7 +794,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
         { title: 'Categorie & Ordinamento', desc: 'Crea categorie (es. Burger, Pizze, Bevande, Dolci) e trascinale nell\'ordine di visualizzazione desiderato.' },
         { title: 'Gruppi di Opzioni & Combo', desc: 'Crea gruppi di scelta (es. "Scegli la Bibita", "Tipo di Cottura", "Aggiungi Salsa") con regole di selezione minima e massima obbligatoria.' },
         { title: 'Ingredienti Rimovibili & Extra', desc: 'Definisci la ricetta base con ingredienti che il cliente può togliere, e imposta gli extra con il rispettivo sovrapprezzo.' },
-        { title: 'Pulsante Esaurito Rapido (86)', desc: 'Con un solo tocco puoi impostare un piatto come "Esaurito": apparirà immediatamente disattivato sul totem senza doverlo eliminare.' },
+        { title: 'Pulsante Esaurito Rapido ', desc: 'Con un solo tocco puoi impostare un piatto come "Esaurito": apparirà immediatamente disattivato sul totem senza doverlo eliminare.' },
       ],
       tip: 'Usa il tasto "Esaurito" dal pannello smartphone quando finisce un ingrediente durante il servizio: si aggiorna live in mezzo secondo.',
     },
@@ -869,7 +868,6 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Piani di Abbonamento & Licenza a Vita B2B',
       subtitle: 'Google Play Store vs Fattura Elettronica Diretta P.IVA',
       badge: 'LICENZE & FISCALITÀ',
       paragraphs: [
@@ -877,8 +875,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
       ],
       bulletPoints: [
         { title: 'Abbonamento Mensile / Annuale Google Play', desc: 'Attivabile con un click tramite account Google. Include periodo di prova di 7 giorni, aggiornamenti automatici e cancellazione libera in qualsiasi momento.' },
-        { title: 'Licenza a Vita B2B (Fattura Elettronica)', desc: 'Acquisto una tantum senza canoni ricorrenti. Fornita con regolare fattura elettronica con Partita IVA italiana 100% deducibile e chiave seriale permanente (es. QKB-B2B-XXXX).' },
-        { title: 'Ripristino Licenza su Nuovo Dispositivo', desc: 'Se cambi tablet puoi ripristinare il tuo acquisto Google Play o re-inserire la chiave seriale B2B per riattivare la licenza istantaneamente.' },
+        { title: 'Ripristino Licenza su Nuovo Dispositivo', desc: 'Se cambi tablet puoi ripristinare il tuo acquisto Google Play per riattivare la licenza istantaneamente.' },
       ],
       tip: 'Per richiedere la licenza a vita con fattura fiscale, clicca sul pulsante "Richiedi Fattura B2B" o invia una email a priologiovanni82@gmail.com.',
     },
@@ -1008,15 +1005,13 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Subscription Plans & B2B Lifetime License',
       subtitle: 'Google Play Billing vs Direct B2B Invoicing',
       badge: 'LICENSING & TAX',
       paragraphs: [
         'Totem QuickBite provides flexible, transparent licensing options tailored to every hospitality business:',
       ],
       bulletPoints: [
-        { title: 'Google Play Monthly / Annual Subscription', desc: 'One-click activation with Google Play account. Includes 30-day free trial, automatic updates and cancel anytime.' },
-        { title: 'B2B Lifetime License (VAT Invoicing)', desc: 'One-time purchase with zero recurring fees. Delivered with an official tax invoice and permanent activation serial key (e.g. QKB-B2B-XXXX).' },
+        { title: 'Google Play Monthly / Annual Subscription', desc: 'One-click activation with Google Play account. Includes 7-day free trial, automatic updates and cancel anytime.' },
         { title: 'Restoring License on New Device', desc: 'Easily restore purchases on new tablets via Google Play Restore or re-entering the B2B key.' },
       ],
       tip: 'To request a B2B invoice license, tap "Request B2B Invoice" or email priologiovanni82@gmail.com.',
@@ -1062,7 +1057,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch3_menu_management',
       icon: 'fast-food',
-      title: '3. Gestión de Menú, Variantes y Agotados (86)',
+      title: '3. Gestión de Menú, Variantes y Agotados ',
       subtitle: 'Creación de categorías, extras, grupos de opciones y precios',
       badge: 'MENÚ Y CATÁLOGO',
       paragraphs: [
@@ -1072,7 +1067,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
         { title: 'Categorías y Orden', desc: 'Cree categorías (Hamburguesas, Pizzas, Bebidas, Postres) y ordénelas fácilmente.' },
         { title: 'Grupos de Opciones y Menús', desc: 'Configure opciones obligatorias (ej. "Elige Bebida", "Punto de Carne") con mínimos y máximos.' },
         { title: 'Ingredientes y Extras', desc: 'Defina ingredientes que el cliente puede quitar y extras con suplemento de precio.' },
-        { title: 'Botón de Agotado Rápido (86)', desc: 'Desactive productos agotados con un solo toque sin tener que borrarlos.' },
+        { title: 'Botón de Agotado Rápido ', desc: 'Desactive productos agotados con un solo toque sin tener que borrarlos.' },
       ],
       tip: 'Utilice el botón de Agotado desde su móvil cuando se acabe un ingrediente durante el servicio.',
     },
@@ -1195,7 +1190,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch3_menu_management',
       icon: 'fast-food',
-      title: '3. Gestion du Menu, Options et Ruptures (86)',
+      title: '3. Gestion du Menu, Options et Ruptures ',
       subtitle: 'Catégories, recettes, menus combos et gestion des stocks',
       badge: 'MENU & STOCKS',
       paragraphs: [
@@ -1204,7 +1199,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
       bulletPoints: [
         { title: 'Catégories & Ordre', desc: 'Créez vos familles de produits et organisez l\'affichage.' },
         { title: 'Groupes d\'Options & Combos', desc: 'Définissez des choix obligatoires (Boisson, Cuisson, Sauce).' },
-        { title: 'Bouton Rupture Rapide (86)', desc: 'Désactivez un plat épuisé en un clic sans le supprimer.' },
+        { title: 'Bouton Rupture Rapide ', desc: 'Désactivez un plat épuisé en un clic sans le supprimer.' },
       ],
       tip: 'Utilisez le bouton Rupture depuis votre mobile lors des coups de feu.',
     },
@@ -1325,7 +1320,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch3_menu_management',
       icon: 'fast-food',
-      title: '3. Speisekarten- und Ausverkaufs-Verwaltung (86)',
+      title: '3. Speisekarten- und Ausverkaufs-Verwaltung ',
       subtitle: 'Kategorien, Rezepturen, Menü-Kombinationen und Preise',
       badge: 'SPEISEKARTE',
       paragraphs: [
@@ -1334,7 +1329,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
       bulletPoints: [
         { title: 'Kategorien & Reihenfolge', desc: 'Kategorien anlegen (Burger, Pizza, Getränke, Desserts) und anordnen.' },
         { title: 'Optionsgruppen & Menüs', desc: 'Pflichtauswahlen definieren (z.B. Getränkewahl, Garstufe).' },
-        { title: 'Schneller Ausverkaufs-Schalter (86)', desc: 'Ausverkaufte Artikel mit einem Tippen deaktivieren.' },
+        { title: 'Schneller Ausverkaufs-Schalter ', desc: 'Ausverkaufte Artikel mit einem Tippen deaktivieren.' },
       ],
       tip: 'Nutzen Sie die Ausverkaufs-Funktion vom Smartphone während des laufenden Betriebs.',
     },
