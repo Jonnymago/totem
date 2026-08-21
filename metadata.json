@@ -1,6 +1,6 @@
 {
   "name": "Totem Ristorante",
-  "description": "Applicazione totem per ordinazioni rapide e gestione cassa/cucina per ristorante",
+  "description": "Sistema Totem Kiosk per ordinazioni touch-screen, gestione comande in tempo reale, display cucina e pannello di controllo remoto locale su Android nativo.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
