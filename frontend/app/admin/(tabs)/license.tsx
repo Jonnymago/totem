@@ -25,6 +25,7 @@ import {
   LicenseInfo,
   LicensePlan,
 } from '@/src/utils/license';
+import GuideHelper from '@/src/components/GuideHelper';
 
 export default function LicenseCreditsScreen() {
   const [loading, setLoading] = useState(true);
@@ -558,6 +559,9 @@ export default function LicenseCreditsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* SEZIONE 7: GUIDA OPERATIVA COMPLETA & MANUALE IN 5 LINGUE */}
+      <GuideHelper />
 
       {/* MODAL INFORMATIVE LEGALI */}
       <Modal

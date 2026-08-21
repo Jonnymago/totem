@@ -4,9 +4,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getCategories, Category, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function CategoriesScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const cartItems = useCartStore(state => state.getTotalItems());
@@ -72,19 +75,23 @@ export default function CategoriesScreen() {
         <TouchableOpacity onPress={() => router.back()} style={[styles.headerBtn, isLarge && styles.headerBtnLarge]} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="arrow-back" size={isLarge ? 44 : 36} color="white" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, isLarge && { fontSize: 36 }]}>Categorie</Text>
-        <TouchableOpacity
-          onPress={() => router.push('/cart')}
-          style={[styles.headerBtn, isLarge && styles.headerBtnLarge]}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="cart" size={isLarge ? 44 : 36} color="white" />
-          {cartItems > 0 && (
-            <View style={[styles.badge, isLarge && styles.badgeLarge]}>
-              <Text style={[styles.badgeText, isLarge && { fontSize: 18 }]}>{cartItems}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <Text style={[styles.headerTitle, isLarge && { fontSize: 36 }]}>{t('categories.title')}</Text>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <LanguageSelector compact theme="dark" />
+          <TouchableOpacity
+            onPress={() => router.push('/cart')}
+            style={[styles.headerBtn, isLarge && styles.headerBtnLarge]}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="cart" size={isLarge ? 44 : 36} color="white" />
+            {cartItems > 0 && (
+              <View style={[styles.badge, isLarge && styles.badgeLarge]}>
+                <Text style={[styles.badgeText, isLarge && { fontSize: 18 }]}>{cartItems}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -95,7 +102,7 @@ export default function CategoriesScreen() {
           isLarge && { paddingTop: 28 },
         ]}
       >
-        <Text style={[styles.subtitle, isLarge && { fontSize: 30, marginBottom: 28 }]}>Cosa desideri oggi?</Text>
+        <Text style={[styles.subtitle, isLarge && { fontSize: 30, marginBottom: 28 }]}>{t('categories.subtitle')}</Text>
 
         <View style={[styles.grid, { gap }]}>
           {categories.map((category) => (

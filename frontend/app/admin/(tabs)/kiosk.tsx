@@ -20,8 +20,11 @@ import {
   getKioskTelemetry,
   KioskTelemetry,
 } from '@/src/utils/kiosk';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function KioskHardwareScreen() {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<KioskConfig>(DEFAULT_KIOSK_CONFIG);
@@ -88,13 +91,16 @@ export default function KioskHardwareScreen() {
       
       {/* HEADER SCHERMATA */}
       <View style={styles.header}>
-        <View style={styles.headerIconBox}>
-          <Ionicons name="tablet-portrait" size={28} color="#2563EB" />
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={styles.headerIconBox}>
+            <Ionicons name="tablet-portrait" size={28} color="#2563EB" />
+          </View>
+          <View style={styles.headerTextBox}>
+            <Text style={styles.headerTitle}>{t('admin.nav_kiosk')} & Hardware</Text>
+            <Text style={styles.headerSubtitle}>Gestione dispositivo, blocco schermo, salvaschermo e REST API</Text>
+          </View>
         </View>
-        <View style={styles.headerTextBox}>
-          <Text style={styles.headerTitle}>Controllo Kiosk & Hardware</Text>
-          <Text style={styles.headerSubtitle}>Gestione dispositivo, blocco schermo, salvaschermo e REST API</Text>
-        </View>
+        <LanguageSelector compact theme="light" />
       </View>
 
       {/* SEZIONE 1: STATO KIOSK & BLOCCO DISPOSITIVO */}

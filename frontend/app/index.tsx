@@ -6,12 +6,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getSettings, Settings, getAdminPin, getGlobalGroups, getProducts, getCategories } from '@/src/api/api';
 import PinPad from '@/src/components/PinPad';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 const EDGE = Platform.OS === 'android' ? 32 : 28;
 const BOTTOM = Platform.OS === 'android' ? 40 : 32;
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
@@ -98,6 +101,11 @@ export default function WelcomeScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Global Multi-Language Selector Bar on Top */}
+        <View style={styles.langBarTop}>
+          <LanguageSelector theme="dark" />
+        </View>
+
         <View style={[styles.content, isLarge && styles.contentLarge]}>
           <View style={styles.header}>
             {logo ? (
@@ -111,7 +119,9 @@ export default function WelcomeScreen() {
               <Ionicons name="restaurant" size={isLarge ? 110 : 90} color="white" />
             )}
             <Text style={[styles.title, isLarge && { fontSize: 48, marginTop: 16 }]}>{restaurantName}</Text>
-            <Text style={[styles.subtitle, isLarge && { fontSize: 26, marginBottom: 8 }]}>Come vuoi procedere?</Text>
+            <Text style={[styles.subtitle, isLarge && { fontSize: 26, marginBottom: 8 }]}>
+              {t('welcome.how_to_proceed')}
+            </Text>
           </View>
 
           <View style={[styles.buttonContainer, { gap: btnGap, maxWidth: btnMaxW }]}>
@@ -124,8 +134,12 @@ export default function WelcomeScreen() {
                 <Ionicons name="ticket" size={iconSize} color="#FF6B6B" />
               </View>
               <View style={styles.optionText}>
-                <Text style={[styles.optionTitle, { fontSize: titleSize }]}>Prendi solo il Numero</Text>
-                <Text style={[styles.optionDescription, { fontSize: descSize }]}>Vai in cassa a ordinare a voce</Text>
+                <Text style={[styles.optionTitle, { fontSize: titleSize }]}>
+                  {t('welcome.take_number_title')}
+                </Text>
+                <Text style={[styles.optionDescription, { fontSize: descSize }]}>
+                  {t('welcome.take_number_desc')}
+                </Text>
               </View>
               <Ionicons name="arrow-forward" size={arrowSize} color="#FF6B6B" />
             </TouchableOpacity>
@@ -139,8 +153,12 @@ export default function WelcomeScreen() {
                 <Ionicons name="fast-food" size={iconSize} color="white" />
               </View>
               <View style={styles.optionText}>
-                <Text style={[styles.optionTitle, styles.primaryTitle, { fontSize: titleSize }]}>Ordina al Totem</Text>
-                <Text style={[styles.optionDescription, styles.primaryDescription, { fontSize: descSize }]}>Componi il tuo ordine qui</Text>
+                <Text style={[styles.optionTitle, styles.primaryTitle, { fontSize: titleSize }]}>
+                  {t('welcome.order_totem_title')}
+                </Text>
+                <Text style={[styles.optionDescription, styles.primaryDescription, { fontSize: descSize }]}>
+                  {t('welcome.order_totem_desc')}
+                </Text>
               </View>
               <Ionicons name="arrow-forward" size={arrowSize} color="white" />
             </TouchableOpacity>
@@ -157,8 +175,8 @@ export default function WelcomeScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <PinPad
-              title="Accesso Admin"
-              subtitle="Inserisci il PIN per accedere"
+              title={t('welcome.admin_access_title')}
+              subtitle={t('welcome.admin_access_desc')}
               correctPin={adminPin}
               onSuccess={handlePinSuccess}
               onBack={() => setShowPinModal(false)}
@@ -173,6 +191,12 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
+  langBarTop: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 56 : 60,
+    left: EDGE,
+    zIndex: 90,
+  },
   secretDot: {
     position: 'absolute',
     top: Platform.OS === 'android' ? 64 : 70,

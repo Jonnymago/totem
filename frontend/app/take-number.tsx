@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { createNumberOnlyOrder, Order, getSettings, Settings } from '@/src/api/api';
 import { printCourtesyTicket } from '@/src/utils/printer';
+import { useI18n } from '@/src/utils/i18n';
 
 export default function TakeNumberScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [order, setOrder] = useState<Order | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,7 @@ export default function TakeNumberScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Generazione numero...</Text>
+        <Text style={styles.loadingText}>{t('take_number.loading')}</Text>
       </View>
     );
   }
@@ -98,7 +100,7 @@ export default function TakeNumberScreen() {
                 <Text style={styles.logo}>🍔</Text>
               )}
               <Text style={styles.restaurantName}>{settings?.restaurant_name || 'TOTEM RISTORANTE'}</Text>
-              <Text style={styles.ticketSubtitle}>SCONTRINO CORTESIA</Text>
+              <Text style={styles.ticketSubtitle}>{t('take_number.ticket_title')}</Text>
             </View>
 
             <View style={styles.divider} />
@@ -116,7 +118,7 @@ export default function TakeNumberScreen() {
 
             <View style={styles.divider} />
 
-            <Text style={styles.numberLabel}>Il Tuo Numero e</Text>
+            <Text style={styles.numberLabel}>{t('take_number.your_number')}</Text>
             <View style={styles.numberBox}>
               <Text style={styles.numberValue}>{order?.order_number}</Text>
             </View>
@@ -125,10 +127,8 @@ export default function TakeNumberScreen() {
 
             <View style={styles.infoBox}>
               <Ionicons name="information-circle" size={24} color="#FF6B6B" />
-              <Text style={styles.infoText}>Presentati alla cassa con questo numero per ordinare a voce</Text>
+              <Text style={styles.infoText}>{t('take_number.go_to_counter')}</Text>
             </View>
-
-            <Text style={styles.footer}>Grazie per la Sua visita!</Text>
           </View>
         </View>
       </View>
@@ -139,17 +139,15 @@ export default function TakeNumberScreen() {
             <View style={styles.overlayIcon}>
               <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
             </View>
-            <Text style={styles.overlayTitle}>Numero Preso!</Text>
+            <Text style={styles.overlayTitle}>{t('take_number.new_ticket')}</Text>
             <Text style={styles.overlayNumber}>#{order.order_number}</Text>
             <Text style={styles.overlayMessage}>
-              Il tuo numero e stato registrato.{'\n'}
-              Ritira lo scontrino dalla stampante.{'\n'}
-              Lascia libero il tablet per il prossimo cliente.
+              {t('take_number.go_to_counter')}
             </Text>
             <View style={styles.countdownContainer}>
               <ActivityIndicator size="small" color="#FF6B6B" />
               <Text style={styles.countdownText}>
-                Ritorno alla home tra {countdown} second{countdown === 1 ? 'o' : 'i'}
+                {t('take_number.auto_return')} {countdown} {t('common.seconds')}
               </Text>
             </View>
           </View>

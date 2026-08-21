@@ -4,9 +4,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { adminLogin } from '@/src/api/api';
 import { storage } from '@/src/utils/storage';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function AdminLoginScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   // Precompilati: funzionano sempre anche senza backend / WiFi
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin123');
@@ -15,7 +18,7 @@ export default function AdminLoginScreen() {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      setError('Inserisci username e password');
+      setError(t('admin.credentials_required') || 'Inserisci username e password');
       return;
     }
 
@@ -39,19 +42,22 @@ export default function AdminLoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={28} color="#FF6B6B" />
-        </TouchableOpacity>
+        <View style={styles.topBar}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={28} color="#FF6B6B" />
+          </TouchableOpacity>
+          <LanguageSelector compact theme="dark" />
+        </View>
 
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <Ionicons name="lock-closed" size={60} color="#FF6B6B" />
           </View>
-          <Text style={styles.title}>Pannello Admin</Text>
-          <Text style={styles.subtitle}>Accedi con le tue credenziali</Text>
+          <Text style={styles.title}>{t('admin.login_title')}</Text>
+          <Text style={styles.subtitle}>{t('admin.login_subtitle')}</Text>
         </View>
 
         <View style={styles.form}>
@@ -59,7 +65,7 @@ export default function AdminLoginScreen() {
             <Ionicons name="person" size={24} color="#999" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Username"
+              placeholder={t('admin.username')}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -72,7 +78,7 @@ export default function AdminLoginScreen() {
             <Ionicons name="key" size={24} color="#999" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Password"
+              placeholder={t('admin.password')}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -95,7 +101,7 @@ export default function AdminLoginScreen() {
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={styles.loginButtonText}>Accedi</Text>
+              <Text style={styles.loginButtonText}>{t('admin.login_btn')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -114,12 +120,18 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
-  backButton: {
+  topBar: {
     position: 'absolute',
-    top: 60,
+    top: Platform.OS === 'android' ? 48 : 56,
     left: 20,
-    padding: 8,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     zIndex: 10,
+  },
+  backButton: {
+    padding: 8,
   },
   header: {
     alignItems: 'center',

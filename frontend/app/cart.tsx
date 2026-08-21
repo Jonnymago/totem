@@ -4,9 +4,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
 import { getProducts, subscribeToDbChanges } from '@/src/api/api';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function CartScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, setEditingIndex } = useCartStore();
   const [unavailableIds, setUnavailableIds] = useState<Set<string>>(new Set());
   const totalPrice = getTotalPrice();
@@ -152,16 +155,18 @@ export default function CartScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
           <Ionicons name="arrow-back" size={40} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Carrello</Text>
-        <View style={styles.headerBtnPlaceholder} />
+        <Text style={styles.headerTitle}>{t('cart.title')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <LanguageSelector compact theme="dark" />
+        </View>
       </View>
 
       {items.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="cart-outline" size={100} color="#CCC" />
-          <Text style={styles.emptyText}>Il tuo carrello è vuoto</Text>
+          <Text style={styles.emptyText}>{t('cart.empty')}</Text>
           <TouchableOpacity style={styles.shopButton} onPress={() => router.push('/categories')}>
-            <Text style={styles.shopButtonText}>Inizia a ordinare</Text>
+            <Text style={styles.shopButtonText}>{t('cart.start_order')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -184,7 +189,7 @@ export default function CartScreen() {
                       </Text>
                       {isItemSoldOut && (
                         <View style={styles.soldOutBadge}>
-                          <Text style={styles.soldOutBadgeText}>🔴 Esaurito</Text>
+                          <Text style={styles.soldOutBadgeText}>🔴 {t('products.sold_out')}</Text>
                         </View>
                       )}
                     </View>
@@ -193,7 +198,7 @@ export default function CartScreen() {
                     </Text>
                     {isItemSoldOut && (
                       <Text style={styles.tagSoldOutAlert}>
-                        ⚠️ Questo prodotto è esaurito. Rimuovilo dal carrello.
+                        ⚠️ {t('cart.unavailable_items')}
                       </Text>
                     )}
                     {renderItemDetails(item)}
@@ -202,7 +207,7 @@ export default function CartScreen() {
                     {!isItemSoldOut ? (
                       <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(index)}>
                         <Ionicons name="create-outline" size={24} color="white" />
-                        <Text style={styles.editButtonText}>Modifica</Text>
+                        <Text style={styles.editButtonText}>{t('cart.edit')}</Text>
                       </TouchableOpacity>
                     ) : (
                       <View />
@@ -231,11 +236,11 @@ export default function CartScreen() {
           <View style={styles.footer}>
             <View style={styles.totalContainer}>
               <View>
-                <Text style={styles.totalLabel}>Totale ({totalItems} articoli)</Text>
+                <Text style={styles.totalLabel}>{t('cart.total')} ({totalItems} {t('cart.items_count')})</Text>
                 <Text style={styles.totalPrice}>€{totalPrice.toFixed(2)}</Text>
               </View>
               <TouchableOpacity testID="checkout-btn" style={styles.checkoutButton} onPress={handleCheckout}>
-                <Text style={styles.checkoutButtonText}>Conferma</Text>
+                <Text style={styles.checkoutButtonText}>{t('cart.checkout')}</Text>
                 <Ionicons name="arrow-forward" size={24} color="white" />
               </TouchableOpacity>
             </View>

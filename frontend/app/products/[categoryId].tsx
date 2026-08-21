@@ -4,9 +4,12 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getProductsByCategory, Product, ExtraAddition, ComboGroup, UiSection, ensureProductSections, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { categoryId } = useLocalSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -258,20 +261,23 @@ export default function ProductsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Ionicons name="arrow-back" size={40} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Prodotti</Text>
-        <TouchableOpacity
-          testID="cart-btn"
-          onPress={() => router.push('/cart')}
-          style={styles.headerBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="cart" size={40} color="white" />
-          {cartItems > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{cartItems}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('products.title')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <LanguageSelector compact theme="dark" />
+          <TouchableOpacity
+            testID="cart-btn"
+            onPress={() => router.push('/cart')}
+            style={styles.headerBtn}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="cart" size={40} color="white" />
+            {cartItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{cartItems}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
@@ -306,7 +312,7 @@ export default function ProductsScreen() {
                   />
                   {!isAvailable && (
                     <View style={styles.soldOutImageOverlay}>
-                      <Text style={styles.soldOutImageOverlayText}>ESAURITO</Text>
+                      <Text style={styles.soldOutImageOverlayText}>{t('products.sold_out').toUpperCase()}</Text>
                     </View>
                   )}
                 </View>
@@ -326,7 +332,7 @@ export default function ProductsScreen() {
                   </Text>
                   {!isAvailable && (
                     <View style={styles.soldOutBadge}>
-                      <Text style={styles.soldOutBadgeText}>🔴 Esaurito</Text>
+                      <Text style={styles.soldOutBadgeText}>🔴 {t('products.sold_out')}</Text>
                     </View>
                   )}
                 </View>
@@ -338,7 +344,7 @@ export default function ProductsScreen() {
                 </Text>
                 {product.allergens && product.allergens.length > 0 && (
                   <Text style={[styles.allergens, !isAvailable && styles.allergensDisabled]}>
-                    Allergeni: {product.allergens.join(', ')}
+                    {t('products.allergens')}: {product.allergens.join(', ')}
                   </Text>
                 )}
               </View>
@@ -350,7 +356,7 @@ export default function ProductsScreen() {
                   <Ionicons name="add-circle" size={32} color="#FF6B6B" />
                 ) : (
                   <View style={styles.soldOutButton}>
-                    <Text style={styles.soldOutButtonText}>Esaurito</Text>
+                    <Text style={styles.soldOutButtonText}>{t('products.sold_out')}</Text>
                   </View>
                 )}
               </View>
@@ -539,7 +545,7 @@ export default function ProductsScreen() {
               })}
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Quantità</Text>
+                <Text style={styles.sectionTitle}>{t('products.quantity')}</Text>
                 <View style={styles.quantityContainer}>
                   <TouchableOpacity
                     style={styles.quantityButton}
@@ -567,8 +573,8 @@ export default function ProductsScreen() {
               >
                 <Text style={styles.addButtonText}>
                   {isComboValid()
-                    ? `${isEditing ? 'Salva modifiche' : 'Aggiungi al Carrello'} - €${calculatePrice().toFixed(2)}`
-                    : 'Completa la selezione'}
+                    ? `${isEditing ? t('common.save') : t('products.add_to_cart')} - €${calculatePrice().toFixed(2)}`
+                    : t('products.complete_selection')}
                 </Text>
               </TouchableOpacity>
             </View>

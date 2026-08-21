@@ -3,9 +3,11 @@ import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useI18n } from '@/src/utils/i18n';
 
 export default function AdminLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   // Extra spazio sotto: gabbia totem / FydeOS taglia il bordo inferiore
   const bottomExtra = Platform.OS === 'android' ? 28 : 12;
   const padBottom = Math.max(insets.bottom, 12) + bottomExtra;
@@ -40,7 +42,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="products"
         options={{
-          title: 'Prodotti',
+          title: t('admin.nav_products'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fast-food" size={size} color={color} />
           ),
@@ -50,7 +52,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="categories"
         options={{
-          title: 'Categorie',
+          title: t('admin.nav_categories'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" size={size} color={color} />
           ),
@@ -60,7 +62,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="groups"
         options={{
-          title: 'Gruppi',
+          title: t('admin.nav_groups'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="layers" size={size} color={color} />
           ),
@@ -70,7 +72,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="kiosk"
         options={{
-          title: 'Kiosk',
+          title: t('admin.nav_kiosk'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="tablet-portrait" size={size} color={color} />
           ),
@@ -80,7 +82,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Impostazioni',
+          title: t('admin.nav_settings'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
           ),
@@ -90,7 +92,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="license"
         options={{
-          title: 'Licenza & Info',
+          title: t('admin.nav_license'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ribbon-outline" size={size} color={color} />
           ),
@@ -101,7 +103,7 @@ export default function AdminLayout() {
         name="kitchen"
         options={{
           href: null,
-          title: 'Cucina',
+          title: t('admin.nav_kitchen'),
         }}
       />
     </Tabs>

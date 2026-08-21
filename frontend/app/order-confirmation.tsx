@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
 import { createOrder, Order, getSettings, Settings } from '@/src/api/api';
 import { printCourtesyTicket, printKitchenTicket } from '@/src/utils/printer';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -74,6 +76,7 @@ function renderItemDetails(item: any) {
 
 export default function OrderConfirmationScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -144,7 +147,7 @@ export default function OrderConfirmationScreen() {
       })();
     } catch (error) {
       console.error('Error creating order:', error);
-      alert("Errore nella creazione dell'ordine. Riprova.");
+      alert(t('order_conf.error'));
       setLoading(false);
     }
   };
@@ -156,12 +159,14 @@ export default function OrderConfirmationScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
             <Ionicons name="arrow-back" size={40} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Conferma Ordine</Text>
-          <View style={styles.headerBtnPlaceholder} />
+          <Text style={styles.headerTitle}>{t('order_conf.title')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <LanguageSelector compact theme="dark" />
+          </View>
         </View>
 
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.sectionTitle}>Riepilogo Ordine</Text>
+          <Text style={styles.sectionTitle}>{t('order_conf.summary')}</Text>
           {items.map((item, index) => (
             <View key={index} style={styles.orderItem}>
               <View style={styles.itemRow}>
@@ -172,12 +177,12 @@ export default function OrderConfirmationScreen() {
             </View>
           ))}
           <View style={styles.totalSection}>
-            <Text style={styles.totalLabelBold}>TOTALE</Text>
+            <Text style={styles.totalLabelBold}>{t('cart.total').toUpperCase()}</Text>
             <Text style={styles.totalValueBold}>€{totalPrice.toFixed(2)}</Text>
           </View>
           <View style={styles.paymentInfo}>
             <Ionicons name="cash-outline" size={36} color="#FF6B6B" />
-            <Text style={styles.paymentText}>Pagamento alla cassa dopo il ritiro</Text>
+            <Text style={styles.paymentText}>{t('order_conf.pay_at_counter')}</Text>
           </View>
         </ScrollView>
 
@@ -192,7 +197,7 @@ export default function OrderConfirmationScreen() {
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text style={styles.confirmButtonText}>Conferma e Stampa</Text>
+                <Text style={styles.confirmButtonText}>{t('order_conf.confirm_and_print')}</Text>
                 <Ionicons name="print" size={26} color="white" />
               </>
             )}
@@ -204,14 +209,14 @@ export default function OrderConfirmationScreen() {
         <View style={styles.overlay}>
           <View style={styles.overlayContent}>
             <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
-            <Text style={styles.overlayTitle}>Ordine Confermato!</Text>
+            <Text style={styles.overlayTitle}>{t('order_conf.order_confirmed')}</Text>
             <Text style={styles.overlayNumber}>#{confirmedOrder.order_number}</Text>
             <Text style={styles.overlayMessage}>
-              Il tuo ordine è stato inviato alla cucina.{"\n"}
-              Ritira lo scontrino dalla stampante.{"\n"}
-              Lascia libero il tablet per il prossimo ordine.
+              {t('order_conf.sent_to_kitchen')}
             </Text>
-            <Text style={styles.countdownText}>Ritorno alla home tra {countdown} secondi</Text>
+            <Text style={styles.countdownText}>
+              {t('take_number.auto_return')} {countdown} {t('common.seconds')}
+            </Text>
           </View>
         </View>
       )}

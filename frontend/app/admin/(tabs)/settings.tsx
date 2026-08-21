@@ -9,6 +9,8 @@ import { exportBackupZip, importBackupZip } from '@/src/utils/backup';
 import { storage } from '@/src/utils/storage';
 import { scanPrinters, getPairedPrinters, PairedPrinter } from '@/src/utils/printer';
 import * as Network from 'expo-network';
+import { useI18n } from '@/src/utils/i18n';
+import LanguageSelector from '@/src/components/LanguageSelector';
 
 function deviceIdentifier(device: PairedPrinter): string {
   const addr = (device.address || '').trim();
@@ -18,6 +20,7 @@ function deviceIdentifier(device: PairedPrinter): string {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -404,15 +407,23 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Impostazioni</Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color="white" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('settings.title')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <LanguageSelector compact theme="dark" />
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        
-        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="globe-outline" size={18} color="#FF6B6B" /> {t('settings.language_section')}
+          </Text>
+          <Text style={styles.label}>{t('settings.select_language')}</Text>
+          <LanguageSelector theme="light" />
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>

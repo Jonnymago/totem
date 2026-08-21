@@ -1,1 +1,2 @@
-Build trigger timestamp: 2026-08-21T00:10:00-07:00
+Build trigger timestamp: 2026-08-21T03:53:15-07:00
+Triggered: Manual build requested by user for multi-language i18n & kiosk updates
