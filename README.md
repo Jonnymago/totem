@@ -61,8 +61,7 @@ Il sistema è stato recentemente aggiornato con **22 correzioni e implementazion
 
 La repository è configurata per generare automaticamente l'APK Android ad ogni push sul branch `main` tramite GitHub Actions. L'attesa del completamento è stata rimossa per risparmiare minuti di esecuzione.
 
-I file APK generati possono essere scaricati direttamente dalla dashboard del progetto su Expo:
-👉 [Dashboard Progetto EAS - Totem QuickBite](https://expo.dev/accounts/cogoy23817s-teamq/projects/totem/builds)
+I file APK generati possono essere scaricati direttamente dalla dashboard del progetto su Expo EAS.
 
 ---
 
