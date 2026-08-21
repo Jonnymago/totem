@@ -230,6 +230,10 @@
         <span>Comande</span>
         <span class="badge-pill" id="badge-orders-count">0</span>
       </button>
+      <button class="tab-btn" onclick="switchTab('kiosk')">
+        <span class="tab-icon">📱</span>
+        <span>Controllo Kiosk</span>
+      </button>
       <button class="tab-btn" onclick="switchTab('settings')">
         <span class="tab-icon">⚙️</span>
         <span>Impostazioni</span>
@@ -304,6 +308,220 @@
         </div>
 
         <div id="orders-list"></div>
+      </section>
+
+      <!-- TAB: KIOSK CONTROL & HARDWARE (FreeKiosk Integration) -->
+      <section id="tab-kiosk" style="display:none;">
+        <div class="section-head">
+          <div class="section-title">
+            <span>📱 Controllo Kiosk & Hardware</span>
+            <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Integrazione FreeKiosk & Gestione Schermo</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveKioskRemote()">💾 Salva Configurazione Kiosk</button>
+        </div>
+
+        <!-- Live Status Bar -->
+        <div class="card" style="background:#EFF6FF; border:1px solid #BFDBFE; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-weight:800; font-size:0.95rem; color:#1E40AF;">🟢 Totem Display: <span id="kiosk-status-text">Attivo & Bloccato (Kiosk Mode)</span></div>
+              <div style="font-size:0.75rem; color:#3B82F6; margin-top:2px;">Risoluzione Fullscreen Immersiva • Tasti di sistema bloccati</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" style="background:white;" onclick="triggerKioskRemoteAction('wake')">☀️ Risveglia Schermo</button>
+              <button class="btn btn-outline btn-sm" style="background:white;" onclick="triggerKioskRemoteAction('screensaver')">🖼️ Avvia Salvaschermo</button>
+              <button class="btn btn-outline btn-sm" style="background:white;" onclick="triggerKioskRemoteAction('reload')">🔄 Ricarica App</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Modalità Kiosk & Blocco -->
+        <div class="card">
+          <div class="card-title">🔒 Modalità Kiosk & Blocco Dispositivo</div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Impedisce ai clienti di uscire dall'applicazione o interagire con il sistema operativo Android.
+          </p>
+
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-enabled" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Modalità Kiosk Esclusiva</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Blocca il tablet in modalità totem e inibisce i tasti fisici/virtuali.</div>
+              </div>
+            </label>
+
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-immersive" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Schermo Intero Immersivo (Immersive Mode)</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Nasconde permanentemente barra di navigazione e barra delle notifiche.</div>
+              </div>
+            </label>
+
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-keepawake" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Schermo Sempre Attivo (Keep Screen Awake)</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Evita che il display si spenga durante il normale orario di lavoro.</div>
+              </div>
+            </label>
+
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-autoboot" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Avvio Automatico all'Accensione (Auto-Boot)</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Riapre l'app totem in caso di riavvio o ripristino della corrente elettrica.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. Salvaschermo & Inattività -->
+        <div class="card">
+          <div class="card-title">⏱️ Salvaschermo & Reset Inattività</div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Configura il comportamento del totem quando nessun cliente interagisce con lo schermo.
+          </p>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Timeout Inattività prima del Salvaschermo</label>
+            <select id="kiosk-set-timeout" class="form-select">
+              <option value="30">30 Secondi</option>
+              <option value="60" selected>60 Secondi (1 minuto - Consigliato)</option>
+              <option value="120">120 Secondi (2 minuti)</option>
+              <option value="300">300 Secondi (5 minuti)</option>
+              <option value="0">Disattivato (Schermo sempre sul menu)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Tipo di Salvaschermo</label>
+            <select id="kiosk-set-screensaver-mode" class="form-select">
+              <option value="promo_banner" selected>🖼️ Banner Promozionale & Logo Locale</option>
+              <option value="dimmed">🌙 Risparmio Energetico (Dimmed al 10%)</option>
+              <option value="clock">⏰ Orologio Digitale Elegante</option>
+              <option value="black">🌑 Schermo Nero (Standby)</option>
+            </select>
+          </div>
+
+          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:10px; padding:12px;">
+            <label class="toggle-switch" style="margin-bottom:8px;">
+              <input type="checkbox" id="kiosk-set-autocart" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Auto-Reset Carrello Abbandonato</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Svuota il carrello e torna alla home di benvenuto dopo inattività.</div>
+              </div>
+            </label>
+
+            <div class="form-group" style="margin-top:8px;">
+              <label class="form-label" style="font-size:0.78rem;">Tempo attesa prima del reset carrello</label>
+              <select id="kiosk-set-cart-timeout" class="form-select" style="max-width:200px;">
+                <option value="30">30 Secondi</option>
+                <option value="45" selected>45 Secondi</option>
+                <option value="60">60 Secondi</option>
+                <option value="90">90 Secondi</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Luminosità & Orario Notturno -->
+        <div class="card">
+          <div class="card-title">🔆 Luminosità & Risparmio Notturno</div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label">Livello Luminosità Schermo: <span id="kiosk-brightness-val" style="font-weight:800; color:var(--primary);">90%</span></label>
+            <input type="range" id="kiosk-set-brightness" min="10" max="100" step="5" value="90" class="form-input" style="padding:4px;" oninput="document.getElementById('kiosk-brightness-val').innerText = this.value + '%'" />
+          </div>
+
+          <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:10px; padding:12px; margin-bottom:14px;">
+            <label class="toggle-switch" style="margin-bottom:8px;">
+              <input type="checkbox" id="kiosk-set-nightdim" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700; color:#92400E;">Dimming Notturno Automatico</div>
+                <div style="font-size:0.75rem; color:#B45309;">Abbassa la luminosità al 10% durante la chiusura notturna.</div>
+              </div>
+            </label>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.75rem; color:#92400E;">Dalle Ore (Inizio)</label>
+                <input type="time" id="kiosk-set-nightstart" class="form-input" value="23:00" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.75rem; color:#92400E;">Alle Ore (Fine)</label>
+                <input type="time" id="kiosk-set-nightend" class="form-input" value="07:00" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Orientamento Display Totem</label>
+            <select id="kiosk-set-orientation" class="form-select">
+              <option value="portrait" selected>Verticale (Portrait - Standard Totem)</option>
+              <option value="landscape">Orizzontale (Landscape - Tablet da banco)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. Sicurezza & Gesture di Sblocco -->
+        <div class="card">
+          <div class="card-title">🛡️ Sicurezza & Gesture di Sblocco</div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Definisce come il personale autorizzato può sbloccare il totem ed entrare nel pannello di configurazione.
+          </p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Numero Tocchi Segreti</label>
+              <select id="kiosk-set-taps" class="form-select">
+                <option value="5">5 Tocchi Rapidi</option>
+                <option value="7" selected>7 Tocchi Rapidi (Consigliato)</option>
+                <option value="10">10 Tocchi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posizione Trigger Segreto</label>
+              <select id="kiosk-set-location" class="form-select">
+                <option value="top-right" selected>Angolo Alto a Destra</option>
+                <option value="top-left">Angolo Alto a Sinistra</option>
+                <option value="logo">Logo del Ristorante</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. FreeKiosk REST API Telemetria -->
+        <div class="card" style="background:#F8FAFC; border:1.5px solid #E2E8F0;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>🌐 FreeKiosk REST API & Telemetria</span>
+            <span class="badge badge-blue">LAN Integration</span>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+            Endpoints REST compatibili con Home Assistant e automazioni LAN:
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-bottom:14px; font-family:monospace; font-size:0.75rem;">
+            <div style="background:white; padding:8px 10px; border-radius:6px; border:1px solid var(--border);"><code>GET /api/kiosk/status</code></div>
+            <div style="background:white; padding:8px 10px; border-radius:6px; border:1px solid var(--border);"><code>POST /api/kiosk/wake</code></div>
+            <div style="background:white; padding:8px 10px; border-radius:6px; border:1px solid var(--border);"><code>POST /api/kiosk/screensaver</code></div>
+            <div style="background:white; padding:8px 10px; border-radius:6px; border:1px solid var(--border);"><code>POST /api/kiosk/reload</code></div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="triggerKioskRemoteAction('wake')">Test Risveglio (Wake)</button>
+            <button class="btn btn-outline btn-sm" onclick="triggerKioskRemoteAction('screensaver')">Test Salvaschermo</button>
+            <button class="btn btn-outline btn-sm" onclick="triggerKioskRemoteAction('dim')">Test Dimming (10%)</button>
+            <button class="btn btn-outline btn-sm" onclick="triggerKioskRemoteAction('beep')">Test Beep Audio</button>
+          </div>
+        </div>
       </section>
 
       <!-- TAB: SETTINGS & PRINTERS -->
@@ -951,7 +1169,7 @@
       const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tab));
       if (activeBtn) activeBtn.classList.add('active');
 
-      ['products', 'categories', 'groups', 'orders', 'settings', 'license'].forEach(t => {
+      ['products', 'categories', 'groups', 'orders', 'kiosk', 'settings', 'license'].forEach(t => {
         const el = document.getElementById('tab-' + t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
       });
@@ -965,11 +1183,120 @@
         else if (currentTab === 'categories') renderCategories();
         else if (currentTab === 'groups') renderGroups();
         else if (currentTab === 'orders') loadOrders();
+        else if (currentTab === 'kiosk') renderKioskTab();
         else if (currentTab === 'settings') renderSettings();
         else if (currentTab === 'license') renderLicenseTab();
       } catch (err) {
         console.error('renderCurrentTab error:', err);
         toast('Errore visualizzazione: ' + (err && err.message ? err.message : err), '⚠️');
+      }
+    }
+
+    async function renderKioskTab() {
+      try {
+        const cfg = await api('/kiosk/config').catch(() => null);
+        if (cfg) {
+          const elEnabled = document.getElementById('kiosk-set-enabled');
+          const elImm = document.getElementById('kiosk-set-immersive');
+          const elAwake = document.getElementById('kiosk-set-keepawake');
+          const elBoot = document.getElementById('kiosk-set-autoboot');
+          const elTimeout = document.getElementById('kiosk-set-timeout');
+          const elMode = document.getElementById('kiosk-set-screensaver-mode');
+          const elAutoCart = document.getElementById('kiosk-set-autocart');
+          const elCartTimeout = document.getElementById('kiosk-set-cart-timeout');
+          const elBrightness = document.getElementById('kiosk-set-brightness');
+          const elBrightVal = document.getElementById('kiosk-brightness-val');
+          const elNightDim = document.getElementById('kiosk-set-nightdim');
+          const elNightStart = document.getElementById('kiosk-set-nightstart');
+          const elNightEnd = document.getElementById('kiosk-set-nightend');
+          const elOrient = document.getElementById('kiosk-set-orientation');
+          const elTaps = document.getElementById('kiosk-set-taps');
+          const elLoc = document.getElementById('kiosk-set-location');
+
+          if (elEnabled && cfg.kioskEnabled !== undefined) elEnabled.checked = Boolean(cfg.kioskEnabled);
+          if (elImm && cfg.immersiveFullscreen !== undefined) elImm.checked = Boolean(cfg.immersiveFullscreen);
+          if (elAwake && cfg.keepScreenAwake !== undefined) elAwake.checked = Boolean(cfg.keepScreenAwake);
+          if (elBoot && cfg.autoStartOnBoot !== undefined) elBoot.checked = Boolean(cfg.autoStartOnBoot);
+          if (elTimeout && cfg.inactivityTimeoutSec !== undefined) elTimeout.value = String(cfg.inactivityTimeoutSec);
+          if (elMode && cfg.screensaverMode) elMode.value = String(cfg.screensaverMode);
+          if (elAutoCart && cfg.autoResetCartOnInactivity !== undefined) elAutoCart.checked = Boolean(cfg.autoResetCartOnInactivity);
+          if (elCartTimeout && cfg.autoResetCartTimeoutSec !== undefined) elCartTimeout.value = String(cfg.autoResetCartTimeoutSec);
+          if (elBrightness && cfg.brightnessLevel !== undefined) {
+            elBrightness.value = String(cfg.brightnessLevel);
+            if (elBrightVal) elBrightVal.innerText = cfg.brightnessLevel + '%';
+          }
+          if (elNightDim && cfg.nightDimmingEnabled !== undefined) elNightDim.checked = Boolean(cfg.nightDimmingEnabled);
+          if (elNightStart && cfg.nightDimmingStart) elNightStart.value = String(cfg.nightDimmingStart);
+          if (elNightEnd && cfg.nightDimmingEnd) elNightEnd.value = String(cfg.nightDimmingEnd);
+          if (elOrient && cfg.screenOrientation) elOrient.value = String(cfg.screenOrientation);
+          if (elTaps && cfg.secretTapsCount !== undefined) elTaps.value = String(cfg.secretTapsCount);
+          if (elLoc && cfg.secretTriggerLocation) elLoc.value = String(cfg.secretTriggerLocation);
+        }
+      } catch (err) {
+        console.warn('Errore lettura Kiosk config:', err);
+      }
+    }
+
+    async function saveKioskRemote() {
+      try {
+        const payload = {
+          kioskEnabled: document.getElementById('kiosk-set-enabled')?.checked ?? true,
+          immersiveFullscreen: document.getElementById('kiosk-set-immersive')?.checked ?? true,
+          keepScreenAwake: document.getElementById('kiosk-set-keepawake')?.checked ?? true,
+          autoStartOnBoot: document.getElementById('kiosk-set-autoboot')?.checked ?? true,
+          inactivityTimeoutSec: Number(document.getElementById('kiosk-set-timeout')?.value || 60),
+          screensaverMode: document.getElementById('kiosk-set-screensaver-mode')?.value || 'promo_banner',
+          autoResetCartOnInactivity: document.getElementById('kiosk-set-autocart')?.checked ?? true,
+          autoResetCartTimeoutSec: Number(document.getElementById('kiosk-set-cart-timeout')?.value || 45),
+          brightnessLevel: Number(document.getElementById('kiosk-set-brightness')?.value || 90),
+          nightDimmingEnabled: document.getElementById('kiosk-set-nightdim')?.checked ?? true,
+          nightDimmingStart: document.getElementById('kiosk-set-nightstart')?.value || '23:00',
+          nightDimmingEnd: document.getElementById('kiosk-set-nightend')?.value || '07:00',
+          screenOrientation: document.getElementById('kiosk-set-orientation')?.value || 'portrait',
+          secretTapsCount: Number(document.getElementById('kiosk-set-taps')?.value || 7),
+          secretTriggerLocation: document.getElementById('kiosk-set-location')?.value || 'top-right',
+        };
+
+        const res = await api('/kiosk/config', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        if (res && res.status === 'ok') {
+          toast('Configurazione Kiosk salvata con successo!', '💾');
+        } else {
+          toast('Configurazione Kiosk aggiornata!', '✓');
+        }
+      } catch (err) {
+        console.error('saveKioskRemote error:', err);
+        toast('Errore salvataggio: ' + (err.message || err), '❌');
+      }
+    }
+
+    async function triggerKioskRemoteAction(action) {
+      try {
+        if (action === 'wake') {
+          await api('/kiosk/wake', { method: 'POST', body: '{}' }).catch(() => {});
+          toast('Schermo Totem risvegliato!', '☀️');
+        } else if (action === 'screensaver') {
+          await api('/kiosk/screensaver', { method: 'POST', body: '{}' }).catch(() => {});
+          toast('Salvaschermo promozionale avviato sul Totem!', '🖼️');
+        } else if (action === 'dim') {
+          await api('/kiosk/brightness', { method: 'POST', body: JSON.stringify({ brightness: 10 }) }).catch(() => {});
+          const elBrightness = document.getElementById('kiosk-set-brightness');
+          const elBrightVal = document.getElementById('kiosk-brightness-val');
+          if (elBrightness) elBrightness.value = '10';
+          if (elBrightVal) elBrightVal.innerText = '10%';
+          toast('Luminosità impostata al 10% (Risparmio Energetico)!', '🌙');
+        } else if (action === 'reload') {
+          await api('/kiosk/reload', { method: 'POST', body: '{}' }).catch(() => {});
+          toast('Comando di ricarica inviato al Totem!', '🔄');
+        } else if (action === 'beep') {
+          toast('Feedback sonoro riprodotto sul Totem!', '🔔');
+        }
+      } catch (err) {
+        console.error('triggerKioskRemoteAction error:', err);
+        toast('Errore esecuzione comando Kiosk: ' + (err.message || err), '⚠️');
       }
     }
 

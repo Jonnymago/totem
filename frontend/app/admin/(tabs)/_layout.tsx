@@ -66,6 +66,17 @@ export default function AdminLayout() {
           ),
         }}
       />
+      
+      <Tabs.Screen
+        name="kiosk"
+        options={{
+          title: 'Kiosk',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="tablet-portrait" size={size} color={color} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="settings"
         options={{

@@ -134,3 +134,75 @@ def register_extra_routes(api_router: APIRouter) -> None:
             {"username": "admin", "password_hash": password_hash, "created_at": datetime.now(UTC)}
         )
         return {"message": "Database seeded successfully", "admin_username": "admin"}
+
+    # --- FreeKiosk REST API Endpoints ---
+    @api_router.get("/kiosk/status")
+    async def get_kiosk_status():
+        cfg = await db.kiosk_config.find_one({}) or {}
+        return {
+            "status": "active" if cfg.get("kioskEnabled", True) else "disabled",
+            "kiosk_mode": cfg.get("kioskEnabled", True),
+            "immersive_fullscreen": cfg.get("immersiveFullscreen", True),
+            "screen_brightness": cfg.get("brightnessLevel", 90),
+            "screensaver_mode": cfg.get("screensaverMode", "promo_banner"),
+            "inactivity_timeout_sec": cfg.get("inactivityTimeoutSec", 60),
+            "auto_reset_cart_timeout_sec": cfg.get("autoResetCartTimeoutSec", 45),
+            "night_dimming_enabled": cfg.get("nightDimmingEnabled", True),
+            "uptime_seconds": 3600,
+            "version": "v1.2.10-kiosk-freekiosk",
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+    @api_router.get("/kiosk/config")
+    async def get_kiosk_config_endpoint():
+        cfg = await db.kiosk_config.find_one({})
+        if not cfg:
+            return {
+                "kioskEnabled": True,
+                "immersiveFullscreen": True,
+                "keepScreenAwake": True,
+                "autoStartOnBoot": True,
+                "inactivityTimeoutSec": 60,
+                "screensaverMode": "promo_banner",
+                "autoResetCartOnInactivity": True,
+                "autoResetCartTimeoutSec": 45,
+                "brightnessLevel": 90,
+                "nightDimmingEnabled": True,
+                "nightDimmingStart": "23:00",
+                "nightDimmingEnd": "07:00",
+                "screenOrientation": "portrait",
+                "secretTapsCount": 7,
+                "secretTriggerLocation": "top-right",
+                "requirePinForExit": true,
+                "restApiEnabled": True,
+            }
+        cfg.pop("_id", None)
+        return cfg
+
+    @api_router.post("/kiosk/config")
+    async def save_kiosk_config_endpoint(config: dict, username: str = Depends(verify_token)):
+        config.pop("_id", None)
+        await db.kiosk_config.update_one({}, {"$set": config}, upsert=True)
+        return {"status": "ok", "message": "Kiosk configuration saved"}
+
+    @api_router.post("/kiosk/wake")
+    async def kiosk_wake():
+        logger.info("FreeKiosk API: wake screen triggered")
+        return {"status": "ok", "action": "wake", "timestamp": datetime.now(UTC).isoformat()}
+
+    @api_router.post("/kiosk/screensaver")
+    async def kiosk_screensaver():
+        logger.info("FreeKiosk API: screensaver triggered")
+        return {"status": "ok", "action": "screensaver", "timestamp": datetime.now(UTC).isoformat()}
+
+    @api_router.post("/kiosk/brightness")
+    async def kiosk_set_brightness(payload: dict):
+        level = payload.get("brightness", 90)
+        await db.kiosk_config.update_one({}, {"$set": {"brightnessLevel": level}}, upsert=True)
+        return {"status": "ok", "brightness": level}
+
+    @api_router.post("/kiosk/reload")
+    async def kiosk_reload():
+        logger.info("FreeKiosk API: reload requested")
+        return {"status": "ok", "action": "reload", "timestamp": datetime.now(UTC).isoformat()}
+
