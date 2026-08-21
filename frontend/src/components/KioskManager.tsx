@@ -101,22 +101,24 @@ export default function KioskManager({ children }: KioskManagerProps) {
         if (cartItems.length > 0) {
           useCartStore.getState().clearCart();
         }
-        // Chiude la sessione linguistica cliente e riporta il totem alla home.
-        resetCustomerSessionLanguage();
         if (pathname !== '/') {
           router.replace('/');
           recordActivity();
         }
       }
 
-      // 2. Attivazione Salvaschermo se il totem è inattivo
+      // 2. Attivazione Salvaschermo e Reset Lingua se il totem è inattivo
       if (
         config.inactivityTimeoutSec > 0 &&
         elapsedSec >= config.inactivityTimeoutSec &&
-        !screensaverActive &&
         !pathname?.startsWith('/admin')
       ) {
-        triggerScreensaver();
+        // Chiude la sessione linguistica cliente quando scatta il salvaschermo per inattività
+        resetCustomerSessionLanguage();
+        
+        if (!screensaverActive) {
+          triggerScreensaver();
+        }
       }
 
       // 3. Controllo Programmazione Notturna
