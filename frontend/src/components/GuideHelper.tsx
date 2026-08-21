@@ -200,17 +200,17 @@ export default function GuideHelper() {
       {/* Support & Quick Contact Footer */}
       <View style={styles.supportFooter}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.supportTitle}>Hai bisogno di assistenza o configurazione personalizzata?</Text>
+          <Text style={styles.supportTitle}>{t('guide.support_title')}</Text>
           <Text style={styles.supportDesc}>
-            Contatta direttamente il team di sviluppo per supporto su hardware, stampanti ESC/POS o licenze B2B.
+            {t('guide.support_desc')}
           </Text>
         </View>
         <TouchableOpacity
           style={styles.supportBtn}
-          onPress={() => Linking.openURL('mailto:priologiovanni82@gmail.com?subject=Supporto%20Guida%20Totem%20QuickBite')}
+          onPress={() => Linking.openURL('mailto:support@totemquickbite.com?subject=Supporto%20Totem%20QuickBite')}
         >
           <Ionicons name="mail" size={16} color="white" />
-          <Text style={styles.supportBtnText}>Scrivi al Supporto</Text>
+          <Text style={styles.supportBtnText}>{t('guide.support_btn')}</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -169,6 +169,9 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'guide.tab_customer': 'Per i Clienti',
     'guide.tab_admin': 'Per i Gestori',
     'guide.tab_hardware': 'Hardware & Stampanti',
+    'guide.support_title': 'Hai bisogno di assistenza?',
+    'guide.support_desc': 'Contatta il nostro team di supporto per aiuto su hardware, stampanti ESC/POS o licenze.',
+    'guide.support_btn': 'Scrivi al Supporto',
   },
 
   en: {
@@ -308,6 +311,9 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'guide.tab_customer': 'Customer Flow',
     'guide.tab_admin': 'Manager Ops',
     'guide.tab_hardware': 'Hardware & Printers',
+    'guide.support_title': 'Need assistance?',
+    'guide.support_desc': 'Contact our support team for help with hardware, ESC/POS printers, or licensing.',
+    'guide.support_btn': 'Contact Support',
   },
 
   es: {
@@ -447,6 +453,9 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'guide.tab_customer': 'Flujo Clientes',
     'guide.tab_admin': 'Gestión Restaurante',
     'guide.tab_hardware': 'Hardware e Impresoras',
+    'guide.support_title': '¿Necesitas ayuda?',
+    'guide.support_desc': 'Contacta con nuestro equipo de soporte para ayuda con hardware, impresoras ESC/POS o licencias.',
+    'guide.support_btn': 'Escribir a Soporte',
   },
 
   fr: {
@@ -586,6 +595,9 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'guide.tab_customer': 'Parcours Client',
     'guide.tab_admin': 'Gestion Restaurant',
     'guide.tab_hardware': 'Matériel & Imprimantes',
+    'guide.support_title': 'Besoin d\'assistance ?',
+    'guide.support_desc': 'Contactez notre équipe de support pour l\'aide au matériel, imprimantes ESC/POS ou licences.',
+    'guide.support_btn': 'Écrire au Support',
   },
 
   de: {
@@ -725,6 +737,9 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'guide.tab_customer': 'Kundenablauf',
     'guide.tab_admin': 'Betriebsleitung',
     'guide.tab_hardware': 'Hardware & Drucker',
+    'guide.support_title': 'Benötigen Sie Hilfe?',
+    'guide.support_desc': 'Kontaktieren Sie unser Support-Team für Hilfe bei Hardware, ESC/POS-Druckern oder Lizenzen.',
+    'guide.support_btn': 'Support kontaktieren',
   },
 };
 
@@ -1387,17 +1402,17 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Abonnements & Lebenslange B2B-Lizenz',
-      subtitle: 'Google Play Abrechnung vs. Direkte B2B-Rechnung',
+      title: '8. Abonnements',
+      subtitle: 'Lizenzen und Support',
       badge: 'LIZENZEN',
       paragraphs: [
         'Transparente Lizenzmodelle für Gastronomiebetriebe:',
       ],
       bulletPoints: [
-        { title: 'Google Play Abo', desc: '30 Tage kostenlos testen, monatlich oder jährlich kündbar.' },
-        { title: 'Lebenslange B2B-Lizenz', desc: 'Einmalkauf mit steuerlicher Rechnung und Dauerschlüssel.' },
+        { title: 'Google Play Abo', desc: '7 Tage kostenlos testen, monatlich oder jährlich kündbar.' },
+        { title: 'Lizenz wiederherstellen', desc: 'Einfache Wiederherstellung von Käufen auf neuen Tablets über Google Play.' },
       ],
-      tip: 'Kontakt für B2B-Rechnungen: priologiovanni82@gmail.com.',
+      tip: 'Die Abonnementverwaltung erfolgt sicher über den Google Play Store.',
     },
   ],
 };

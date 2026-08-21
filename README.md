@@ -8,9 +8,10 @@ Soluzione software e hardware integrata per totem digitali touch-screen dedicati
 
 ### 1. Interfaccia Cliente (Kiosk Mode)
 - **Catalogo Digitale:** Navigazione fluida per categorie merceologiche, allergeni, varianti e personalizzazione ingredienti.
+- **Supporto Multilingua (Offline):** I clienti possono selezionare la lingua preferita (Italiano, Inglese, Francese, Spagnolo, Tedesco) per la sessione d'ordine, senza bisogno di rete internet.
 - **Carrello Reattivo:** Calcolo automatico di totali, IVA e sconti.
 - **Modalità di Servizio:** Scelta tra *Consumazione al Tavolo* e *Asporto*.
-- **Sicurezza Kiosk:** Interfaccia bloccata a schermo intero (Immersive Mode) con protezione da input multipli (debouncing).
+- **Sicurezza Kiosk:** Protezione da input multipli (debouncing) e blocco configurabile.
 
 ### 2. Display Comande Cucina (KDS)
 - **Ricezione Real-Time:** Notifiche immediate di nuovi ordini senza necessità di refresh.
@@ -20,9 +21,10 @@ Soluzione software e hardware integrata per totem digitali touch-screen dedicati
   - Reset manuale con azzeramento numerazione e svuotamento istantaneo della coda cucina.
 
 ### 3. Pannello Admin Remoto (Web LAN)
-- **Controllo da Rete Locale:** Accesso via browser da qualsiasi smartphone, tablet o PC connesso alla stessa rete WiFi/LAN del totem (`http://<IP_TOTEM>:8080/remote`).
-- **Gestione Menu:** Inserimento, modifica e cancellazione prodotti, prezzi, categorie e caricamento foto.
-- **Reportistica & Backup:** Statistiche giornaliere di vendita e snapshot di backup/ripristino database.
+- **Controllo da Rete Locale:** Accesso via browser da qualsiasi smartphone, tablet o PC connesso alla stessa rete WiFi/LAN del totem.
+- **Gestione Menu:** Inserimento, modifica, cancellazione e riordinamento di prodotti, categorie e varianti.
+- **Glossario Multilingua Integrato:** Aggiornamento delle traduzioni offline del catalogo (IT, EN, FR, ES, DE) con traduzione assistita automatica dal browser.
+- **Reportistica & Backup:** Statistiche giornaliere di vendita e snapshot di backup/ripristino database in locale.
 
 ### 4. Gestione Stampanti & Ricevute
 - **Supporto ESC/POS:** Stampa automatica o manuale su stampanti termiche di rete (LAN), USB e Bluetooth.
@@ -89,7 +91,6 @@ I build artefatti generati possono essere scaricati direttamente dalla dashboard
 
 ## 👨‍💻 Autori e Crediti
 
-- **Project Lead & Sviluppo:** Giovanni Priolo ([@Jonnymago](https://github.com/Jonnymago))
-- **Email:** `priologiovanni82@gmail.com`
-- **Repository Ufficiale:** [github.com/Jonnymago/totem](https://github.com/Jonnymago/totem)
+- **Azienda:** Totem QuickBite
+- **Repository Ufficiale:** [Totem QuickBite](https://github.com/Jonnymago/totem)
 - **Licenza:** Proprietary - Tutti i diritti riservati
