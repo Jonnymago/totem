@@ -13,20 +13,10 @@ function sanitizeRemoteHtml(html) {
   return html;
 }
 
-const sourceCandidates = [
-  path.join(rootDir, 'backend', 'static', 'remote', 'index.html'),
-  path.join(rootDir, '..', 'backend', 'static', 'remote', 'index.html'),
-  path.join(rootDir, 'frontend', 'backend', 'static', 'remote', 'index.html'),
-  path.join(rootDir, 'public', 'remote', 'index.html'),
-  path.join(rootDir, 'frontend', 'public', 'remote', 'index.html'),
-  path.join(rootDir, 'frontend', 'public', 'remote.html'),
-  path.join(rootDir, 'public', 'remote.html'),
-  path.join(__dirname, '../public/remote.html')
-];
-const remoteSrc = sourceCandidates.find(p => fs.existsSync(p));
+const remoteSrc = path.resolve(__dirname, '../../backend/static/remote/index.html');
 
-if (!remoteSrc) {
-  console.warn(`[bundle-web] Remote Admin source not found, skipping HTML injection. Checked: ${sourceCandidates.join(', ')}`);
+if (!fs.existsSync(remoteSrc)) {
+  console.warn(`[bundle-web] Remote Admin source not found, skipping HTML injection: ${remoteSrc}`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   if (!fs.existsSync(outPath)) {
     fs.writeFileSync(outPath, JSON.stringify({}));
@@ -35,22 +25,8 @@ if (!remoteSrc) {
 }
 
 const remoteHtml = sanitizeRemoteHtml(fs.readFileSync(remoteSrc, 'utf8'));
-const aliases = [
-  path.join(rootDir, 'public', 'remote.html'),
-  path.join(rootDir, 'public', 'admin.html'),
-  path.join(rootDir, 'public', 'admin', 'index.html'),
-  path.join(rootDir, 'public', 'remote', 'index.html'),
-  path.join(rootDir, 'frontend', 'public', 'remote.html'),
-  path.join(rootDir, 'frontend', 'public', 'admin.html'),
-  path.join(rootDir, 'frontend', 'public', 'remote', 'index.html'),
-  path.join(rootDir, 'frontend', 'public', 'admin', 'index.html'),
-  path.join(rootDir, 'frontend', 'backend', 'static', 'remote', 'index.html'),
-  path.join(rootDir, 'backend', 'static', 'remote', 'index.html')
-];
-for (const target of aliases) {
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, remoteHtml);
-}
+// The bundled HTML is served by the native local server from web_build.json.
+// Deliberately do not create mirror files: they would become stale sources.
 
 let result = {};
 if (fs.existsSync(outPath)) {

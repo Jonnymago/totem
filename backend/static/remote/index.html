@@ -127,10 +127,34 @@
     /* Floating Save Bar */
     .floating-save-bar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); max-width: 500px; width: calc(100% - 32px); background: #1E293B; color: white; padding: 12px 18px; border-radius: 16px; box-shadow: var(--shadow-lg); display: flex; justify-content: space-between; align-items: center; z-index: 45; }
 
-    /* Mobile helper */
-    @media (max-width: 640px) {
-      main { padding: 12px; }
-      .allergens-grid { grid-template-columns: 1fr 1fr; }
+    /* Responsive mobile and tablet layout */
+    .header-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .section-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    @media (max-width: 760px) {
+      header { padding:10px 12px; gap:10px; align-items:flex-start; }
+      header > div:first-child { min-width:0; flex:1; }
+      .brand-title { font-size:1rem; }
+      .brand-title span:last-child, .brand-sub { max-width:145px !important; }
+      .header-actions { gap:5px; }
+      .header-actions .badge { display:none; }
+      .nav-tabs { padding:0 4px; scroll-snap-type:x proximity; }
+      .tab-btn { min-width:76px; padding:10px 7px; scroll-snap-align:start; }
+      main { padding:12px; padding-bottom:92px; }
+      .section-head { align-items:flex-start; flex-wrap:wrap; gap:10px; }
+      .section-title { font-size:1.1rem; flex-wrap:wrap; }
+      .section-actions { width:100%; justify-content:flex-start; }
+      .card { padding:14px; }
+      .form-input, .form-select, .form-textarea { min-height:44px; }
+      .btn { min-height:40px; }
+    }
+    @media (max-width: 420px) {
+      header { align-items:center; }
+      .brand-title span:last-child, .brand-sub { max-width:118px !important; }
+      .tab-btn { min-width:70px; font-size:0.7rem; }
+      .tab-btn .tab-icon { font-size:1.12rem; }
+      .allergens-grid { grid-template-columns:1fr 1fr; }
+      .modal-backdrop { padding:8px; }
+      .modal-body { padding:14px; }
     }
   </style>
 </head>
@@ -202,7 +226,7 @@
         </div>
         <div class="brand-sub">Totem QuickBite Remote Admin</div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px;">
+      <div class="header-actions">
         <span id="conn-status" class="badge badge-green">🟢 Connesso</span>
         <button class="btn btn-outline btn-sm" onclick="loadAll(true)" title="Ricarica Dati">🔄</button>
         <button class="btn btn-secondary btn-sm" onclick="doLogout()" title="Disconnetti">Esci</button>
@@ -254,7 +278,7 @@
             <span>🍔 Prodotti</span>
             <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);" id="prod-counter-text"></span>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <div class="section-actions">
             <button class="btn btn-secondary btn-sm" onclick="updateOfflineGlossary()">🌐 Aggiorna traduzioni offline</button>
             <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Nuovo Prodotto</button>
           </div>
@@ -317,19 +341,16 @@
       <!-- TAB: KIOSK CONTROL & HARDWARE (Totem Native Kiosk Engine) -->
       <section id="tab-kiosk" style="display:none;">
         <div class="section-head">
-          <div class="section-title">
-            <span>📱 Controllo Kiosk & Hardware</span>
-            <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Gestione Dispositivo, Blocco & Schermo</span>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="saveKioskRemote()">💾 Salva Configurazione Kiosk</button>
+          <div class="section-title"><span>📱 Controllo Totem</span></div>
+          <button class="btn btn-primary btn-sm" onclick="saveKioskRemote()">💾 Salva</button>
         </div>
 
         <!-- Live Status Bar -->
         <div class="card" style="background:#EFF6FF; border:1px solid #BFDBFE; margin-bottom:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
-              <div style="font-weight:800; font-size:0.95rem; color:#1E40AF;">🟢 Totem Display: <span id="kiosk-status-text">Attivo & Bloccato (Kiosk Mode)</span></div>
-              <div style="font-size:0.75rem; color:#3B82F6; margin-top:2px;">Risoluzione Fullscreen Immersiva • Tasti di sistema bloccati</div>
+              <div style="font-weight:800; font-size:0.95rem; color:#1E40AF;">🟢 Totem: <span id="kiosk-status-text">Attivo</span></div>
+              <div style="font-size:0.75rem; color:#3B82F6; margin-top:2px;">La visualizzazione è gestita dal dispositivo.</div>
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button class="btn btn-outline btn-sm" style="background:white;" onclick="triggerKioskRemoteAction('wake')">☀️ Risveglia Schermo</button>
@@ -341,9 +362,9 @@
 
         <!-- 1. Modalità Kiosk & Blocco -->
         <div class="card">
-          <div class="card-title">🔒 Modalità Kiosk & Blocco Dispositivo</div>
+          <div class="card-title">🔒 Gestione schermo</div>
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
-            Impedisce ai clienti di uscire dall'applicazione o interagire con il sistema operativo Android.
+            Configura il comportamento dello schermo durante l'uso del totem.
           </p>
 
           <div style="display:flex; flex-direction:column; gap:12px;">
@@ -473,11 +494,9 @@
             </div>
             <div class="form-group">
               <label class="form-label">Posizione Trigger Segreto</label>
-              <select id="kiosk-set-location" class="form-select">
-                <option value="top-right" selected>In Alto Centrale</option>
-                <option value="top-left">Angolo Alto a Sinistra</option>
-                <option value="logo">In Alto Centrale</option>
-              </select>
+                  <select id="kiosk-set-location" class="form-select">
+                    <option value="top-center" selected>In Alto Centrale</option>
+                  </select>
             </div>
           </div>
         </div>
@@ -511,10 +530,8 @@
       <!-- TAB: SETTINGS & PRINTERS -->
       <section id="tab-settings" style="display:none;">
         <div class="section-head">
-          <div class="section-title">
-            <span>⚙️ Impostazioni Totem</span>
-          </div>
-          <button class="btn btn-success btn-sm" onclick="saveAllSettings()">💾 Salva Tutto</button>
+          <div class="section-title"><span>⚙️ Impostazioni</span></div>
+          <button class="btn btn-success btn-sm" onclick="saveAllSettings()">💾 Salva</button>
         </div>
 
 
@@ -566,14 +583,10 @@
               <div id="remote-url-display" style="font-size:0.8rem; font-family:monospace; background:#F1F5F9; padding:8px 12px; border-radius:8px; word-break:break-all; border:1px solid var(--border); margin-bottom:8px;"></div>
               <div style="display:flex; gap:8px;">
                 <button class="btn btn-secondary btn-sm" onclick="copyRemoteUrl()">📋 Copia Link</button>
-                <button class="btn btn-outline btn-sm" onclick="detectLocalIp()">🔄 Rileva IP Wi-Fi</button>
               </div>
             </div>
           </div>
-          <div class="form-group" style="margin-top:14px;">
-            <label class="form-label">IP Locale Totem (es. 192.168.1.9)</label>
-            <input type="text" id="set-ip" class="form-input" placeholder="192.168.1.9" />
-          </div>
+
         </div>
 
         <!-- Stampa & Stampanti Bluetooth / Network -->
@@ -670,58 +683,23 @@
           </div>
         </div>
 
-        <div style="text-align:center; padding:16px 0;">
-          <button class="btn btn-success" style="padding:12px 28px; font-size:1rem;" onclick="saveAllSettings()">💾 Salva Tutte le Impostazioni</button>
-        </div>
+
       </section>
 
       <!-- TAB: LICENSE & CREDITS -->
       <section id="tab-license" style="display:none;">
-        <!-- License Card -->
         <div class="card">
-          <div class="card-title">📜 Licenza & Attivazione Software</div>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-            Stato della licenza e piano attivo per questo terminale Totem QuickBite.
-          </p>
-
-          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <span style="font-weight:700; font-size:0.9rem;">Stato Dispositivo:</span>
-              <span class="badge badge-green" id="remote-lic-badge" style="font-size:0.85rem; padding:4px 12px;">🟢 Licenza Attiva</span>
+          <div class="card-title">📜 Piano e licenza</div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Gestisci lo stato dell'abbonamento di Totem QuickBite.</p>
+          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:12px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+              <span style="font-weight:700; font-size:0.9rem;">Stato piano</span>
+              <span class="badge badge-green" id="remote-lic-badge" style="font-size:0.85rem; padding:4px 12px;">🟢 Attivo</span>
             </div>
-            <div style="font-size:0.85rem; color:var(--text); margin-bottom:6px;">
-              <strong>ID Kiosk (Hardware):</strong> <code id="remote-lic-device" style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:monospace;">QKB-LOCAL-001</code>
-            </div>
-            <div style="font-size:0.85rem; color:var(--text); margin-bottom:6px;">
-              <strong>Piano Configurato:</strong> <span id="remote-lic-plan">Totem Kiosk Base</span>
-            </div>
-            <div style="font-size:0.85rem; color:var(--text-muted);">
-              <strong>Validità:</strong> <span id="remote-lic-validity">Mensile / Annuale</span>
-            </div>
+            <div style="font-size:0.9rem; color:var(--text);"><strong>Piano Base</strong> <span id="remote-lic-plan">Mensile o annuale</span></div>
           </div>
-
+          <p style="font-size:0.72rem; color:var(--text-muted); margin-top:14px;">Versione build: <span id="remote-build-version">—</span></p>
         </div>
-        </div>
-
-        <!-- Plans Info -->
-        <div class="card">
-          <div class="card-title">💳 Abbonamenti Google Play Store</div>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-            Piani flessibili con addebito sicuro su Google Play Store.
-          </p>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:12px;">
-            <div style="border:1.5px solid var(--border); border-radius:12px; padding:16px; background:white;">
-              <div style="font-weight:800; font-size:1rem; color:var(--text);">Piano Base Totem</div>
-              <div style="font-size:0.75rem; color:#6366F1; font-weight:700; margin-top:2px;">Singola postazione Kiosk</div>
-              <div style="font-size:1.4rem; font-weight:900; color:var(--text); margin:6px 0;">9,99 € <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">/ mese</span></div>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Ideale per pizzerie al taglio, bar e chioschi. Ordini illimitati, 1 KDS cucina e stampe ESC/POS.</p>
-              <div style="font-size:0.75rem; font-weight:700; color:var(--success);">✓ 89,00 € / anno (2 mesi gratis)</div>
-            </div>
-
-
-          </div>
-        </div>
-
       </section>
     </main>
   </div>
@@ -747,7 +725,29 @@
       'Nessun logo': { en: 'No logo', es: 'Sin logotipo', fr: 'Aucun logo', de: 'Kein Logo' },
       'Nessuna stampante configurata. Aggiungi il MAC, IP o nome qui sopra.': { en: 'No printer configured. Add the MAC, IP or name above.', es: 'No hay impresora configurada. Añade arriba la MAC, IP o el nombre.', fr: 'Aucune imprimante configurée. Ajoutez l’adresse MAC, IP ou le nom ci-dessus.', de: 'Kein Drucker konfiguriert. Fügen Sie oben MAC, IP oder Namen hinzu.' },
       'Lingua aggiornata': { en: 'Language updated', es: 'Idioma actualizado', fr: 'Langue mise à jour', de: 'Sprache aktualisiert' },
-      'Errore salvataggio lingua': { en: 'Language save error', es: 'Error al guardar el idioma', fr: 'Erreur d’enregistrement de la langue', de: 'Fehler beim Speichern der Sprache' }
+      'Errore salvataggio lingua': { en: 'Language save error', es: 'Error al guardar el idioma', fr: 'Erreur d’enregistrement de la langue', de: 'Fehler beim Speichern der Sprache' },
+      'Nessun prodotto trovato': { en: 'No product found', es: 'No se encontró ningún producto', fr: 'Aucun produit trouvé', de: 'Kein Produkt gefunden' },
+      'Aggiungi un nuovo prodotto o modifica la ricerca.': { en: 'Add a new product or change the search.', es: 'Añade un producto o cambia la búsqueda.', fr: 'Ajoutez un produit ou modifiez la recherche.', de: 'Fügen Sie ein Produkt hinzu oder ändern Sie die Suche.' },
+      'Nessuna categoria trovata': { en: 'No category found', es: 'No se encontró ninguna categoría', fr: 'Aucune catégorie trouvée', de: 'Keine Kategorie gefunden' },
+      'Usa il pulsante “+ Categoria” in alto per iniziare.': { en: 'Use the “+ Category” button above to get started.', es: 'Usa el botón “+ Categoría” de arriba para empezar.', fr: 'Utilisez le bouton « + Catégorie » ci-dessus pour commencer.', de: 'Verwenden Sie oben die Schaltfläche „+ Kategorie“, um zu beginnen.' },
+      'Nessun gruppo globale configurato': { en: 'No global group configured', es: 'No hay grupos globales configurados', fr: 'Aucun groupe global configuré', de: 'Keine globale Gruppe konfiguriert' },
+      'Usa “+ Gruppo” in alto per creare salse, ingredienti, extra o scelte riutilizzabili.': { en: 'Use “+ Group” above to create reusable sauces, ingredients, extras or choices.', es: 'Usa “+ Grupo” arriba para crear salsas, ingredientes, extras u opciones reutilizables.', fr: 'Utilisez « + Groupe » ci-dessus pour créer des sauces, ingrédients, extras ou choix réutilisables.', de: 'Verwenden Sie oben „+ Gruppe“, um wiederverwendbare Saucen, Zutaten, Extras oder Auswahlmöglichkeiten zu erstellen.' },
+      '⚙️ Impostazioni': { en: '⚙️ Settings', es: '⚙️ Ajustes', fr: '⚙️ Paramètres', de: '⚙️ Einstellungen' },
+      '💾 Salva': { en: '💾 Save', es: '💾 Guardar', fr: '💾 Enregistrer', de: '💾 Speichern' },
+      '📱 Controllo Totem': { en: '📱 Totem Control', es: '📱 Control del Totem', fr: '📱 Contrôle du Totem', de: '📱 Totem-Steuerung' },
+      '📜 Piano e licenza': { en: '📜 Plan & license', es: '📜 Plan y licencia', fr: '📜 Plan et licence', de: '📜 Tarif & Lizenz' },
+      'Gestisci lo stato dell\'abbonamento di Totem QuickBite.': { en: 'Manage the Totem QuickBite subscription status.', es: 'Gestiona el estado de la suscripción de Totem QuickBite.', fr: 'Gérez l’état de l’abonnement Totem QuickBite.', de: 'Verwalten Sie den Abonnementstatus von Totem QuickBite.' },
+      'Stato piano': { en: 'Plan status', es: 'Estado del plan', fr: 'État du plan', de: 'Tarifstatus' },
+      'Piano Base': { en: 'Basic plan', es: 'Plan Básico', fr: 'Plan de base', de: 'Basispaket' },
+      'Mensile o annuale': { en: 'Monthly or annual', es: 'Mensual o anual', fr: 'Mensuel ou annuel', de: 'Monatlich oder jährlich' },
+      'Versione build:': { en: 'Build version:', es: 'Versión de compilación:', fr: 'Version de build :', de: 'Build-Version:' },
+      '🟢 Attivo': { en: '🟢 Active', es: '🟢 Activo', fr: '🟢 Actif', de: '🟢 Aktiv' },
+      'Attivo': { en: 'Active', es: 'Activo', fr: 'Actif', de: 'Aktiv' },
+      'La visualizzazione è gestita dal dispositivo.': { en: 'Display handling is managed by the device.', es: 'La visualización la gestiona el dispositivo.', fr: 'L’affichage est géré par l’appareil.', de: 'Die Anzeige wird vom Gerät verwaltet.' },
+      '🔒 Gestione schermo': { en: '🔒 Screen management', es: '🔒 Gestión de pantalla', fr: '🔒 Gestion de l’écran', de: '🔒 Bildschirmverwaltung' },
+      'Configura il comportamento dello schermo durante l\'uso del totem.': { en: 'Configure screen behavior while using the totem.', es: 'Configura el comportamiento de la pantalla durante el uso del tótem.', fr: 'Configurez le comportement de l’écran pendant l’utilisation du totem.', de: 'Konfigurieren Sie das Bildschirmverhalten bei der Nutzung des Totems.' },
+      'Mensile 9,99 €': { en: 'Monthly €9.99', es: 'Mensual 9,99 €', fr: 'Mensuel 9,99 €', de: 'Monatlich 9,99 €' },
+      'Annuale 89,00 €': { en: 'Annual €89.00', es: 'Anual 89,00 €', fr: 'Annuel 89,00 €', de: 'Jährlich 89,00 €' }
     });
 
     function normalizeRemoteText(value) {
@@ -761,6 +761,17 @@
       const translated = REMOTE_I18N[normalized] && REMOTE_I18N[normalized][remoteLang];
       if (!translated) return original;
       return original.replace(normalized, translated);
+    }
+
+    function remoteCount(kind, visible, total) {
+      const labels = {
+        it: { products: `Mostrati ${visible} di ${total} prodotti`, categories: `Totale: ${total} categorie` },
+        en: { products: `Showing ${visible} of ${total} products`, categories: `Total: ${total} categories` },
+        fr: { products: `${visible} produits affichés sur ${total}`, categories: `Total : ${total} catégories` },
+        es: { products: `Mostrando ${visible} de ${total} productos`, categories: `Total: ${total} categorías` },
+        de: { products: `${visible} von ${total} Produkten angezeigt`, categories: `Gesamt: ${total} Kategorien` }
+      };
+      return labels[remoteLang]?.[kind] || labels.it[kind];
     }
 
     Object.assign(REMOTE_I18N, {
@@ -1310,8 +1321,6 @@
     async function saveKioskRemote() {
       try {
         const payload = {
-          kioskEnabled: document.getElementById('kiosk-set-enabled')?.checked ?? true,
-          immersiveFullscreen: document.getElementById('kiosk-set-immersive')?.checked ?? true,
           keepScreenAwake: document.getElementById('kiosk-set-keepawake')?.checked ?? true,
           autoStartOnBoot: document.getElementById('kiosk-set-autoboot')?.checked ?? true,
           inactivityTimeoutSec: Number(document.getElementById('kiosk-set-timeout')?.value || 60),
@@ -1322,9 +1331,8 @@
           nightDimmingEnabled: document.getElementById('kiosk-set-nightdim')?.checked ?? true,
           nightDimmingStart: document.getElementById('kiosk-set-nightstart')?.value || '23:00',
           nightDimmingEnd: document.getElementById('kiosk-set-nightend')?.value || '07:00',
-          screenOrientation: document.getElementById('kiosk-set-orientation')?.value || 'portrait',
           secretTapsCount: Number(document.getElementById('kiosk-set-taps')?.value || 7),
-          secretTriggerLocation: document.getElementById('kiosk-set-location')?.value || 'top-right',
+          secretTriggerLocation: document.getElementById('kiosk-set-location')?.value || 'top-center',
         };
 
         const res = await api('/kiosk/config', {
@@ -1371,11 +1379,12 @@
     }
 
     function renderLicenseTab() {
-      // Initialize or load any remote license status
-      try {
-        const serialInput = document.getElementById('remote-lic-serial');
-        if (serialInput && !serialInput.value) serialInput.value = '';
-      } catch (e) {}
+      const plan = document.getElementById('remote-lic-plan');
+      const badge = document.getElementById('remote-lic-badge');
+      const build = document.getElementById('remote-build-version');
+      if (plan) plan.textContent = remoteT(settings?.subscriptionPlan === 'annual' ? 'Annuale 89,00 €' : 'Mensile 9,99 €');
+      if (badge) badge.textContent = settings?.licenseActive === false ? '⚪ Non attivo' : '🟢 Attivo';
+      if (build) build.textContent = settings?.buildVersion || settings?.appVersion || '1.2.10';
     }
 
 
@@ -1494,7 +1503,7 @@
         );
       }
 
-      document.getElementById('prod-counter-text').innerText = `Mostrati ${filtered.length} di ${products.length} prodotti`;
+      document.getElementById('prod-counter-text').innerText = remoteCount('products', filtered.length, products.length);
       const container = document.getElementById('products-list');
       
       if (!filtered.length) {
@@ -2026,7 +2035,7 @@
        CATEGORIES TAB LOGIC
        ======================================================== */
     function renderCategories() {
-      document.getElementById('cat-counter-text').innerText = `Totale: ${categories.length} categorie`;
+      document.getElementById('cat-counter-text').innerText = remoteCount('categories', 0, categories.length);
       const container = document.getElementById('categories-list');
       
       if (!categories.length) {
@@ -2034,7 +2043,7 @@
           <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
             <div style="font-size:2.5rem; margin-bottom:8px;">▦</div>
             <div style="font-weight:700;">Nessuna categoria trovata</div>
-            <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openCategoryModal()">+ Crea Categoria</button>
+            <div style="font-size:0.8rem; margin-top:4px;">Usa il pulsante “+ Categoria” in alto per iniziare.</div>
           </div>
         `;
         return;
@@ -2188,8 +2197,7 @@
           <div class="card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
             <div style="font-size:2.5rem; margin-bottom:8px;">📚</div>
             <div style="font-weight:700;">Nessun gruppo globale configurato</div>
-            <div style="font-size:0.8rem; margin-top:4px; margin-bottom:12px;">Crea gruppi di salse, ingredienti, extra o scelte da riutilizzare su più prodotti.</div>
-            <button class="btn btn-primary btn-sm" onclick="openGroupModal()">+ Crea Gruppo Globale</button>
+            <div style="font-size:0.8rem; margin-top:4px;">Usa “+ Gruppo” in alto per creare salse, ingredienti, extra o scelte riutilizzabili.</div>
           </div>
         `;
         return;
@@ -2679,9 +2687,6 @@
       const passSet = document.getElementById('set-admin-pass');
       if (passSet) passSet.value = settings.admin_password || 'admin123';
 
-      const localIp = localStorage.getItem('totem_local_ip') || window.location.hostname || '192.168.1.9';
-      document.getElementById('set-ip').value = localIp;
-
       // Remote URL & QR Code
       const currentOrigin = window.location.origin;
       const remoteUrl = `${currentOrigin}/remote/`;
@@ -2928,19 +2933,6 @@
     function removeLogo() {
       customLogoBase64 = '';
       document.getElementById('logo-preview-box').innerHTML = `<span style="font-size:0.8rem; color:#94A3B8;">Nessun logo</span>`;
-    }
-
-    async function detectLocalIp() {
-      toast('Rilevamento IP Wi-Fi...');
-      const host = window.location.hostname;
-      if (host && host !== 'localhost' && host !== '127.0.0.1') {
-        document.getElementById('set-ip').value = host;
-        localStorage.setItem('totem_local_ip', host);
-        renderSettings();
-        toast('IP impostato: ' + host);
-      } else {
-        toast('Usa l\'indirizzo IP locale del tuo Totem (es. 192.168.1.9)');
-      }
     }
 
     function copyRemoteUrl() {
@@ -3214,9 +3206,6 @@
         toast('Il nome del ristorante non può essere vuoto', '⚠️');
         return;
       }
-
-      const ipVal = document.getElementById('set-ip').value.trim();
-      if (ipVal) localStorage.setItem('totem_local_ip', ipVal);
 
       const payload = {
         restaurant_name: name,
