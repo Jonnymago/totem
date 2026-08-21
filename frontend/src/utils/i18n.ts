@@ -868,8 +868,9 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      subtitle: 'Google Play Store vs Fattura Elettronica Diretta P.IVA',
-      badge: 'LICENZE & FISCALITÀ',
+      title: '8. Licenze e Abbonamenti',
+      subtitle: 'Gestione dell\'abbonamento tramite Google Play Store',
+      badge: 'LICENZE',
       paragraphs: [
         'Totem QuickBite offre formule commerciali trasparenti pensate per ogni tipo di attività:',
       ],
@@ -877,7 +878,7 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
         { title: 'Abbonamento Mensile / Annuale Google Play', desc: 'Attivabile con un click tramite account Google. Include periodo di prova di 7 giorni, aggiornamenti automatici e cancellazione libera in qualsiasi momento.' },
         { title: 'Ripristino Licenza su Nuovo Dispositivo', desc: 'Se cambi tablet puoi ripristinare il tuo acquisto Google Play per riattivare la licenza istantaneamente.' },
       ],
-      tip: 'Per richiedere la licenza a vita con fattura fiscale, clicca sul pulsante "Richiedi Fattura B2B" o invia una email a priologiovanni82@gmail.com.',
+      tip: 'Gestisci il tuo abbonamento e il metodo di pagamento direttamente dalle impostazioni del tuo account Google Play Store.',
     },
   ],
 
@@ -1005,16 +1006,17 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      subtitle: 'Google Play Billing vs Direct B2B Invoicing',
-      badge: 'LICENSING & TAX',
+      title: '8. Licensing and Subscriptions',
+      subtitle: 'Subscription management via Google Play Store',
+      badge: 'LICENSING',
       paragraphs: [
         'Totem QuickBite provides flexible, transparent licensing options tailored to every hospitality business:',
       ],
       bulletPoints: [
         { title: 'Google Play Monthly / Annual Subscription', desc: 'One-click activation with Google Play account. Includes 7-day free trial, automatic updates and cancel anytime.' },
-        { title: 'Restoring License on New Device', desc: 'Easily restore purchases on new tablets via Google Play Restore or re-entering the B2B key.' },
+        { title: 'Restoring License on New Device', desc: 'Easily restore purchases on new tablets via Google Play Restore.' },
       ],
-      tip: 'To request a B2B invoice license, tap "Request B2B Invoice" or email priologiovanni82@gmail.com.',
+      tip: 'Manage your subscription and payment method directly from your Google Play Store account settings.',
     },
   ],
 
@@ -1137,17 +1139,17 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Suscripciones y Licencia de por Vida B2B',
-      subtitle: 'Google Play Billing vs Facturación Fiscal Directa',
+      title: '8. Licencias y Suscripciones',
+      subtitle: 'Gestión de la suscripción a través de Google Play Store',
       badge: 'LICENCIAS',
       paragraphs: [
         'Opciones comerciales adaptadas a cualquier negocio de hostelería:',
       ],
       bulletPoints: [
-        { title: 'Suscripción Google Play', desc: 'Prueba gratuita de 7 días, actualizaciones automáticas y cancelación libre.' },
-        { title: 'Licencia de por Vida B2B', desc: 'Pago único con factura deducible y clave de serie permanente.' },
+        { title: 'Suscripción Mensual / Anual Google Play', desc: 'Activación con un clic con cuenta de Google. Incluye prueba gratuita de 7 días, actualizaciones automáticas y cancelación en cualquier momento.' },
+        { title: 'Restauración de licencia en nuevo dispositivo', desc: 'Restaure fácilmente las compras en nuevas tabletas a través de Google Play.' },
       ],
-      tip: 'Para solicitar factura B2B, contacte en priologiovanni82@gmail.com.',
+      tip: 'Gestione su suscripción y método de pago directamente desde la configuración de su cuenta de Google Play Store.',
     },
   ],
 
@@ -1267,17 +1269,17 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Abonnements & Licence à Vie B2B',
-      subtitle: 'Google Play Store vs Facturation Professionnelle',
+      title: '8. Licences et Abonnements',
+      subtitle: 'Gestion de l\'abonnement via Google Play Store',
       badge: 'LICENCES',
       paragraphs: [
         'Des formules transparentes adaptées à chaque établissement :',
       ],
       bulletPoints: [
-        { title: 'Abonnement Google Play', desc: 'Essai gratuit de 7 jours et résiliation libre.' },
-        { title: 'Licence à Vie B2B', desc: 'Achat unique avec facture professionnelle et clé permanente.' },
+        { title: 'Abonnement Mensuel / Annuel Google Play', desc: 'Activation en un clic avec un compte Google. Comprend un essai gratuit de 7 jours, des mises à jour automatiques et annulation à tout moment.' },
+        { title: 'Restauration de la licence sur un nouvel appareil', desc: 'Restaurez facilement vos achats sur de nouvelles tablettes via Google Play.' },
       ],
-      tip: 'Contactez priologiovanni82@gmail.com pour une facture B2B.',
+      tip: 'Gérez votre abonnement et votre mode de paiement directement depuis les paramètres de votre compte Google Play Store.',
     },
   ],
 
@@ -1397,17 +1399,17 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
     {
       id: 'ch8_licensing',
       icon: 'ribbon',
-      title: '8. Abonnements',
-      subtitle: 'Lizenzen und Support',
+      title: '8. Lizenzen und Abonnements',
+      subtitle: 'Abonnementverwaltung über den Google Play Store',
       badge: 'LIZENZEN',
       paragraphs: [
         'Transparente Lizenzmodelle für Gastronomiebetriebe:',
       ],
       bulletPoints: [
-        { title: 'Google Play Abo', desc: '7 Tage kostenlos testen, monatlich oder jährlich kündbar.' },
-        { title: 'Lizenz wiederherstellen', desc: 'Einfache Wiederherstellung von Käufen auf neuen Tablets über Google Play.' },
+        { title: 'Monatliches / Jährliches Google Play Abo', desc: 'Aktivierung mit einem Klick über das Google-Konto. Inklusive 7-tägiger kostenloser Testversion, automatischen Updates und jederzeit kündbar.' },
+        { title: 'Lizenz auf neuem Gerät wiederherstellen', desc: 'Stellen Sie Einkäufe auf neuen Tablets einfach über Google Play wieder her.' },
       ],
-      tip: 'Die Abonnementverwaltung erfolgt sicher über den Google Play Store.',
+      tip: 'Verwalten Sie Ihr Abonnement und Ihre Zahlungsmethode direkt in den Einstellungen Ihres Google Play Store-Kontos.',
     },
   ],
 };

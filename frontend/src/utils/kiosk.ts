@@ -37,7 +37,7 @@ export interface KioskConfig {
 
   // Sicurezza & Gesture
   secretTapsCount: number; // 5 o 7
-  secretTriggerLocation: 'top-right' | 'top-left' | 'logo';
+  secretTriggerLocation: 'top-center' | 'top-right' | 'top-left' | 'logo';
   requirePinForExit: boolean;
 
   // Kiosk REST API
@@ -64,7 +64,7 @@ export const DEFAULT_KIOSK_CONFIG: KioskConfig = {
   screenOrientation: 'portrait',
 
   secretTapsCount: 7,
-  secretTriggerLocation: 'top-right',
+  secretTriggerLocation: 'top-center',
   requirePinForExit: true,
 
   restApiEnabled: true,

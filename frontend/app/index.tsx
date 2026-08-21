@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getSettings, Settings, getAdminPin, getGlobalGroups, getProducts, getCategories } from '@/src/api/api';
 import PinPad from '@/src/components/PinPad';
 import LanguageSelector from '@/src/components/LanguageSelector';
-import { useI18n } from '@/src/utils/i18n';
+import { useI18n, resetCustomerSessionLanguage } from '@/src/utils/i18n';
 import { useKioskStore } from '@/src/store/kioskStore';
 
 import { Text } from '@/src/components/LocalizedPrimitives';
@@ -16,16 +16,17 @@ const BOTTOM = Platform.OS === 'android' ? 40 : 32;
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { t, resetCustomerSessionLanguage } = useI18n();
+  const { t } = useI18n();
   const config = useKioskStore((s) => s.config);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState('1234');
   const clickTimerRef = useRef<any>(null);
+  const hasReceivedInitialFocusRef = useRef(false);
 
   const targetTaps = config.secretTapsCount || 7;
-  const triggerLoc = config.secretTriggerLocation || 'top-right';
+  const triggerLoc = config.secretTriggerLocation || 'top-center';
 
   const loadSettings = useCallback(async () => {
     try {
@@ -39,12 +40,17 @@ export default function WelcomeScreen() {
     }
   }, []);
 
-  // Cold start + ogni volta che si torna sulla home (es. da Ordina al Totem)
+  // Alla prima apertura conserva la lingua appena scelta dal cliente. Al ritorno
+  // effettivo alla Home dopo una navigazione, chiude invece la sessione lingua.
   useFocusEffect(
     useCallback(() => {
-      resetCustomerSessionLanguage();
+      if (hasReceivedInitialFocusRef.current) {
+        resetCustomerSessionLanguage();
+      } else {
+        hasReceivedInitialFocusRef.current = true;
+      }
       loadSettings();
-    }, [loadSettings, resetCustomerSessionLanguage])
+    }, [loadSettings])
   );
 
   const handleSecretDotPress = async () => {
@@ -98,16 +104,17 @@ export default function WelcomeScreen() {
         <View style={styles.langBarTop}>
           <LanguageSelector compact mode="customer-session" />
         </View>
-        <TouchableOpacity
-          testID="secret-admin-dot"
-          style={[
-            styles.secretDot,
-            triggerLoc === 'top-left' && { right: undefined, left: EDGE },
-            triggerLoc === 'logo' && { right: undefined, left: winW / 2 - 12, top: Platform.OS === 'android' ? 64 : 70 },
-          ]}
-          onPress={handleSecretDotPress}
-          activeOpacity={0.7}
-        >
+          <TouchableOpacity
+            testID="secret-admin-dot"
+            style={[
+              styles.secretDot,
+              triggerLoc === 'top-left' && { right: undefined, left: EDGE },
+              triggerLoc === 'top-center' && { right: undefined, left: winW / 2 - 12 },
+              triggerLoc === 'logo' && { right: undefined, left: winW / 2 - 12, top: Platform.OS === 'android' ? 64 : 70 },
+            ]}
+            onPress={handleSecretDotPress}
+            activeOpacity={0.7}
+          >
           {dotClickCount > 0 && (
             <View style={styles.dotCounter}>
               <Text style={styles.dotCounterText}>{dotClickCount}</Text>
