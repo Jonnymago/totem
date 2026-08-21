@@ -50,7 +50,7 @@ jobs:
       - name: Verifica EXPO_TOKEN
         shell: bash
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || 'LzpqoxDEc07l4qK5Qb4oxI8yIQnefAUfiGUqWuul' }}
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
             echo "Manca il secret EXPO_TOKEN nelle Actions secrets di GitHub"
@@ -67,7 +67,7 @@ jobs:
           const expo = config.expo || {};
           const projectId = expo.extra?.eas?.projectId;
 
-          if (expo.owner !== 'cejohoy727s-team') {
+          if (expo.owner !== 'cogoy23817s-teamq') {
             throw new Error(`Owner Expo non valido: ${expo.owner}`);
           }
 
@@ -75,7 +75,7 @@ jobs:
             throw new Error('newArchEnabled deve essere true');
           }
 
-          if (projectId !== '374b7045-c570-4cb2-8fcb-d4a17d6cddca') {
+          if (projectId !== '570f77d9-89c5-4ded-a6d0-e4281f08e2ef') {
             throw new Error(`Project ID non valido: ${projectId}`);
           }
 
@@ -93,7 +93,7 @@ jobs:
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          token: ${{ secrets.EXPO_TOKEN || 'LzpqoxDEc07l4qK5Qb4oxI8yIQnefAUfiGUqWuul' }}
 
       - name: Installazione dipendenze
         run: npm ci || npm install --legacy-peer-deps
@@ -127,7 +127,7 @@ jobs:
 
       - name: Avvia build Android su Expo EAS
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || 'LzpqoxDEc07l4qK5Qb4oxI8yIQnefAUfiGUqWuul' }}
         shell: bash
         run: |
           PROFILE="${{ github.event.inputs.profile || 'preview' }}"
@@ -157,9 +157,9 @@ jobs:
           echo "- Repository: \`Jonnymago/totem\`" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Account Expo: \`cejohoy727s-team\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Account Expo: \`cogoy23817s-teamq\`" >> $GITHUB_STEP_SUMMARY
           echo "- Progetto: \`totem\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Dashboard EAS: https://expo.dev/accounts/cejohoy727s-team/projects/totem/builds" >> $GITHUB_STEP_SUMMARY
+          echo "- Dashboard EAS: https://expo.dev/accounts/cogoy23817s-teamq/projects/totem/builds" >> $GITHUB_STEP_SUMMARY
           echo "- GitHub Actions: https://github.com/Jonnymago/totem/actions" >> $GITHUB_STEP_SUMMARY
           echo "- La modalità predefinita usa \`--no-wait\` per non consumare minuti durante la build cloud." >> $GITHUB_STEP_SUMMARY
 

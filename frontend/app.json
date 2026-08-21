@@ -2,7 +2,7 @@
   "expo": {
     "name": "Totem QuickBite ordinazioni",
     "slug": "totem",
-    "owner": "cejohoy727s-team",
+    "owner": "cogoy23817s-teamq",
     "version": "1.2.10",
     "platforms": [
       "android",
@@ -85,7 +85,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "374b7045-c570-4cb2-8fcb-d4a17d6cddca"
+        "projectId": "570f77d9-89c5-4ded-a6d0-e4281f08e2ef"
       }
     }
   }
