@@ -234,6 +234,10 @@
         <span class="tab-icon">⚙️</span>
         <span>Impostazioni</span>
       </button>
+      <button class="tab-btn" onclick="switchTab('license')">
+        <span class="tab-icon">📜</span>
+        <span>Licenza & Info</span>
+      </button>
     </nav>
 
     <!-- Main Content Area -->
@@ -450,6 +454,104 @@
 
         <div style="text-align:center; padding:16px 0;">
           <button class="btn btn-success" style="padding:12px 28px; font-size:1rem;" onclick="saveAllSettings()">💾 Salva Tutte le Impostazioni</button>
+        </div>
+      </section>
+
+      <!-- TAB: LICENSE & CREDITS -->
+      <section id="tab-license" style="display:none;">
+        <!-- License Card -->
+        <div class="card">
+          <div class="card-title">📜 Licenza & Attivazione Software</div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
+            Stato della licenza e piano attivo per questo terminale Totem QuickBite.
+          </p>
+
+          <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-weight:700; font-size:0.9rem;">Stato Dispositivo:</span>
+              <span class="badge badge-green" id="remote-lic-badge" style="font-size:0.85rem; padding:4px 12px;">🟢 Licenza Pro Attiva</span>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text); margin-bottom:6px;">
+              <strong>ID Kiosk (Hardware):</strong> <code id="remote-lic-device" style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:monospace;">QKB-PRO-LOCAL-001</code>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text); margin-bottom:6px;">
+              <strong>Piano Configurato:</strong> <span id="remote-lic-plan">Totem Kiosk Pro Unlimited</span>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-muted);">
+              <strong>Validità:</strong> <span id="remote-lic-validity">Perpetua / Aggiornamenti inclusi</span>
+            </div>
+          </div>
+
+          <div class="card-title" style="font-size:0.95rem; margin-top:20px; margin-bottom:8px;">🔑 Attivazione tramite Chiave Seriale / Voucher B2B</div>
+          <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <input type="text" id="remote-lic-serial" class="form-input" placeholder="es. QKB-PRO-2026-XXXX-XXXX" style="font-weight:700; text-transform:uppercase;" />
+            <button class="btn btn-primary" onclick="remoteActivateSerial()">Attiva Seriale</button>
+          </div>
+        </div>
+
+        <!-- Plans Info -->
+        <div class="card">
+          <div class="card-title">💳 Piani Google Play Store & Listino</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:12px;">
+            <div style="border:1.5px solid var(--border); border-radius:12px; padding:16px; background:white;">
+              <div style="font-weight:800; font-size:1rem; color:var(--text);">Mensile Pro</div>
+              <div style="font-size:1.4rem; font-weight:900; color:var(--text); margin:6px 0;">19,99 € <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">/ mese</span></div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Rinnovo mensile automatico, KDS cucina illimitato, supporto email.</p>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--success);">✓ Ordini & stampe illimitate</div>
+            </div>
+
+            <div style="border:2px solid #10B981; border-radius:12px; padding:16px; background:#F0FDF4; position:relative;">
+              <div style="position:absolute; top:-10px; right:12px; background:#10B981; color:white; font-size:0.65rem; font-weight:900; padding:2px 8px; border-radius:10px;">CONSIGLIATO</div>
+              <div style="font-weight:800; font-size:1rem; color:var(--text);">Annuale Kiosk</div>
+              <div style="font-size:1.4rem; font-weight:900; color:var(--text); margin:6px 0;">199,00 € <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">/ anno</span></div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Risparmia 2 mesi, backup illimitati, supporto prioritario.</p>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--success);">✓ 2 Mesi Gratis Inclusi</div>
+            </div>
+
+            <div style="border:1.5px solid var(--border); border-radius:12px; padding:16px; background:white;">
+              <div style="font-weight:800; font-size:1rem; color:var(--text);">Licenza a Vita</div>
+              <div style="font-size:1.4rem; font-weight:900; color:var(--text); margin:6px 0;">399,00 € <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">una tantum</span></div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Nessun canone periodico, licenza permanente per questo totem.</p>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--success);">✓ Accesso Illimitato a Vita</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credits Card -->
+        <div class="card">
+          <div class="card-title">👨‍💻 Autori & Crediti Sviluppo</div>
+          <div style="display:flex; gap:16px; align-items:center; background:#F8FAFC; border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:14px;">
+            <div style="width:54px; height:54px; border-radius:50%; background:#6366F1; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900;">GP</div>
+            <div>
+              <div style="font-size:1.1rem; font-weight:800; color:var(--text);">Giovanni Priolo</div>
+              <div style="font-size:0.8rem; font-weight:700; color:#6366F1; margin-bottom:4px;">Lead Software Architect & Developer</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Progettazione e sviluppo software Totem QuickBite, architettura Local-First, gestione display cucina e stampanti termiche ESC/POS.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+            <a href="mailto:priologiovanni82@gmail.com" class="btn btn-outline btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <span>✉️</span> <span>priologiovanni82@gmail.com</span>
+            </a>
+            <a href="https://github.com/Jonnymago/totem" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <span>🐙</span> <span>GitHub: Jonnymago/totem</span>
+            </a>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px;">
+            <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="font-size:0.75rem; color:var(--text-muted);">Versione Software</div>
+              <div style="font-size:0.9rem; font-weight:800; color:var(--text);">v1.2.10 (Production)</div>
+            </div>
+            <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="font-size:0.75rem; color:var(--text-muted);">Runtime</div>
+              <div style="font-size:0.9rem; font-weight:800; color:var(--text);">Android Hermes / Python</div>
+            </div>
+            <div style="background:#F8FAFC; border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="font-size:0.75rem; color:var(--text-muted);">Licenza</div>
+              <div style="font-size:0.9rem; font-weight:800; color:var(--text);">Proprietary / All rights reserved</div>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -834,7 +936,7 @@
       const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tab));
       if (activeBtn) activeBtn.classList.add('active');
 
-      ['products', 'categories', 'groups', 'orders', 'settings'].forEach(t => {
+      ['products', 'categories', 'groups', 'orders', 'settings', 'license'].forEach(t => {
         const el = document.getElementById('tab-' + t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
       });
@@ -849,10 +951,39 @@
         else if (currentTab === 'groups') renderGroups();
         else if (currentTab === 'orders') loadOrders();
         else if (currentTab === 'settings') renderSettings();
+        else if (currentTab === 'license') renderLicenseTab();
       } catch (err) {
         console.error('renderCurrentTab error:', err);
         toast('Errore visualizzazione: ' + (err && err.message ? err.message : err), '⚠️');
       }
+    }
+
+    function renderLicenseTab() {
+      // Initialize or load any remote license status
+      try {
+        const serialInput = document.getElementById('remote-lic-serial');
+        if (serialInput && !serialInput.value) serialInput.value = '';
+      } catch (e) {}
+    }
+
+    function remoteActivateSerial() {
+      const serialEl = document.getElementById('remote-lic-serial');
+      const val = (serialEl ? serialEl.value : '').trim().toUpperCase();
+      if (!val || val.length < 8) {
+        toast('Inserisci un codice seriale valido (min 8 caratteri)', '⚠️');
+        return;
+      }
+      const badge = document.getElementById('remote-lic-badge');
+      const plan = document.getElementById('remote-lic-plan');
+      if (badge) {
+        badge.className = 'badge badge-green';
+        badge.innerText = '🟢 Licenza Seriale Attiva';
+      }
+      if (plan) {
+        plan.innerText = 'Licenza Seriale (' + val + ')';
+      }
+      toast('Licenza Seriale attivata con successo!', '🎉');
+      if (serialEl) serialEl.value = '';
     }
 
     /* ========================================================

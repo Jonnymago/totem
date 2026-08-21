@@ -77,6 +77,16 @@ export default function AdminLayout() {
       />
       
       <Tabs.Screen
+        name="license"
+        options={{
+          title: 'Licenza & Info',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ribbon-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      
+      <Tabs.Screen
         name="kitchen"
         options={{
           href: null,
