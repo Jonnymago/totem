@@ -13,21 +13,24 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  getKioskConfig,
-  saveKioskConfig,
   KioskConfig,
   DEFAULT_KIOSK_CONFIG,
   getKioskTelemetry,
   KioskTelemetry,
 } from '@/src/utils/kiosk';
-import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
+import { useKioskStore } from '@/src/store/kioskStore';
 
 export default function KioskHardwareScreen() {
-  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [config, setConfig] = useState<KioskConfig>(DEFAULT_KIOSK_CONFIG);
+  const {
+    config,
+    updateConfig,
+    triggerWake,
+    triggerScreensaver,
+    triggerDim,
+    triggerBeep,
+  } = useKioskStore();
   const [telemetry, setTelemetry] = useState<KioskTelemetry | null>(null);
   const [activeTest, setActiveTest] = useState<string | null>(null);
 
@@ -38,24 +41,23 @@ export default function KioskHardwareScreen() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [cfg, tel] = await Promise.all([getKioskConfig(), getKioskTelemetry()]);
-      setConfig(cfg);
+      const tel = await getKioskTelemetry();
       setTelemetry(tel);
     } catch (e) {
-      console.warn('Errore caricamento dati Kiosk:', e);
+      console.warn('Error loading Kiosk data:', e);
     } finally {
       setLoading(false);
     }
   };
 
   const handleUpdate = async (patch: Partial<KioskConfig>) => {
-    const updated = { ...config, ...patch };
-    setConfig(updated);
     try {
       setSaving(true);
-      await saveKioskConfig(patch);
+      await updateConfig(patch);
+      const tel = await getKioskTelemetry();
+      setTelemetry(tel);
     } catch (e) {
-      console.warn('Errore salvataggio kiosk:', e);
+      console.warn('Error saving kiosk config:', e);
     } finally {
       setSaving(false);
     }
@@ -66,22 +68,26 @@ export default function KioskHardwareScreen() {
     setTimeout(() => {
       setActiveTest(null);
       if (testName === 'wake') {
-        Alert.alert('✅ Test Risveglio', 'Comando di risveglio schermo (Wake Screen) inviato con successo.');
+        triggerWake();
+        Alert.alert('✅ Test Risveglio', 'Comando di risveglio schermo eseguito con successo.');
       } else if (testName === 'screensaver') {
-        Alert.alert('✅ Test Salvaschermo', 'Salvaschermo promozionale avviato con successo.');
+        triggerScreensaver();
+        Alert.alert('✅ Test Salvaschermo', 'Salvaschermo avviato. Tocca lo schermo per uscire.');
       } else if (testName === 'dim') {
-        Alert.alert('✅ Test Dimming', 'Luminosità impostata in modalità risparmio energetico (10%).');
+        triggerDim();
+        Alert.alert('✅ Test Dimming', 'Luminosità impostata al 10% (risparmio energetico). Tocca lo schermo per ripristinare.');
       } else if (testName === 'beep') {
-        Alert.alert('🔔 Feedback Audio', 'Segnale acustico / beep di sistema riprodotto.');
+        triggerBeep();
+        Alert.alert('🔔 Feedback Acustico', 'Segnale acustico e vibrazione hardware eseguiti.');
       }
-    }, 600);
+    }, 400);
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento impostazioni Kiosk & Hardware...</Text>
+        <Text style={styles.loadingText}>Loading Kiosk & Hardware Settings...</Text>
       </View>
     );
   }
@@ -96,11 +102,10 @@ export default function KioskHardwareScreen() {
             <Ionicons name="tablet-portrait" size={28} color="#2563EB" />
           </View>
           <View style={styles.headerTextBox}>
-            <Text style={styles.headerTitle}>{t('admin.nav_kiosk')} & Hardware</Text>
-            <Text style={styles.headerSubtitle}>Gestione dispositivo, blocco schermo, salvaschermo e REST API</Text>
+            <Text style={styles.headerTitle}>Kiosk Control & Hardware</Text>
+            <Text style={styles.headerSubtitle}>Device management, screen lockdown, screensaver and REST API</Text>
           </View>
         </View>
-        <LanguageSelector compact theme="light" />
       </View>
 
       {/* SEZIONE 1: STATO KIOSK & BLOCCO DISPOSITIVO */}
@@ -500,8 +505,8 @@ export default function KioskHardwareScreen() {
             <Text style={styles.telVal}>{telemetry?.freeMemoryMb || 512} MB</Text>
           </View>
           <View style={styles.telemetryRow}>
-            <Text style={styles.telKey}>Versione Kiosk Engine:</Text>
-            <Text style={styles.telVal}>{telemetry?.version || 'v1.2.10-kiosk'}</Text>
+            <Text style={styles.telKey}>Versione Sistema:</Text>
+            <Text style={styles.telVal}>{telemetry?.version || '1.2.10'}</Text>
           </View>
         </View>
 

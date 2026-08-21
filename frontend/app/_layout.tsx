@@ -2,31 +2,20 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AppState, LogBox, Platform } from "react-native";
-import { useKeepAwake } from "expo-keep-awake";
 
 import { startLocalServer, isLocalServerRunning, restartLocalServer } from '@/src/utils/LocalServer';
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
-import { ensureKioskIfPreferred } from "../modules/kiosk-mode/src";
+import KioskManager from "@/src/components/KioskManager";
 
 LogBox.ignoreAllLogs(true);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useIconFonts();
-  useKeepAwake();
 
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") return;
-    ensureKioskIfPreferred();
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") ensureKioskIfPreferred();
-    });
-    return () => sub.remove();
-  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
@@ -43,8 +32,6 @@ export default function RootLayout() {
 
     const sub = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-      // Do not blindly create a second socket. LocalServer handles its own recovery
-      // after socket/port errors; this only repairs a missing instance.
       if (!isLocalServerRunning()) {
         try { restartLocalServer(); } catch { boot(); }
       }
@@ -54,5 +41,10 @@ export default function RootLayout() {
   }, []);
 
   if (!loaded && !error) return null;
-  return <Stack screenOptions={{ headerShown: false }} />;
+
+  return (
+    <KioskManager>
+      <Stack screenOptions={{ headerShown: false }} />
+    </KioskManager>
+  );
 }

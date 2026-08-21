@@ -655,6 +655,32 @@ async function handleApi(socket: any, method: string, rawPath: string, bodyText:
       result = await api.testPrintHardware(json?.type || 'courtesy');
     } else if (method === 'POST' && (p === '/api/admin/seed' || p === '/api/seed')) {
       result = { message: 'Seed restored successfully' };
+    } else if (method === 'GET' && (p === '/api/kiosk/status' || p === '/api/admin/kiosk/status')) {
+      const { getKioskTelemetry } = await import('./kiosk');
+      result = await getKioskTelemetry();
+    } else if (method === 'GET' && (p === '/api/kiosk/config' || p === '/api/admin/kiosk/config')) {
+      const { getKioskConfig } = await import('./kiosk');
+      result = await getKioskConfig();
+    } else if (method === 'POST' && (p === '/api/kiosk/config' || p === '/api/admin/kiosk/config')) {
+      const { saveKioskConfig } = await import('./kiosk');
+      result = await saveKioskConfig(json || {});
+    } else if (method === 'POST' && p === '/api/kiosk/wake') {
+      const { useKioskStore } = await import('../store/kioskStore');
+      useKioskStore.getState().triggerWake();
+      result = { status: 'ok', action: 'wake' };
+    } else if (method === 'POST' && p === '/api/kiosk/screensaver') {
+      const { useKioskStore } = await import('../store/kioskStore');
+      useKioskStore.getState().triggerScreensaver();
+      result = { status: 'ok', action: 'screensaver' };
+    } else if (method === 'POST' && p === '/api/kiosk/brightness') {
+      const { useKioskStore } = await import('../store/kioskStore');
+      const brightness = json?.brightness ?? 90;
+      await useKioskStore.getState().updateConfig({ brightnessLevel: brightness });
+      result = { status: 'ok', brightness };
+    } else if (method === 'POST' && p === '/api/kiosk/reload') {
+      const { useKioskStore } = await import('../store/kioskStore');
+      useKioskStore.getState().triggerWake();
+      result = { status: 'ok', action: 'reload' };
     } else {
       writeResponse(socket, '404 Not Found', 'application/json; charset=utf-8', JSON.stringify({ error: 'Endpoint not found', path: p }));
       return;

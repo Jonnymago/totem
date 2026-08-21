@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '@/src/store/cartStore';
 import { getProducts, subscribeToDbChanges } from '@/src/api/api';
 import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function CartScreen() {
   const router = useRouter();
@@ -156,9 +155,7 @@ export default function CartScreen() {
           <Ionicons name="arrow-back" size={40} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('cart.title')}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <LanguageSelector compact theme="dark" />
-        </View>
+        <View style={{ width: 40 }} />
       </View>
 
       {items.length === 0 ? (

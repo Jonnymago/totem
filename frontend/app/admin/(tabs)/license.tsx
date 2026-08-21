@@ -409,10 +409,10 @@ export default function LicenseCreditsScreen() {
 
         <View style={styles.b2bContainer}>
           <View style={styles.b2bHeaderRow}>
-            <div>
+            <View>
               <Text style={styles.b2bTitle}>{B2B_LIFETIME_INFO.name}</Text>
               <Text style={styles.b2bSubtitle}>Licenza permanente per singolo terminale Kiosk</Text>
-            </div>
+            </View>
             <View style={styles.b2bPriceBox}>
               <Text style={styles.b2bPrice}>{B2B_LIFETIME_INFO.price}</Text>
               <Text style={styles.b2bPeriod}>una tantum + IVA</Text>

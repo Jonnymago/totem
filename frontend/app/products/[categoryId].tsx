@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { getProductsByCategory, Product, ExtraAddition, ComboGroup, UiSection, ensureProductSections, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function ProductsScreen() {
   const router = useRouter();
@@ -262,22 +261,19 @@ export default function ProductsScreen() {
           <Ionicons name="arrow-back" size={40} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('products.title')}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <LanguageSelector compact theme="dark" />
-          <TouchableOpacity
-            testID="cart-btn"
-            onPress={() => router.push('/cart')}
-            style={styles.headerBtn}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Ionicons name="cart" size={40} color="white" />
-            {cartItems > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{cartItems}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          testID="cart-btn"
+          onPress={() => router.push('/cart')}
+          style={styles.headerBtn}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Ionicons name="cart" size={40} color="white" />
+          {cartItems > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{cartItems}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>

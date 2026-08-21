@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { getCategories, Category, subscribeToDbChanges } from '@/src/api/api';
 import { useCartStore } from '@/src/store/cartStore';
 import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function CategoriesScreen() {
   const router = useRouter();
@@ -77,21 +76,18 @@ export default function CategoriesScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isLarge && { fontSize: 36 }]}>{t('categories.title')}</Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <LanguageSelector compact theme="dark" />
-          <TouchableOpacity
-            onPress={() => router.push('/cart')}
-            style={[styles.headerBtn, isLarge && styles.headerBtnLarge]}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Ionicons name="cart" size={isLarge ? 44 : 36} color="white" />
-            {cartItems > 0 && (
-              <View style={[styles.badge, isLarge && styles.badgeLarge]}>
-                <Text style={[styles.badgeText, isLarge && { fontSize: 18 }]}>{cartItems}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/cart')}
+          style={[styles.headerBtn, isLarge && styles.headerBtnLarge]}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Ionicons name="cart" size={isLarge ? 44 : 36} color="white" />
+          {cartItems > 0 && (
+            <View style={[styles.badge, isLarge && styles.badgeLarge]}>
+              <Text style={[styles.badgeText, isLarge && { fontSize: 18 }]}>{cartItems}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       <ScrollView

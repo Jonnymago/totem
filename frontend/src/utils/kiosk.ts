@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform, StatusBar as RNStatusBar } from 'react-native';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as Haptics from 'expo-haptics';
+import { startKioskMode, stopKioskMode } from '../../modules/kiosk-mode/src';
 
 const STORAGE_KEY_KIOSK = 'TOTEM_KIOSK_CONFIG_V1';
 
@@ -80,7 +83,96 @@ export async function saveKioskConfig(config: Partial<KioskConfig>): Promise<Kio
   } catch (e) {
     console.warn('Errore salvataggio configurazione Kiosk:', e);
   }
+  
+  // Applica immediatamente le impostazioni hardware
+  await applyKioskHardwareSettings(updated);
   return updated;
+}
+
+/**
+ * Applica effettivamente le configurazioni hardware su Android e Web.
+ */
+export async function applyKioskHardwareSettings(config: KioskConfig): Promise<void> {
+  try {
+    // 1. Keep Screen Awake (Schermo Sempre Acceso)
+    if (config.keepScreenAwake) {
+      await activateKeepAwakeAsync().catch(() => {});
+    } else {
+      try {
+        deactivateKeepAwake();
+      } catch {}
+    }
+
+    // 2. Immersive Mode & Status Bar
+    if (Platform.OS === 'android') {
+      RNStatusBar.setHidden(Boolean(config.immersiveFullscreen), 'fade');
+    }
+
+    // 3. Kiosk Lock Task Mode (Android)
+    if (Platform.OS === 'android') {
+      if (config.kioskEnabled) {
+        await startKioskMode().catch(() => {});
+      } else {
+        await stopKioskMode().catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.warn('Errore applicazione hardware kiosk:', e);
+  }
+}
+
+/**
+ * Verifica se l'ora attuale rientra nella fascia oraria di Dimming Notturno
+ */
+export function isNightDimmingTime(startStr: string = '23:00', endStr: string = '07:00'): boolean {
+  try {
+    const now = new Date();
+    const currentMin = now.getHours() * 60 + now.getMinutes();
+
+    const [startH, startM] = (startStr || '23:00').split(':').map((v) => parseInt(v, 10) || 0);
+    const [endH, endM] = (endStr || '07:00').split(':').map((v) => parseInt(v, 10) || 0);
+
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+
+    if (startMin > endMin) {
+      // Fascia che scavalca la mezzanotte (es. 23:00 -> 07:00)
+      return currentMin >= startMin || currentMin < endMin;
+    } else {
+      // Fascia nello stesso giorno
+      return currentMin >= startMin && currentMin < endMin;
+    }
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Genera feedback acustico e aptico
+ */
+export function playKioskBeep(): void {
+  try {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  } catch {}
+
+  try {
+    if (typeof window !== 'undefined') {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+      }
+    }
+  } catch {}
 }
 
 export interface KioskTelemetry {
@@ -105,7 +197,7 @@ export async function getKioskTelemetry(): Promise<KioskTelemetry> {
     isCharging: true,
     screenBrightness: config.brightnessLevel,
     ipAddress: '192.168.1.9',
-    version: 'v1.2.10-kiosk-engine',
+    version: '1.2.10',
     lastHeartbeat: new Date().toISOString(),
   };
 }

@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n, SUPPORTED_LANGUAGES, SupportedLanguage, GuideSection } from '@/src/utils/i18n';
-import LanguageSelector from './LanguageSelector';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+try {
+  if (Platform.OS === 'android' && UIManager?.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+} catch (e) {}
 
 export default function GuideHelper() {
   const { lang, setLanguage, t, guideChapters } = useI18n();
@@ -25,7 +26,9 @@ export default function GuideHelper() {
   const [filterCategory, setFilterCategory] = useState<'all' | 'customer' | 'admin' | 'hardware'>('all');
 
   const toggleExpand = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    try {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    } catch (e) {}
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
@@ -56,18 +59,11 @@ export default function GuideHelper() {
           </View>
           <View style={{ flex: 1 }}>
             <View style={styles.badgeRow}>
-              <Text style={styles.badgeText}>{t('guide.interactive_helper')}</Text>
-              <Text style={styles.langBadge}>{lang.toUpperCase()}</Text>
+              <Text style={styles.badgeText}>Interactive Totem Guide</Text>
             </View>
-            <Text style={styles.title}>{t('guide.title')}</Text>
-            <Text style={styles.subtitle}>{t('guide.subtitle')}</Text>
+            <Text style={styles.title}>Totem Operating Guide & Manual</Text>
+            <Text style={styles.subtitle}>Step-by-step instructions for hardware configuration, orders, and restaurant management</Text>
           </View>
-        </View>
-
-        {/* Multilingual Selector Bar */}
-        <View style={styles.langSelectorRow}>
-          <Text style={styles.langLabel}>🌐 {t('common.choose_language')}:</Text>
-          <LanguageSelector theme="light" />
         </View>
       </View>
 

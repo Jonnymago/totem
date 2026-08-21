@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getSettings, Settings, getAdminPin, getGlobalGroups, getProducts, getCategories } from '@/src/api/api';
 import PinPad from '@/src/components/PinPad';
 import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
+import { useKioskStore } from '@/src/store/kioskStore';
 
 const EDGE = Platform.OS === 'android' ? 32 : 28;
 const BOTTOM = Platform.OS === 'android' ? 40 : 32;
@@ -15,11 +15,15 @@ const BOTTOM = Platform.OS === 'android' ? 40 : 32;
 export default function WelcomeScreen() {
   const router = useRouter();
   const { t } = useI18n();
+  const config = useKioskStore((s) => s.config);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
   const [adminPin, setAdminPin] = useState('1234');
   const clickTimerRef = useRef<any>(null);
+
+  const targetTaps = config.secretTapsCount || 7;
+  const triggerLoc = config.secretTriggerLocation || 'top-right';
 
   const loadSettings = useCallback(async () => {
     try {
@@ -48,7 +52,7 @@ export default function WelcomeScreen() {
     const newCount = dotClickCount + 1;
     setDotClickCount(newCount);
 
-    if (newCount >= 7) {
+    if (newCount >= targetTaps) {
       setDotClickCount(0);
       const pin = await getAdminPin();
       setAdminPin(pin);
@@ -90,7 +94,11 @@ export default function WelcomeScreen() {
       >
         <TouchableOpacity
           testID="secret-admin-dot"
-          style={styles.secretDot}
+          style={[
+            styles.secretDot,
+            triggerLoc === 'top-left' && { right: undefined, left: EDGE },
+            triggerLoc === 'logo' && { right: undefined, left: winW / 2 - 12, top: Platform.OS === 'android' ? 64 : 70 },
+          ]}
           onPress={handleSecretDotPress}
           activeOpacity={0.7}
         >
@@ -101,13 +109,12 @@ export default function WelcomeScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Global Multi-Language Selector Bar on Top */}
-        <View style={styles.langBarTop}>
-          <LanguageSelector theme="dark" />
-        </View>
-
         <View style={[styles.content, isLarge && styles.contentLarge]}>
-          <View style={styles.header}>
+          <TouchableOpacity
+            activeOpacity={triggerLoc === 'logo' ? 0.8 : 1}
+            onPress={triggerLoc === 'logo' ? handleSecretDotPress : undefined}
+            style={styles.header}
+          >
             {logo ? (
               <Image
                 key={logo.slice(0, 64)}
@@ -122,7 +129,7 @@ export default function WelcomeScreen() {
             <Text style={[styles.subtitle, isLarge && { fontSize: 26, marginBottom: 8 }]}>
               {t('welcome.how_to_proceed')}
             </Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={[styles.buttonContainer, { gap: btnGap, maxWidth: btnMaxW }]}>
             <TouchableOpacity

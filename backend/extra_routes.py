@@ -149,7 +149,7 @@ def register_extra_routes(api_router: APIRouter) -> None:
             "auto_reset_cart_timeout_sec": cfg.get("autoResetCartTimeoutSec", 45),
             "night_dimming_enabled": cfg.get("nightDimmingEnabled", True),
             "uptime_seconds": 3600,
-            "version": "v1.2.10-kiosk-engine",
+            "version": "1.2.10",
             "timestamp": datetime.now(UTC).isoformat(),
         }
 
@@ -173,7 +173,7 @@ def register_extra_routes(api_router: APIRouter) -> None:
                 "screenOrientation": "portrait",
                 "secretTapsCount": 7,
                 "secretTriggerLocation": "top-right",
-                "requirePinForExit": true,
+                "requirePinForExit": True,
                 "restApiEnabled": True,
             }
         cfg.pop("_id", None)

@@ -99,9 +99,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'products.optional': 'Opzionale',
     'products.select_at_least': 'Seleziona almeno',
     'products.select_max': 'Massimo consentito',
+    'products.allergens': 'Allergeni',
+    'products.quantity': 'Quantità',
+    'products.complete_selection': 'Completa le scelte obbligatorie',
 
     // Cart Screen
     'cart.title': 'Il Tuo Carrello',
+    'cart.empty': 'Il carrello è vuoto',
     'cart.empty_title': 'Il carrello è vuoto',
     'cart.empty_desc': 'Non hai ancora aggiunto nessun piatto al tuo ordine.',
     'cart.start_order': 'Esplora il Menu',
@@ -110,8 +114,33 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'cart.clear_confirm': 'Vuoi davvero svuotare tutti gli articoli dal carrello?',
     'cart.checkout': 'Procedi al Pagamento',
     'cart.sold_out_warning': 'Uno o più articoli nel carrello sono esauriti. Rimuovili per procedere.',
+    'cart.edit': 'Modifica',
+    'cart.items_count': 'articoli',
+    'cart.total': 'Totale',
+    'cart.unavailable_items': 'Prodotto esaurito, rimuovilo per procedere',
 
     // Order Confirmation Screen
+    'order_conf.title': 'Conferma Ordine',
+    'order_conf.summary': 'Riepilogo Ordine',
+    'order_conf.service_type': 'Dove vuoi consumare?',
+    'order_conf.eat_in': '🍽️ Consuma Qui al Tavolo',
+    'order_conf.take_away': '🛍️ Ordine da Asporto',
+    'order_conf.payment_method': 'Seleziona Metodo di Pagamento',
+    'order_conf.pay_cash': '💵 Paga alla Cassa (Contanti / Bancomat)',
+    'order_conf.pay_pos': '💳 Paga al Totem (Carta / POS Digitale)',
+    'order_conf.pay_at_counter': 'Pagamento in cassa al ritiro dell\'ordine.',
+    'order_conf.confirm_and_print': 'Conferma Ordine & Stampa Scontrino',
+    'order_conf.send_order': 'Invia Ordine in Cucina',
+    'order_conf.creating': 'Invio ordine alla cucina in corso...',
+    'order_conf.success_title': 'Ordine Inviato in Cucina!',
+    'order_conf.order_confirmed': 'Ordine Confermato!',
+    'order_conf.sent_to_kitchen': 'Il tuo ordine è stato inviato in cucina. Ritira lo scontrino e attendi la chiamata sul monitor.',
+    'order_conf.order_number_label': 'NUMERO ORDINE',
+    'order_conf.keep_receipt': 'Ritira lo scontrino di cortesia e attendi la chiamata sul monitor.',
+    'order_conf.new_order': 'Inizia Nuovo Ordine',
+    'order_conf.error': 'Errore durante la creazione dell\'ordine. Riprova.',
+
+    // Aliases for compatibility
     'order_confirm.title': 'Conferma Ordine',
     'order_confirm.service_type': 'Dove vuoi consumare?',
     'order_confirm.eat_in': '🍽️ Consuma Qui al Tavolo',
@@ -126,43 +155,10 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'order_confirm.keep_receipt': 'Ritira lo scontrino di cortesia e attendi la chiamata sul monitor.',
     'order_confirm.new_order': 'Inizia Nuovo Ordine',
 
-    // Admin Navigation
-    'nav.products': 'Prodotti',
-    'nav.categories': 'Categorie',
-    'nav.groups': 'Gruppi',
-    'nav.kiosk': 'Controllo Kiosk',
-    'nav.settings': 'Impostazioni',
-    'nav.license': 'Licenza & Info',
-    'nav.kitchen': 'Schermo Cucina KDS',
-
-    // KDS Kitchen Screen
-    'kds.title': 'Monitor Cucina KDS',
-    'kds.active_orders': 'Comande Attive',
-    'kds.status_to_prepare': 'Da Preparare',
-    'kds.status_preparing': 'In Preparazione',
-    'kds.status_ready': 'Pronto per Ritiro',
-    'kds.status_completed': 'Ritirato',
-    'kds.elapsed': 'Trascorsi',
-    'kds.mark_preparing': 'Avvia Preparazione',
-    'kds.mark_ready': 'Segna Come Pronto',
-    'kds.mark_completed': 'Consegna al Cliente',
-    'kds.all_stations': 'Tutte le Postazioni',
-
-    // Kiosk Module
-    'kiosk.title': 'Controllo Kiosk & Schermo',
-    'kiosk.lockdown_title': 'Modalità Kiosk & Blocco Dispositivo',
-    'kiosk.fullscreen': 'Schermo Intero Immersivo',
-    'kiosk.keep_awake': 'Schermo Sempre Acceso (Keep Awake)',
-    'kiosk.auto_boot': 'Avvio Automatico all\'Accensione (Auto-Boot)',
-    'kiosk.screensaver': 'Salvaschermo & Reset Inattività',
-    'kiosk.timeout': 'Timeout Inattività',
-    'kiosk.auto_reset_cart': 'Auto-Reset Carrello Abbandonato',
-    'kiosk.brightness': 'Luminosità Display',
-    'kiosk.night_dimming': 'Dimming Notturno Automatico',
-    'kiosk.secret_unlock': 'Gesture di Sblocco Segreto (7 Tocchi)',
-    'kiosk.wake_btn': '☀️ Risveglia Schermo',
-    'kiosk.screensaver_btn': '🖼️ Avvia Salvaschermo',
-    'kiosk.reload_btn': '🔄 Ricarica App',
+    // Settings
+    'settings.title': 'Impostazioni',
+    'settings.language_section': 'Lingua dell\'Interfaccia Totem',
+    'settings.select_language': 'Seleziona la lingua per il totem clienti',
 
     // Guide Title & Header
     'guide.title': '📖 Guida Completa & Manuale Operativo Totem',
@@ -201,7 +197,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     // Welcome Screen
     'welcome.greeting': 'Welcome!',
-    'welcome.how_to_proceed': 'How would you like to proceed?',
+    'welcome.how_to_proceed': 'How would you like to order?',
     'welcome.take_number_title': 'Take a Number Only',
     'welcome.take_number_desc': 'Order at the counter with our staff',
     'welcome.order_totem_title': 'Order at the Totem',
@@ -213,7 +209,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'take_number.loading': 'Generating ticket number...',
     'take_number.ticket_title': 'QUEUE RESERVATION TICKET',
     'take_number.your_number': 'YOUR NUMBER',
-    'take_number.go_to_counter': 'Please proceed to the counter to order',
+    'take_number.go_to_counter': 'Please proceed to the counter to place your order',
     'take_number.date': 'Date',
     'take_number.time': 'Time',
     'take_number.auto_return': 'Returning to home screen in',
@@ -242,9 +238,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'products.optional': 'Optional',
     'products.select_at_least': 'Select at least',
     'products.select_max': 'Maximum allowed',
+    'products.allergens': 'Allergens',
+    'products.quantity': 'Quantity',
+    'products.complete_selection': 'Please complete required choices',
 
     // Cart Screen
     'cart.title': 'Your Cart',
+    'cart.empty': 'Your cart is empty',
     'cart.empty_title': 'Your cart is empty',
     'cart.empty_desc': 'You have not added any dishes to your order yet.',
     'cart.start_order': 'Explore the Menu',
@@ -253,8 +253,33 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'cart.clear_confirm': 'Are you sure you want to remove all items from the cart?',
     'cart.checkout': 'Proceed to Checkout',
     'cart.sold_out_warning': 'One or more items in your cart are sold out. Remove them to proceed.',
+    'cart.edit': 'Edit',
+    'cart.items_count': 'items',
+    'cart.total': 'Total',
+    'cart.unavailable_items': 'Sold out item, please remove to proceed',
 
     // Order Confirmation Screen
+    'order_conf.title': 'Order Confirmation',
+    'order_conf.summary': 'Order Summary',
+    'order_conf.service_type': 'Dining Preference',
+    'order_conf.eat_in': '🍽️ Dine In / Eat Here',
+    'order_conf.take_away': '🛍️ Take Away / To Go',
+    'order_conf.payment_method': 'Select Payment Method',
+    'order_conf.pay_cash': '💵 Pay at Cash Desk (Cash / Card)',
+    'order_conf.pay_pos': '💳 Pay at Totem (Digital Card / POS)',
+    'order_conf.pay_at_counter': 'Payment at cash desk upon collecting your order.',
+    'order_conf.confirm_and_print': 'Confirm Order & Print Ticket',
+    'order_conf.send_order': 'Send Order to Kitchen',
+    'order_conf.creating': 'Submitting order to the kitchen...',
+    'order_conf.success_title': 'Order Sent to Kitchen!',
+    'order_conf.order_confirmed': 'Order Confirmed!',
+    'order_conf.sent_to_kitchen': 'Your order has been sent to the kitchen. Please take your courtesy receipt and watch the monitor.',
+    'order_conf.order_number_label': 'ORDER NUMBER',
+    'order_conf.keep_receipt': 'Please take your courtesy receipt and wait for your number on screen.',
+    'order_conf.new_order': 'Start New Order',
+    'order_conf.error': 'Error submitting order. Please try again.',
+
+    // Aliases for compatibility
     'order_confirm.title': 'Order Confirmation',
     'order_confirm.service_type': 'Dining Preference',
     'order_confirm.eat_in': '🍽️ Dine In / Eat Here',
@@ -269,43 +294,10 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'order_confirm.keep_receipt': 'Please take your courtesy receipt and watch the monitor.',
     'order_confirm.new_order': 'Start New Order',
 
-    // Admin Navigation
-    'nav.products': 'Products',
-    'nav.categories': 'Categories',
-    'nav.groups': 'Groups',
-    'nav.kiosk': 'Kiosk Control',
-    'nav.settings': 'Settings',
-    'nav.license': 'License & Info',
-    'nav.kitchen': 'Kitchen KDS',
-
-    // KDS Kitchen Screen
-    'kds.title': 'Kitchen Display KDS',
-    'kds.active_orders': 'Active Orders',
-    'kds.status_to_prepare': 'To Prepare',
-    'kds.status_preparing': 'Preparing',
-    'kds.status_ready': 'Ready for Pickup',
-    'kds.status_completed': 'Delivered',
-    'kds.elapsed': 'Elapsed',
-    'kds.mark_preparing': 'Start Prep',
-    'kds.mark_ready': 'Mark as Ready',
-    'kds.mark_completed': 'Deliver to Customer',
-    'kds.all_stations': 'All Stations',
-
-    // Kiosk Module
-    'kiosk.title': 'Kiosk & Screen Control',
-    'kiosk.lockdown_title': 'Kiosk Lockdown & Device Mode',
-    'kiosk.fullscreen': 'Immersive Fullscreen',
-    'kiosk.keep_awake': 'Keep Screen Awake',
-    'kiosk.auto_boot': 'Auto-Start on Boot',
-    'kiosk.screensaver': 'Screensaver & Inactivity Reset',
-    'kiosk.timeout': 'Inactivity Timeout',
-    'kiosk.auto_reset_cart': 'Auto-Reset Abandoned Cart',
-    'kiosk.brightness': 'Display Brightness',
-    'kiosk.night_dimming': 'Automatic Night Dimming',
-    'kiosk.secret_unlock': 'Secret Gesture Unlock (7 Taps)',
-    'kiosk.wake_btn': '☀️ Wake Screen',
-    'kiosk.screensaver_btn': '🖼️ Start Screensaver',
-    'kiosk.reload_btn': '🔄 Reload App',
+    // Settings
+    'settings.title': 'Settings',
+    'settings.language_section': 'Totem Interface Language',
+    'settings.select_language': 'Select language for the customer totem',
 
     // Guide Title & Header
     'guide.title': '📖 Complete Totem Operating Guide & Manual',
@@ -344,19 +336,19 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     // Welcome Screen
     'welcome.greeting': '¡Bienvenido!',
-    'welcome.how_to_proceed': '¿Cómo deseas proceder?',
-    'welcome.take_number_title': 'Tomar solo el Turno',
-    'welcome.take_number_desc': 'Pide en caja directamente con el personal',
+    'welcome.how_to_proceed': '¿Cómo deseas pedir?',
+    'welcome.take_number_title': 'Solo Turno / Fila',
+    'welcome.take_number_desc': 'Pide directamente en caja al personal',
     'welcome.order_totem_title': 'Pedir en el Tótem',
     'welcome.order_totem_desc': 'Crea y personaliza tu pedido aquí',
     'welcome.admin_access_title': 'Acceso Administrador',
-    'welcome.admin_access_desc': 'Ingresa el PIN de seguridad para gestionar el tótem',
+    'welcome.admin_access_desc': 'Introduce el PIN de seguridad para gestionar el tótem',
 
     // Take Number Screen
-    'take_number.loading': 'Generando número de turno...',
-    'take_number.ticket_title': 'TICKET DE RESERVA DE TURNO',
+    'take_number.loading': 'Generando ticket de turno...',
+    'take_number.ticket_title': 'TICKET DE TURNO',
     'take_number.your_number': 'TU NÚMERO',
-    'take_number.go_to_counter': 'Pasa por caja para realizar tu pedido',
+    'take_number.go_to_counter': 'Preséntate en caja para pedir tu comida',
     'take_number.date': 'Fecha',
     'take_number.time': 'Hora',
     'take_number.auto_return': 'Volviendo a la pantalla principal en',
@@ -378,26 +370,55 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'products.add_to_cart': 'Añadir al Carrito',
     'products.update_cart': 'Actualizar en el Carrito',
     'products.without_ingredients': 'Quitar Ingredientes (Sin)',
-    'products.extra_additions': 'Ingredientes Extra',
+    'products.extra_additions': 'Ingredientes Extra y Suplementos',
     'products.choose_options': 'Elegir Opciones',
-    'products.notes_placeholder': 'Notas para cocina (ej. punto de cocción, alergias)...',
+    'products.notes_placeholder': 'Notas para la cocina (ej. punto de cocción, alergias)...',
     'products.required': 'Obligatorio',
     'products.optional': 'Opcional',
     'products.select_at_least': 'Selecciona al menos',
     'products.select_max': 'Máximo permitido',
+    'products.allergens': 'Alérgenos',
+    'products.quantity': 'Cantidad',
+    'products.complete_selection': 'Completa las opciones obligatorias',
 
     // Cart Screen
     'cart.title': 'Tu Carrito',
+    'cart.empty': 'El carrito está vacío',
     'cart.empty_title': 'El carrito está vacío',
     'cart.empty_desc': 'Aún no has añadido ningún plato a tu pedido.',
     'cart.start_order': 'Explorar el Menú',
     'cart.order_summary': 'Resumen del Pedido',
     'cart.clear_all': 'Vaciar Carrito',
     'cart.clear_confirm': '¿Seguro que deseas vaciar todos los artículos del carrito?',
-    'cart.checkout': 'Proceder al Pago',
+    'cart.checkout': 'Tramitar Pedido',
     'cart.sold_out_warning': 'Uno o más artículos en tu carrito están agotados. Elimínalos para continuar.',
+    'cart.edit': 'Editar',
+    'cart.items_count': 'artículos',
+    'cart.total': 'Total',
+    'cart.unavailable_items': 'Artículo agotado, por favor elimínalo para continuar',
 
     // Order Confirmation Screen
+    'order_conf.title': 'Confirmación del Pedido',
+    'order_conf.summary': 'Resumen del Pedido',
+    'order_conf.service_type': '¿Dónde deseas consumir?',
+    'order_conf.eat_in': '🍽️ Comer Aquí en Mesa',
+    'order_conf.take_away': '🛍️ Para Llevar',
+    'order_conf.payment_method': 'Selecciona Método de Pago',
+    'order_conf.pay_cash': '💵 Pagar en Caja (Efectivo / Tarjeta)',
+    'order_conf.pay_pos': '💳 Pagar en el Tótem (Tarjeta / POS)',
+    'order_conf.pay_at_counter': 'Pago en caja al recoger tu pedido.',
+    'order_conf.confirm_and_print': 'Confirmar Pedido e Imprimir Ticket',
+    'order_conf.send_order': 'Enviar Pedido a Cocina',
+    'order_conf.creating': 'Enviando el pedido a la cocina...',
+    'order_conf.success_title': '¡Pedido Enviado a la Cocina!',
+    'order_conf.order_confirmed': '¡Pedido Confirmado!',
+    'order_conf.sent_to_kitchen': 'Tu pedido ha sido enviado a la cocina. Recoge tu ticket de cortesía y espera en el monitor.',
+    'order_conf.order_number_label': 'NÚMERO DE PEDIDO',
+    'order_conf.keep_receipt': 'Recoge tu ticket de cortesía y espera tu turno en el monitor.',
+    'order_conf.new_order': 'Iniciar Nuevo Pedido',
+    'order_conf.error': 'Ocurrió un error al procesar el pedido. Por favor, inténtalo de nuevo.',
+
+    // Aliases for compatibility
     'order_confirm.title': 'Confirmar Pedido',
     'order_confirm.service_type': '¿Dónde deseas consumir?',
     'order_confirm.eat_in': '🍽️ Comer Aquí en Mesa',
@@ -412,43 +433,10 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'order_confirm.keep_receipt': 'Recoge tu ticket de cortesía y espera tu turno en el monitor.',
     'order_confirm.new_order': 'Iniciar Nuevo Pedido',
 
-    // Admin Navigation
-    'nav.products': 'Productos',
-    'nav.categories': 'Categorías',
-    'nav.groups': 'Grupos',
-    'nav.kiosk': 'Control Kiosco',
-    'nav.settings': 'Ajustes',
-    'nav.license': 'Licencia e Info',
-    'nav.kitchen': 'Pantalla Cocina KDS',
-
-    // KDS Kitchen Screen
-    'kds.title': 'Monitor de Cocina KDS',
-    'kds.active_orders': 'Comandas Activas',
-    'kds.status_to_prepare': 'Por Preparar',
-    'kds.status_preparing': 'En Preparación',
-    'kds.status_ready': 'Listo para Recoger',
-    'kds.status_completed': 'Entregado',
-    'kds.elapsed': 'Transcurrido',
-    'kds.mark_preparing': 'Iniciar Prep',
-    'kds.mark_ready': 'Marcar como Listo',
-    'kds.mark_completed': 'Entregar al Cliente',
-    'kds.all_stations': 'Todas las Secciones',
-
-    // Kiosk Module
-    'kiosk.title': 'Control Kiosco y Pantalla',
-    'kiosk.lockdown_title': 'Modo Kiosco y Bloqueo',
-    'kiosk.fullscreen': 'Pantalla Completa Inmersiva',
-    'kiosk.keep_awake': 'Mantener Pantalla Encendida',
-    'kiosk.auto_boot': 'Inicio Automático al Encender',
-    'kiosk.screensaver': 'Salvapantallas e Inactividad',
-    'kiosk.timeout': 'Tiempo de Inactividad',
-    'kiosk.auto_reset_cart': 'Auto-Reset de Carrito Abandonado',
-    'kiosk.brightness': 'Brillo de la Pantalla',
-    'kiosk.night_dimming': 'Atenuación Nocturna Automática',
-    'kiosk.secret_unlock': 'Gesto Secreto de Desbloqueo (7 Toques)',
-    'kiosk.wake_btn': '☀️ Despertar Pantalla',
-    'kiosk.screensaver_btn': '🖼️ Iniciar Salvapantallas',
-    'kiosk.reload_btn': '🔄 Recargar App',
+    // Settings
+    'settings.title': 'Ajustes',
+    'settings.language_section': 'Idioma del Tótem',
+    'settings.select_language': 'Selecciona el idioma para el tótem de clientes',
 
     // Guide Title & Header
     'guide.title': '📖 Guía Completa y Manual Operativo del Tótem',
@@ -493,13 +481,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'welcome.order_totem_title': 'Commander sur la Borne',
     'welcome.order_totem_desc': 'Composez et personnalisez votre commande ici',
     'welcome.admin_access_title': 'Accès Administrateur',
-    'welcome.admin_access_desc': 'Entrez le code PIN pour gérer la borne',
+    'welcome.admin_access_desc': 'Entrez le code PIN de sécurité pour gérer la borne',
 
     // Take Number Screen
-    'take_number.loading': 'Génération du numéro...',
+    'take_number.loading': 'Génération du ticket en cours...',
     'take_number.ticket_title': 'TICKET DE RÉSERVATION',
     'take_number.your_number': 'VOTRE NUMÉRO',
-    'take_number.go_to_counter': 'Présentez-vous à la caisse pour commander',
+    'take_number.go_to_counter': 'Présentez-vous à la caisse pour passer commande',
     'take_number.date': 'Date',
     'take_number.time': 'Heure',
     'take_number.auto_return': 'Retour à l\'accueil dans',
@@ -528,19 +516,48 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'products.optional': 'Facultatif',
     'products.select_at_least': 'Sélectionnez au moins',
     'products.select_max': 'Maximum autorisé',
+    'products.allergens': 'Allergènes',
+    'products.quantity': 'Quantité',
+    'products.complete_selection': 'Complétez les options obligatoires',
 
     // Cart Screen
     'cart.title': 'Votre Panier',
+    'cart.empty': 'Votre panier est vide',
     'cart.empty_title': 'Votre panier est vide',
-    'cart.empty_desc': 'Vous n\'avez encore ajouté aucun plat.',
+    'cart.empty_desc': 'Vous n\'avez encore ajouté aucun plat à votre commande.',
     'cart.start_order': 'Découvrir le Menu',
     'cart.order_summary': 'Récapitulatif de Commande',
     'cart.clear_all': 'Vider le Panier',
-    'cart.clear_confirm': 'Voulez-vous vraiment vider tous les articles ?',
-    'cart.checkout': 'Passer au Paiement',
-    'cart.sold_out_warning': 'Un ou plusieurs articles sont épuisés. Retirez-les pour continuer.',
+    'cart.clear_confirm': 'Voulez-vous vraiment vider tous les articles du panier ?',
+    'cart.checkout': 'Valider la Commande',
+    'cart.sold_out_warning': 'Un ou plusieurs articles dans votre panier sont épuisés. Retirez-les pour continuer.',
+    'cart.edit': 'Modifier',
+    'cart.items_count': 'articles',
+    'cart.total': 'Total',
+    'cart.unavailable_items': 'Article épuisé, veuillez le retirer pour continuer',
 
     // Order Confirmation Screen
+    'order_conf.title': 'Confirmation de Commande',
+    'order_conf.summary': 'Récapitulatif de Commande',
+    'order_conf.service_type': 'Mode de Dégustation',
+    'order_conf.eat_in': '🍽️ Sur Place (À Table)',
+    'order_conf.take_away': '🛍️ À Emporter',
+    'order_conf.payment_method': 'Mode de Paiement',
+    'order_conf.pay_cash': '💵 Payer en Caisse (Espèces / Carte)',
+    'order_conf.pay_pos': '💳 Payer sur la Borne (Carte / Sans Contact)',
+    'order_conf.pay_at_counter': 'Paiement en caisse lors du retrait de votre commande.',
+    'order_conf.confirm_and_print': 'Confirmer la Commande & Imprimer le Ticket',
+    'order_conf.send_order': 'Envoyer la Commande en Cuisine',
+    'order_conf.creating': 'Envoi de la commande à la cuisine en cours...',
+    'order_conf.success_title': 'Commande Envoyée en Cuisine !',
+    'order_conf.order_confirmed': 'Commande Confirmée !',
+    'order_conf.sent_to_kitchen': 'Votre commande a été envoyée en cuisine. Prenez votre ticket et surveillez l\'écran d\'appel.',
+    'order_conf.order_number_label': 'NUMÉRO DE COMMANDE',
+    'order_conf.keep_receipt': 'Conservez votre ticket de courtoisie et attendez votre tour sur l\'écran.',
+    'order_conf.new_order': 'Nouvelle Commande',
+    'order_conf.error': 'Erreur lors de la création de la commande. Veuillez réessayer.',
+
+    // Aliases for compatibility
     'order_confirm.title': 'Confirmation de Commande',
     'order_confirm.service_type': 'Mode de Dégustation',
     'order_confirm.eat_in': '🍽️ Sur Place (À Table)',
@@ -555,43 +572,10 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'order_confirm.keep_receipt': 'Prenez votre ticket et surveillez l\'écran d\'appel.',
     'order_confirm.new_order': 'Nouvelle Commande',
 
-    // Admin Navigation
-    'nav.products': 'Produits',
-    'nav.categories': 'Catégories',
-    'nav.groups': 'Groupes',
-    'nav.kiosk': 'Contrôle Borne',
-    'nav.settings': 'Paramètres',
-    'nav.license': 'Licence & Info',
-    'nav.kitchen': 'Écran Cuisine KDS',
-
-    // KDS Kitchen Screen
-    'kds.title': 'Écran Cuisine KDS',
-    'kds.active_orders': 'Bons Actifs',
-    'kds.status_to_prepare': 'À Préparer',
-    'kds.status_preparing': 'En Préparation',
-    'kds.status_ready': 'Prêt au Retrait',
-    'kds.status_completed': 'Livré',
-    'kds.elapsed': 'Écoulé',
-    'kds.mark_preparing': 'Démarrer Prépa',
-    'kds.mark_ready': 'Marquer Prêt',
-    'kds.mark_completed': 'Remettre au Client',
-    'kds.all_stations': 'Tous les Postes',
-
-    // Kiosk Module
-    'kiosk.title': 'Contrôle Borne & Écran',
-    'kiosk.lockdown_title': 'Mode Kiosque & Verrouillage',
-    'kiosk.fullscreen': 'Plein Écran Immersif',
-    'kiosk.keep_awake': 'Écran Toujours Allumé',
-    'kiosk.auto_boot': 'Démarrage Automatique',
-    'kiosk.screensaver': 'Écran de Veille & Inactivité',
-    'kiosk.timeout': 'Délai d\'Inactivité',
-    'kiosk.auto_reset_cart': 'Auto-Reset Panier Abandonné',
-    'kiosk.brightness': 'Luminosité de l\'Écran',
-    'kiosk.night_dimming': 'Atténuation Nocturne Auto',
-    'kiosk.secret_unlock': 'Geste Secret de Déverrouillage (7 Tapes)',
-    'kiosk.wake_btn': '☀️ Réveiller l\'Écran',
-    'kiosk.screensaver_btn': '🖼️ Lancer Veille',
-    'kiosk.reload_btn': '🔄 Recharger l\'App',
+    // Settings
+    'settings.title': 'Paramètres',
+    'settings.language_section': 'Langue de la Borne',
+    'settings.select_language': 'Sélectionnez la langue pour la borne client',
 
     // Guide Title & Header
     'guide.title': '📖 Guide Complet & Manuel Opérationnel Borne',
@@ -630,7 +614,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     // Welcome Screen
     'welcome.greeting': 'Herzlich Willkommen!',
-    'welcome.how_to_proceed': 'Wie möchten Sie fortfahren?',
+    'welcome.how_to_proceed': 'Wie möchten Sie bestellen?',
     'welcome.take_number_title': 'Nur Wartenummer ziehen',
     'welcome.take_number_desc': 'Bestellen Sie persönlich an der Kasse',
     'welcome.order_totem_title': 'Am Terminal bestellen',
@@ -639,7 +623,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'welcome.admin_access_desc': 'Sicherheits-PIN für Verwaltungsmenü eingeben',
 
     // Take Number Screen
-    'take_number.loading': 'Nummer wird generiert...',
+    'take_number.loading': 'Wartenummer wird generiert...',
     'take_number.ticket_title': 'RESERVIERUNGS-TICKET',
     'take_number.your_number': 'IHRE NUMMER',
     'take_number.go_to_counter': 'Bitte zur Kasse gehen, um zu bestellen',
@@ -663,27 +647,56 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'products.customize': 'Anpassen',
     'products.add_to_cart': 'In den Warenkorb',
     'products.update_cart': 'Im Warenkorb aktualisieren',
-    'products.without_ingredients': 'Zutaten entfernen (Ohne)',
-    'products.extra_additions': 'Zusätzliche Extras & Toppings',
+    'products.without_ingredients': 'Zutaten abwählen (Ohne)',
+    'products.extra_additions': 'Zusätzliche Extras & Beilagen',
     'products.choose_options': 'Optionen wählen',
     'products.notes_placeholder': 'Notizen für die Küche (z.B. Garstufe, Allergien)...',
     'products.required': 'Erforderlich',
     'products.optional': 'Optional',
     'products.select_at_least': 'Wählen Sie mindestens',
     'products.select_max': 'Maximal erlaubt',
+    'products.allergens': 'Allergene',
+    'products.quantity': 'Menge',
+    'products.complete_selection': 'Pflichtauswahl bitte vervollständigen',
 
     // Cart Screen
     'cart.title': 'Ihr Warenkorb',
+    'cart.empty': 'Ihr Warenkorb ist leer',
     'cart.empty_title': 'Ihr Warenkorb ist leer',
     'cart.empty_desc': 'Sie haben noch keine Gerichte hinzugefügt.',
     'cart.start_order': 'Speisekarte erkunden',
     'cart.order_summary': 'Bestellübersicht',
     'cart.clear_all': 'Warenkorb leeren',
     'cart.clear_confirm': 'Möchten Sie wirklich alle Artikel aus dem Warenkorb entfernen?',
-    'cart.checkout': 'Zur Kasse gehen',
+    'cart.checkout': 'Bestellung aufgeben',
     'cart.sold_out_warning': 'Ein oder mehrere Artikel im Warenkorb sind ausverkauft. Bitte entfernen.',
+    'cart.edit': 'Bearbeiten',
+    'cart.items_count': 'Artikel',
+    'cart.total': 'Gesamt',
+    'cart.unavailable_items': 'Artikel ausverkauft, bitte entfernen',
 
     // Order Confirmation Screen
+    'order_conf.title': 'Bestellbestätigung',
+    'order_conf.summary': 'Bestellübersicht',
+    'order_conf.service_type': 'Verzehrart',
+    'order_conf.eat_in': '🍽️ Hier im Restaurant essen',
+    'order_conf.take_away': '🛍️ Zum Mitnehmen',
+    'order_conf.payment_method': 'Zahlungsart wählen',
+    'order_conf.pay_cash': '💵 An der Kasse zahlen (Bar / Karte)',
+    'order_conf.pay_pos': '💳 Am Terminal zahlen (Karte / Kontaktlos)',
+    'order_conf.pay_at_counter': 'Zahlung erfolgt an der Kasse bei Abholung.',
+    'order_conf.confirm_and_print': 'Bestellung bestätigen & Bon drucken',
+    'order_conf.send_order': 'Bestellung an Küche senden',
+    'order_conf.creating': 'Bestellung wird an die Küche übermittelt...',
+    'order_conf.success_title': 'Bestellung an Küche übermittelt!',
+    'order_conf.order_confirmed': 'Bestellung bestätigt!',
+    'order_conf.sent_to_kitchen': 'Ihre Bestellung wurde an die Küche gesendet. Bitte Beleg entnehmen und Monitor beachten.',
+    'order_conf.order_number_label': 'BESTELLNUMMER',
+    'order_conf.keep_receipt': 'Bitte Beleg entnehmen und warten, bis Ihre Nummer aufgerufen wird.',
+    'order_conf.new_order': 'Neue Bestellung starten',
+    'order_conf.error': 'Fehler bei der Übermittlung. Bitte erneut versuchen.',
+
+    // Aliases for compatibility
     'order_confirm.title': 'Bestellbestätigung',
     'order_confirm.service_type': 'Verzehrart',
     'order_confirm.eat_in': '🍽️ Hier im Restaurant essen',
@@ -698,43 +711,10 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'order_confirm.keep_receipt': 'Bitte Beleg entnehmen und Monitor beachten.',
     'order_confirm.new_order': 'Neue Bestellung starten',
 
-    // Admin Navigation
-    'nav.products': 'Produkte',
-    'nav.categories': 'Kategorien',
-    'nav.groups': 'Gruppen',
-    'nav.kiosk': 'Kiosk-Steuerung',
-    'nav.settings': 'Einstellungen',
-    'nav.license': 'Lizenz & Info',
-    'nav.kitchen': 'Küchen-Monitor KDS',
-
-    // KDS Kitchen Screen
-    'kds.title': 'Küchen-Display KDS',
-    'kds.active_orders': 'Aktive Bestellungen',
-    'kds.status_to_prepare': 'Zuzubereiten',
-    'kds.status_preparing': 'In Zubereitung',
-    'kds.status_ready': 'Abholbereit',
-    'kds.status_completed': 'Ausgegeben',
-    'kds.elapsed': 'Vergangen',
-    'kds.mark_preparing': 'Zubereitung starten',
-    'kds.mark_ready': 'Als Fertig markieren',
-    'kds.mark_completed': 'An Kunden übergeben',
-    'kds.all_stations': 'Alle Stationen',
-
-    // Kiosk Module
-    'kiosk.title': 'Kiosk & Bildschirm-Steuerung',
-    'kiosk.lockdown_title': 'Kiosk-Sperrmodus',
-    'kiosk.fullscreen': 'Immersiver Vollbildmodus',
-    'kiosk.keep_awake': 'Bildschirm immer an (Keep Awake)',
-    'kiosk.auto_boot': 'Automatischer Start beim Einschalten',
-    'kiosk.screensaver': 'Bildschirmschoner & Inaktivitäts-Reset',
-    'kiosk.timeout': 'Inaktivitäts-Timeout',
-    'kiosk.auto_reset_cart': 'Warenkorb bei Inaktivität leeren',
-    'kiosk.brightness': 'Display-Helligkeit',
-    'kiosk.night_dimming': 'Automatische Nacht-Dimmung',
-    'kiosk.secret_unlock': 'Geheime Entsperr-Geste (7x Tippen)',
-    'kiosk.wake_btn': '☀️ Bildschirm aufwecken',
-    'kiosk.screensaver_btn': '🖼️ Schoner starten',
-    'kiosk.reload_btn': '🔄 App neu laden',
+    // Settings
+    'settings.title': 'Einstellungen',
+    'settings.language_section': 'Terminal-Sprache',
+    'settings.select_language': 'Sprache für das Kunden-Terminal auswählen',
 
     // Guide Title & Header
     'guide.title': '📖 Vollständiges Terminal-Handbuch & Betriebsanleitung',
@@ -1425,13 +1405,13 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideSection[]> = {
 type Listener = (lang: SupportedLanguage) => void;
 const listeners = new Set<Listener>();
 
-let currentLang: SupportedLanguage = 'it';
+let currentLang: SupportedLanguage = 'en';
 let isInitialized = false;
 
 export async function initI18n(): Promise<SupportedLanguage> {
   if (isInitialized) return currentLang;
   try {
-    const saved = await storage.getItem('app_language', 'it' as SupportedLanguage);
+    const saved = await storage.getItem('app_language', 'en' as SupportedLanguage);
     if (saved && (['it', 'en', 'es', 'fr', 'de'] as SupportedLanguage[]).includes(saved as SupportedLanguage)) {
       currentLang = saved as SupportedLanguage;
     }

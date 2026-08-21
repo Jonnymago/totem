@@ -4,12 +4,9 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { adminLogin } from '@/src/api/api';
 import { storage } from '@/src/utils/storage';
-import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
 
 export default function AdminLoginScreen() {
   const router = useRouter();
-  const { t } = useI18n();
   // Precompilati: funzionano sempre anche senza backend / WiFi
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin123');
@@ -18,7 +15,7 @@ export default function AdminLoginScreen() {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      setError(t('admin.credentials_required') || 'Inserisci username e password');
+      setError('Please enter username and password');
       return;
     }
 
@@ -30,7 +27,7 @@ export default function AdminLoginScreen() {
       await storage.secureSet('admin_token', token);
       router.replace('/admin/products');
     } catch (err) {
-      setError('Credenziali non valide. Usa admin / admin123');
+      setError('Invalid credentials. Use admin / admin123');
     } finally {
       setLoading(false);
     }
@@ -49,15 +46,14 @@ export default function AdminLoginScreen() {
           >
             <Ionicons name="arrow-back" size={28} color="#FF6B6B" />
           </TouchableOpacity>
-          <LanguageSelector compact theme="dark" />
         </View>
 
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <Ionicons name="lock-closed" size={60} color="#FF6B6B" />
           </View>
-          <Text style={styles.title}>{t('admin.login_title')}</Text>
-          <Text style={styles.subtitle}>{t('admin.login_subtitle')}</Text>
+          <Text style={styles.title}>Admin Panel</Text>
+          <Text style={styles.subtitle}>Enter your credentials to access management</Text>
         </View>
 
         <View style={styles.form}>
@@ -65,7 +61,7 @@ export default function AdminLoginScreen() {
             <Ionicons name="person" size={24} color="#999" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder={t('admin.username')}
+              placeholder="Username"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -78,7 +74,7 @@ export default function AdminLoginScreen() {
             <Ionicons name="key" size={24} color="#999" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder={t('admin.password')}
+              placeholder="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -89,7 +85,7 @@ export default function AdminLoginScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Text style={{ color: '#888', fontSize: 12, textAlign: 'center', marginTop: 12 }}>
-            Offline: admin / admin123 (o PIN 1234)
+            Offline: admin / admin123 (or PIN 1234)
           </Text>
 
           <TouchableOpacity 
@@ -101,7 +97,7 @@ export default function AdminLoginScreen() {
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={styles.loginButtonText}>{t('admin.login_btn')}</Text>
+              <Text style={styles.loginButtonText}>Login</Text>
             )}
           </TouchableOpacity>
         </View>

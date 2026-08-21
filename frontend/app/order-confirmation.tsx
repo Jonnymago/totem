@@ -6,7 +6,6 @@ import { useCartStore } from '@/src/store/cartStore';
 import { createOrder, Order, getSettings, Settings } from '@/src/api/api';
 import { printCourtesyTicket, printKitchenTicket } from '@/src/utils/printer';
 import { useI18n } from '@/src/utils/i18n';
-import LanguageSelector from '@/src/components/LanguageSelector';
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -160,9 +159,7 @@ export default function OrderConfirmationScreen() {
             <Ionicons name="arrow-back" size={40} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('order_conf.title')}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <LanguageSelector compact theme="dark" />
-          </View>
+          <View style={{ width: 40 }} />
         </View>
 
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
