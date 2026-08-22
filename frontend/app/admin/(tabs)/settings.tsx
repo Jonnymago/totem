@@ -413,8 +413,12 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('settings.title')}</Text>
+        <Text style={styles.headerTitle}>{t('settings.title')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity onPress={() => router.replace('/')} style={styles.totemBtnHeader}>
+            <Ionicons name="storefront" size={18} color="white" />
+            <Text style={styles.totemBtnHeaderText}>Totem</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Ionicons name="log-out-outline" size={24} color="white" />
           </TouchableOpacity>
@@ -893,6 +897,20 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: 'white' },
   logoutButton: { padding: 8 },
+  totemBtnHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  totemBtnHeaderText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   content: { flex: 1 },
   scrollContent: { padding: 16, gap: 16 },
   section: {

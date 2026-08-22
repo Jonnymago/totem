@@ -47,6 +47,7 @@
     "expo-web-browser": "15.0.11",
     "fs-extra": "11.3.0",
     "jszip": "3.10.1",
+    "kiosk-mode": "file:./modules/kiosk-mode",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",

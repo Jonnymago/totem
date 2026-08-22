@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text as NativeText, StyleSheet, TouchableOpacity, Image, Modal, Platform, useWindowDimensions } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, Image, Modal, Platform, useWindowDimensions, Alert, BackHandler } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,6 +9,8 @@ import PinPad from '@/src/components/PinPad';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { useI18n, resetCustomerSessionLanguage } from '@/src/utils/i18n';
 import { useKioskStore } from '@/src/store/kioskStore';
+import { stopKioskMode, startKioskMode, isKioskModeActive } from '../modules/kiosk-mode/src';
+import { storage } from '@/src/utils/storage';
 
 import { Text } from '@/src/components/LocalizedPrimitives';
 const EDGE = Platform.OS === 'android' ? 32 : 28;
@@ -21,7 +23,9 @@ export default function WelcomeScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false);
   const [adminPin, setAdminPin] = useState('1234');
+  const [isLockActive, setIsLockActive] = useState(false);
   const clickTimerRef = useRef<any>(null);
   const hasReceivedInitialFocusRef = useRef(false);
 
@@ -35,6 +39,8 @@ export default function WelcomeScreen() {
       getProducts().catch(() => {});
       getCategories().catch(() => {});
       setSettings(data);
+      const lockState = await isKioskModeActive();
+      setIsLockActive(lockState);
     } catch (error) {
       console.error('Error loading settings:', error);
     }
@@ -63,9 +69,16 @@ export default function WelcomeScreen() {
 
     if (newCount >= targetTaps) {
       setDotClickCount(0);
-      const pin = await getAdminPin();
-      setAdminPin(pin);
-      setShowPinModal(true);
+      const isPinRequired = config.requirePinForExit !== false;
+      if (isPinRequired) {
+        const pin = await getAdminPin();
+        setAdminPin(pin || '1234');
+        setShowPinModal(true);
+      } else {
+        // Se PIN non è richiesto, apri direttamente il menu azioni
+        await authenticateAdminSession();
+        setShowActionModal(true);
+      }
       return;
     }
 
@@ -74,9 +87,60 @@ export default function WelcomeScreen() {
     }, 3000);
   };
 
-  const handlePinSuccess = () => {
+  const authenticateAdminSession = async () => {
+    try {
+      await storage.secureSet('admin_token', 'offline_admin_pin_token');
+    } catch {}
+  };
+
+  const handlePinSuccess = async () => {
     setShowPinModal(false);
-    router.push('/admin/login');
+    await authenticateAdminSession();
+    const lockState = await isKioskModeActive();
+    setIsLockActive(lockState);
+    setShowActionModal(true);
+  };
+
+  const handleUnlockKiosk = async () => {
+    try {
+      await stopKioskMode();
+      setIsLockActive(false);
+      Alert.alert('🔓 Kiosk Sbloccato', 'Modalità Lock Task disattivata e barre di sistema ripristinate. Puoi accedere ad Android.');
+    } catch (e) {
+      Alert.alert('Errore Sblocco', String(e));
+    }
+  };
+
+  const handleRelockKiosk = async () => {
+    try {
+      await startKioskMode();
+      setIsLockActive(true);
+      Alert.alert('🔒 Kiosk Bloccato', 'Modalità Lock Task riattivata con successo.');
+    } catch (e) {
+      Alert.alert('Errore Blocco', String(e));
+    }
+  };
+
+  const handleExitApp = () => {
+    Alert.alert(
+      'Uscita Applicazione',
+      'Vuoi chiudere definitivamente l\'applicazione totem?',
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Chiudi App',
+          style: 'destructive',
+          onPress: async () => {
+            await stopKioskMode().catch(() => {});
+            if (Platform.OS === 'android') {
+              BackHandler.exitApp();
+            } else {
+              setShowActionModal(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const restaurantName = settings?.restaurant_name || 'Benvenuto!';
@@ -186,6 +250,7 @@ export default function WelcomeScreen() {
         </View>
       </LinearGradient>
 
+      {/* MODAL 1: PIN PAD */}
       <Modal
         visible={showPinModal}
         transparent
@@ -201,6 +266,113 @@ export default function WelcomeScreen() {
               onSuccess={handlePinSuccess}
               onBack={() => setShowPinModal(false)}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 2: MENU AZIONI RAPIDE KIOSK & ADMIN */}
+      <Modal
+        visible={showActionModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowActionModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 460 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#2563EB20', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="shield-checkmark" size={24} color="#3B82F6" />
+                </View>
+                <View>
+                  <Text style={{ color: 'white', fontSize: 18, fontWeight: '800' }}>Menu Tecnico Totem</Text>
+                  <Text style={{ color: '#94A3B8', fontSize: 12 }}>Accesso autorizzato operatore</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setShowActionModal(false)} style={{ padding: 6 }}>
+                <Ionicons name="close" size={24} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              {/* Opzione 1: Vai al pannello admin */}
+              <TouchableOpacity
+                style={styles.actionModalBtn}
+                onPress={() => {
+                  setShowActionModal(false);
+                  router.push('/admin/products');
+                }}
+              >
+                <View style={[styles.actionIconBox, { backgroundColor: '#2563EB' }]}>
+                  <Ionicons name="settings" size={20} color="white" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.actionModalTitle}>Pannello Amministratore</Text>
+                  <Text style={styles.actionModalSub}>Gestione prodotti, categorie, licenza e kiosk</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* Opzione 2: Sblocca Kiosk / Lock Task */}
+              <TouchableOpacity
+                style={styles.actionModalBtn}
+                onPress={isLockActive ? handleUnlockKiosk : handleRelockKiosk}
+              >
+                <View style={[styles.actionIconBox, { backgroundColor: isLockActive ? '#F59E0B' : '#10B981' }]}>
+                  <Ionicons name={isLockActive ? "lock-open" : "lock-closed"} size={20} color="white" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.actionModalTitle}>
+                    {isLockActive ? 'Sblocca Schermo (LockTask OFF)' : 'Blocca Schermo (LockTask ON)'}
+                  </Text>
+                  <Text style={styles.actionModalSub}>
+                    {isLockActive ? 'Mostra barre Android e consenti uscita dal totem' : 'Attiva modalità blocco kiosk a schermo intero'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* Opzione 3: Ricarica e Sincronizza */}
+              <TouchableOpacity
+                style={styles.actionModalBtn}
+                onPress={() => {
+                  loadSettings();
+                  setShowActionModal(false);
+                  Alert.alert('🔄 Ricaricato', 'Dati e configurazioni sincronizzati con successo.');
+                }}
+              >
+                <View style={[styles.actionIconBox, { backgroundColor: '#0284C7' }]}>
+                  <Ionicons name="refresh" size={20} color="white" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.actionModalTitle}>Ricarica Schermata</Text>
+                  <Text style={styles.actionModalSub}>Aggiorna prodotti e sincronizza impostazioni</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* Opzione 4: Esci dall'App */}
+              <TouchableOpacity
+                style={[styles.actionModalBtn, { borderColor: '#EF444440' }]}
+                onPress={handleExitApp}
+              >
+                <View style={[styles.actionIconBox, { backgroundColor: '#EF4444' }]}>
+                  <Ionicons name="power" size={20} color="white" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.actionModalTitle, { color: '#F87171' }]}>Esci dall'Applicazione</Text>
+                  <Text style={styles.actionModalSub}>Chiude l'app ed esce al sistema operativo</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center', backgroundColor: '#222', borderRadius: 12 }}
+              onPress={() => setShowActionModal(false)}
+            >
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>Ritorna al Totem</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -358,4 +530,32 @@ const styles = StyleSheet.create({
     borderColor: '#333',
     minHeight: 480,
   },
+  actionModalBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
+    gap: 12,
+  },
+  actionIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionModalTitle: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  actionModalSub: {
+    color: '#94A3B8',
+    fontSize: 11,
+    marginTop: 2,
+  },
 });
+

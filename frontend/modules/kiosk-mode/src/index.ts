@@ -7,6 +7,10 @@ interface KioskModeModule {
   stopLockTask(): Promise<boolean>;
   isLockTaskActive(): Promise<boolean>;
   hideSystemUI?(): Promise<boolean>;
+  showSystemUI?(): Promise<boolean>;
+  setScreenOrientation?(orientation: string): Promise<boolean>;
+  setScreenBrightness?(brightness: number): Promise<boolean>;
+  playHardwareBeep?(): Promise<boolean>;
 }
 
 const KIOSK_PREF_KEY = 'kiosk_mode_enabled';
@@ -54,7 +58,7 @@ function unblockHardwareBack() {
   }
 }
 
-/** Re-applica lock + immersive in modo aggressivo (necessario su FydeOS). */
+/** Re-applica lock + immersive in modo aggressivo (necessario su FydeOS / Totem). */
 async function forceLockNow(): Promise<void> {
   if (!nativeModule || Platform.OS !== 'android') return;
   try {
@@ -74,7 +78,7 @@ function startWatchdog() {
   if (Platform.OS !== 'android') return;
   if (watchdogTimer) return;
 
-  // Timer continuo: ogni 1.5s ri-forza immersive + lock task
+  // Timer continuo: ogni 1.5s ri-forza immersive + lock task se abilitato
   watchdogTimer = setInterval(() => {
     void forceLockNow();
   }, WATCHDOG_MS);
@@ -129,7 +133,11 @@ export async function stopKioskMode(): Promise<boolean> {
 
   if (!nativeModule) return true;
   try {
-    return await nativeModule.stopLockTask();
+    const ok = await nativeModule.stopLockTask();
+    try {
+      await nativeModule.showSystemUI?.();
+    } catch {}
+    return ok;
   } catch {
     return false;
   }
@@ -148,6 +156,52 @@ export async function isKioskModeActive(): Promise<boolean> {
   }
 }
 
+export async function setNativeScreenOrientation(orientation: 'portrait' | 'landscape' | 'auto'): Promise<boolean> {
+  if (!nativeModule?.setScreenOrientation) return false;
+  try {
+    return await nativeModule.setScreenOrientation(orientation);
+  } catch {
+    return false;
+  }
+}
+
+export async function setNativeScreenBrightness(levelPercent: number): Promise<boolean> {
+  if (!nativeModule?.setScreenBrightness) return false;
+  try {
+    const normalized = Math.max(0.05, Math.min(1.0, levelPercent / 100));
+    return await nativeModule.setScreenBrightness(normalized);
+  } catch {
+    return false;
+  }
+}
+
+export async function playNativeHardwareBeep(): Promise<boolean> {
+  if (!nativeModule?.playHardwareBeep) return false;
+  try {
+    return await nativeModule.playHardwareBeep();
+  } catch {
+    return false;
+  }
+}
+
+export async function hideNativeSystemUI(): Promise<boolean> {
+  if (!nativeModule?.hideSystemUI) return false;
+  try {
+    return await nativeModule.hideSystemUI();
+  } catch {
+    return false;
+  }
+}
+
+export async function showNativeSystemUI(): Promise<boolean> {
+  if (!nativeModule?.showSystemUI) return false;
+  try {
+    return await nativeModule.showSystemUI();
+  } catch {
+    return false;
+  }
+}
+
 /**
  * All'avvio / resume: se kiosk era abilitato, riattiva lock + watchdog.
  */
@@ -161,3 +215,4 @@ export async function ensureKioskIfPreferred(): Promise<void> {
   startWatchdog();
   await forceLockNow();
 }
+

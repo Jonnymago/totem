@@ -368,9 +368,23 @@
           </p>
 
           <div style="display:flex; flex-direction:column; gap:12px;">
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-enabled" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Modalità Kiosk Esclusiva (Lock Task)</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Blocca l'app a schermo intero e disabilita i tasti Home e Recenti.</div>
+              </div>
+            </label>
 
-
-
+            <label class="toggle-switch">
+              <input type="checkbox" id="kiosk-set-immersive" checked />
+              <div class="toggle-slider"></div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:700;">Schermo Intero Immersivo</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Nasconde permanentemente la barra di stato e la barra di navigazione.</div>
+              </div>
+            </label>
 
             <label class="toggle-switch">
               <input type="checkbox" id="kiosk-set-keepawake" checked />
@@ -473,7 +487,14 @@
             </div>
           </div>
 
-
+          <div class="form-group">
+            <label class="form-label">Orientamento Display</label>
+            <select id="kiosk-set-orientation" class="form-select">
+              <option value="portrait" selected>📱 Verticale (Portrait - Consigliato per Totem)</option>
+              <option value="landscape">🖥️ Orizzontale (Landscape / Desktop)</option>
+              <option value="auto">🔄 Automatico (Rotazione Libera)</option>
+            </select>
+          </div>
         </div>
 
         <!-- 4. Sicurezza & Gesture di Sblocco -->
@@ -482,6 +503,15 @@
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
             Definisce come il personale autorizzato può sbloccare il totem ed entrare nel pannello di configurazione.
           </p>
+
+          <label class="toggle-switch" style="margin-bottom:14px;">
+            <input type="checkbox" id="kiosk-set-pin-req" checked />
+            <div class="toggle-slider"></div>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700;">Richiedi PIN per Uscita / Accesso Admin</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Richiede il PIN amministratore dopo la sequenza di tocchi segreti.</div>
+            </div>
+          </label>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div class="form-group">
@@ -494,9 +524,11 @@
             </div>
             <div class="form-group">
               <label class="form-label">Posizione Trigger Segreto</label>
-                  <select id="kiosk-set-location" class="form-select">
-                    <option value="top-center" selected>In Alto Centrale</option>
-                  </select>
+              <select id="kiosk-set-location" class="form-select">
+                <option value="top-center" selected>In Alto Centrale</option>
+                <option value="top-right">Angolo Alto a Destra</option>
+                <option value="top-left">Angolo Alto a Sinistra</option>
+              </select>
             </div>
           </div>
         </div>
@@ -1291,6 +1323,7 @@
           const elNightStart = document.getElementById('kiosk-set-nightstart');
           const elNightEnd = document.getElementById('kiosk-set-nightend');
           const elOrient = document.getElementById('kiosk-set-orientation');
+          const elPinReq = document.getElementById('kiosk-set-pin-req');
           const elTaps = document.getElementById('kiosk-set-taps');
           const elLoc = document.getElementById('kiosk-set-location');
 
@@ -1310,6 +1343,7 @@
           if (elNightStart && cfg.nightDimmingStart) elNightStart.value = String(cfg.nightDimmingStart);
           if (elNightEnd && cfg.nightDimmingEnd) elNightEnd.value = String(cfg.nightDimmingEnd);
           if (elOrient && cfg.screenOrientation) elOrient.value = String(cfg.screenOrientation);
+          if (elPinReq && cfg.requirePinForExit !== undefined) elPinReq.checked = Boolean(cfg.requirePinForExit);
           if (elTaps && cfg.secretTapsCount !== undefined) elTaps.value = String(cfg.secretTapsCount);
           if (elLoc && cfg.secretTriggerLocation) elLoc.value = String(cfg.secretTriggerLocation);
         }
@@ -1321,6 +1355,8 @@
     async function saveKioskRemote() {
       try {
         const payload = {
+          kioskEnabled: document.getElementById('kiosk-set-enabled')?.checked ?? true,
+          immersiveFullscreen: document.getElementById('kiosk-set-immersive')?.checked ?? true,
           keepScreenAwake: document.getElementById('kiosk-set-keepawake')?.checked ?? true,
           autoStartOnBoot: document.getElementById('kiosk-set-autoboot')?.checked ?? true,
           inactivityTimeoutSec: Number(document.getElementById('kiosk-set-timeout')?.value || 60),
@@ -1331,6 +1367,8 @@
           nightDimmingEnabled: document.getElementById('kiosk-set-nightdim')?.checked ?? true,
           nightDimmingStart: document.getElementById('kiosk-set-nightstart')?.value || '23:00',
           nightDimmingEnd: document.getElementById('kiosk-set-nightend')?.value || '07:00',
+          screenOrientation: document.getElementById('kiosk-set-orientation')?.value || 'portrait',
+          requirePinForExit: document.getElementById('kiosk-set-pin-req')?.checked ?? true,
           secretTapsCount: Number(document.getElementById('kiosk-set-taps')?.value || 7),
           secretTriggerLocation: document.getElementById('kiosk-set-location')?.value || 'top-center',
         };

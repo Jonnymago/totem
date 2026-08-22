@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, ActivityIndicator, Platform,  } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, ActivityIndicator, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   getLicenseInfo,
@@ -14,6 +15,7 @@ import { Text } from '@/src/components/LocalizedPrimitives';
 import GuideHelper from '@/src/components/GuideHelper';
 
 export default function LicenseCreditsScreen() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
@@ -122,13 +124,22 @@ export default function LicenseCreditsScreen() {
       
       {/* HEADER DELLA SCHERMATA */}
       <View style={styles.header}>
-        <View style={styles.headerIconBox}>
-          <Ionicons name="ribbon" size={28} color="#FF6B6B" />
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={styles.headerIconBox}>
+            <Ionicons name="ribbon" size={28} color="#FF6B6B" />
+          </View>
+          <View style={styles.headerTextBox}>
+            <Text style={styles.headerTitle}>Licenza e Abbonamenti</Text>
+            <Text style={styles.headerSubtitle}>Gestisci lo stato della prova e gli abbonamenti disponibili.</Text>
+          </View>
         </View>
-        <View style={styles.headerTextBox}>
-          <Text style={styles.headerTitle}>Licenza e Abbonamenti</Text>
-          <Text style={styles.headerSubtitle}>Gestisci lo stato della prova e gli abbonamenti disponibili.</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.exitToTotemBtn}
+          onPress={() => router.replace('/')}
+        >
+          <Ionicons name="storefront" size={18} color="white" />
+          <Text style={styles.exitToTotemText}>Torna al Totem</Text>
+        </TouchableOpacity>
       </View>
 
       {/* SEZIONE 1: STATO LICENZA ATTUALE */}
@@ -491,6 +502,20 @@ const styles = StyleSheet.create({
     color: '#64748B',
     marginTop: 2,
     fontWeight: '600',
+  },
+  exitToTotemBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    gap: 6,
+  },
+  exitToTotemText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 13,
   },
   card: {
     backgroundColor: 'white',

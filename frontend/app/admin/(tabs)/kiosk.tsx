@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Switch, TextInput as NativeTextInput, Alert, ActivityIndicator, Platform,  } from 'react-native';
+import { View, Text as NativeText, StyleSheet, TouchableOpacity, ScrollView, Switch, TextInput as NativeTextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   KioskConfig,
@@ -9,8 +10,11 @@ import {
 } from '@/src/utils/kiosk';
 import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 import { useKioskStore } from '@/src/store/kioskStore';
+import { startKioskMode, stopKioskMode, isKioskModeActive } from '../../../modules/kiosk-mode/src';
+import { getAdminPin } from '@/src/api/api';
 
 export default function KioskHardwareScreen() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const {
@@ -23,6 +27,7 @@ export default function KioskHardwareScreen() {
   } = useKioskStore();
   const [telemetry, setTelemetry] = useState<KioskTelemetry | null>(null);
   const [activeTest, setActiveTest] = useState<string | null>(null);
+  const [isLockTaskRunning, setIsLockTaskRunning] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -33,6 +38,8 @@ export default function KioskHardwareScreen() {
       setLoading(true);
       const tel = await getKioskTelemetry();
       setTelemetry(tel);
+      const lockState = await isKioskModeActive();
+      setIsLockTaskRunning(lockState);
     } catch (e) {
       console.warn('Error loading Kiosk data:', e);
     } finally {
@@ -46,10 +53,30 @@ export default function KioskHardwareScreen() {
       await updateConfig(patch);
       const tel = await getKioskTelemetry();
       setTelemetry(tel);
+      const lockState = await isKioskModeActive();
+      setIsLockTaskRunning(lockState);
     } catch (e) {
       console.warn('Error saving kiosk config:', e);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleManualLockToggle = async () => {
+    try {
+      if (isLockTaskRunning) {
+        await stopKioskMode();
+        setIsLockTaskRunning(false);
+        await updateConfig({ kioskEnabled: false });
+        Alert.alert('🔓 Kiosk Sbloccato', 'Modalità Lock Task disattivata e barre di sistema ripristinate.');
+      } else {
+        await startKioskMode();
+        setIsLockTaskRunning(true);
+        await updateConfig({ kioskEnabled: true });
+        Alert.alert('🔒 Kiosk Bloccato', 'Modalità Lock Task e schermo intero attivati.');
+      }
+    } catch (e) {
+      Alert.alert('Errore', String(e));
     }
   };
 
@@ -70,7 +97,7 @@ export default function KioskHardwareScreen() {
         triggerBeep();
         Alert.alert('🔔 Feedback Acustico', 'Segnale acustico e vibrazione hardware eseguiti.');
       }
-    }, 400);
+    }, 300);
   };
 
   if (loading) {
@@ -85,7 +112,7 @@ export default function KioskHardwareScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       
-      {/* HEADER SCHERMATA */}
+      {/* HEADER SCHERMATA CON BOTTONE ESCI AL TOTEM */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View style={styles.headerIconBox}>
@@ -93,9 +120,16 @@ export default function KioskHardwareScreen() {
           </View>
           <View style={styles.headerTextBox}>
             <Text style={styles.headerTitle}>Kiosk Control & Hardware</Text>
-            <Text style={styles.headerSubtitle}>Device management, screen lockdown, screensaver and REST API</Text>
+            <Text style={styles.headerSubtitle}>Gestione blocco totem, orientamento, screensaver e sicurezza</Text>
           </View>
         </View>
+        <TouchableOpacity
+          style={styles.exitToTotemBtn}
+          onPress={() => router.replace('/')}
+        >
+          <Ionicons name="storefront" size={18} color="white" />
+          <Text style={styles.exitToTotemText}>Torna al Totem</Text>
+        </TouchableOpacity>
       </View>
 
       {/* SEZIONE 1: STATO KIOSK & BLOCCO DISPOSITIVO */}
@@ -108,7 +142,54 @@ export default function KioskHardwareScreen() {
           Blocca il tablet in modalità totem esclusiva. Nasconde la barra di navigazione Android e impedisce l'uscita non autorizzata ai clienti.
         </Text>
 
+        {/* Status Badge e Bottone Rapido */}
+        <View style={styles.lockStatusBox}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[styles.statusDot, { backgroundColor: isLockTaskRunning ? '#10B981' : '#F59E0B' }]} />
+            <Text style={styles.lockStatusLabel}>
+              Stato Attuale: {isLockTaskRunning ? '🔒 Bloccato in LockTask' : '🔓 Non Bloccato (Libero)'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.quickLockBtn, { backgroundColor: isLockTaskRunning ? '#F59E0B' : '#10B981' }]}
+            onPress={handleManualLockToggle}
+          >
+            <Ionicons name={isLockTaskRunning ? "lock-open" : "lock-closed"} size={16} color="white" />
+            <Text style={styles.quickLockBtnText}>
+              {isLockTaskRunning ? 'Sblocca Adesso' : 'Blocca Adesso'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
+        <View style={styles.settingRow}>
+          <View style={styles.settingTextCol}>
+            <Text style={styles.settingLabel}>Modalità Kiosk Esclusiva (Lock Task)</Text>
+            <Text style={styles.settingSub}>Blocca l'app a schermo intero e disabilita i tasti Home e Recenti.</Text>
+          </View>
+          <Switch
+            value={config.kioskEnabled}
+            onValueChange={(val) => handleUpdate({ kioskEnabled: val })}
+            trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
+            thumbColor={config.kioskEnabled ? '#2563EB' : '#94A3B8'}
+          />
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.settingRow}>
+          <View style={styles.settingTextCol}>
+            <Text style={styles.settingLabel}>Schermo Intero Immersivo</Text>
+            <Text style={styles.settingSub}>Nasconde permanentemente la barra di stato e la barra di navigazione.</Text>
+          </View>
+          <Switch
+            value={config.immersiveFullscreen}
+            onValueChange={(val) => handleUpdate({ immersiveFullscreen: val })}
+            trackColor={{ false: '#CBD5E1', true: '#BFDBFE' }}
+            thumbColor={config.immersiveFullscreen ? '#2563EB' : '#94A3B8'}
+          />
+        </View>
+
+        <View style={styles.divider} />
 
         <View style={styles.settingRow}>
           <View style={styles.settingTextCol}>
@@ -331,6 +412,32 @@ export default function KioskHardwareScreen() {
 
         <View style={styles.divider} />
 
+        <Text style={styles.inputGroupLabel}>Orientamento Display:</Text>
+        <View style={styles.optionsGrid}>
+          {[
+            { label: '📱 Verticale (Portrait)', val: 'portrait' },
+            { label: '🖥️ Orizzontale (Landscape)', val: 'landscape' },
+            { label: '🔄 Automatico (Auto)', val: 'auto' },
+          ].map((opt) => (
+            <TouchableOpacity
+              key={opt.val}
+              style={[
+                styles.optionChip,
+                config.screenOrientation === opt.val && styles.optionChipActive,
+              ]}
+              onPress={() => handleUpdate({ screenOrientation: opt.val as any })}
+            >
+              <Text
+                style={[
+                  styles.optionChipText,
+                  config.screenOrientation === opt.val && styles.optionChipTextActive,
+                ]}
+              >
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {/* SEZIONE 4: SICUREZZA & GESTURE DI SBLOCCO */}
@@ -342,6 +449,21 @@ export default function KioskHardwareScreen() {
         <Text style={styles.sectionDesc}>
           Imposta la sequenza di tocchi segreta per aprire il pannello di amministrazione e il PIN di protezione.
         </Text>
+
+        <View style={styles.settingRow}>
+          <View style={styles.settingTextCol}>
+            <Text style={styles.settingLabel}>Richiedi PIN per Uscita / Accesso</Text>
+            <Text style={styles.settingSub}>Richiede il PIN amministratore dopo aver completato i tocchi segreti.</Text>
+          </View>
+          <Switch
+            value={config.requirePinForExit}
+            onValueChange={(val) => handleUpdate({ requirePinForExit: val })}
+            trackColor={{ false: '#CBD5E1', true: '#DDD6FE' }}
+            thumbColor={config.requirePinForExit ? '#8B5CF6' : '#94A3B8'}
+          />
+        </View>
+
+        <View style={styles.divider} />
 
         <Text style={styles.inputGroupLabel}>Numero di tocchi segreti:</Text>
         <View style={styles.optionsGrid}>
@@ -373,22 +495,22 @@ export default function KioskHardwareScreen() {
         <Text style={[styles.inputGroupLabel, { marginTop: 14 }]}>Posizione del Trigger Segreto:</Text>
         <View style={styles.optionsGrid}>
           {[
+            { label: 'In Alto Centrale', loc: 'top-center' },
             { label: 'Angolo Alto a Destra', loc: 'top-right' },
             { label: 'Angolo Alto a Sinistra', loc: 'top-left' },
-            { label: 'In Alto Centrale', loc: 'logo' },
           ].map((opt) => (
             <TouchableOpacity
               key={opt.loc}
               style={[
                 styles.optionChip,
-                config.secretTriggerLocation === opt.loc && styles.optionChipActive,
+                (config.secretTriggerLocation === opt.loc || (opt.loc === 'top-center' && config.secretTriggerLocation === 'logo')) && styles.optionChipActive,
               ]}
               onPress={() => handleUpdate({ secretTriggerLocation: opt.loc as any })}
             >
               <Text
                 style={[
                   styles.optionChipText,
-                  config.secretTriggerLocation === opt.loc && styles.optionChipTextActive,
+                  (config.secretTriggerLocation === opt.loc || (opt.loc === 'top-center' && config.secretTriggerLocation === 'logo')) && styles.optionChipTextActive,
                 ]}
               >
                 {opt.label}
@@ -511,6 +633,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
     backgroundColor: 'white',
     padding: 16,
@@ -522,29 +645,43 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    gap: 12,
   },
   headerIconBox: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#DBEAFE',
+    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 12,
   },
   headerTextBox: {
     flex: 1,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#0F172A',
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
     marginTop: 2,
-    fontWeight: '600',
+  },
+  exitToTotemBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    gap: 6,
+  },
+  exitToTotemText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 13,
   },
   card: {
     backgroundColor: 'white',
@@ -563,32 +700,66 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#0F172A',
   },
   sectionDesc: {
     fontSize: 13,
     color: '#64748B',
+    marginBottom: 16,
     lineHeight: 18,
-    marginBottom: 14,
+  },
+  lockStatusBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F1F5F9',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  lockStatusLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  quickLockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  quickLockBtnText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
   },
   settingRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    justifyContent: 'space-between',
+    paddingVertical: 10,
   },
   settingTextCol: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 16,
   },
   settingLabel: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#1E293B',
   },
   settingSub: {
@@ -603,7 +774,7 @@ const styles = StyleSheet.create({
   },
   inputGroupLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#334155',
     marginBottom: 8,
   },
@@ -621,67 +792,65 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   optionChipActive: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
     borderColor: '#2563EB',
   },
   optionChipText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#475569',
   },
   optionChipTextActive: {
-    color: 'white',
+    color: '#2563EB',
   },
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F1F5F9',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    flex: 1,
-    minWidth: '45%',
+    gap: 8,
   },
   optionCardActive: {
     backgroundColor: '#EFF6FF',
     borderColor: '#2563EB',
   },
   optionCardText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#334155',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#475569',
   },
   optionCardTextActive: {
     color: '#2563EB',
   },
   subConfigRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#F8FAFC',
     padding: 10,
     borderRadius: 10,
-    marginTop: 8,
+    marginTop: 6,
   },
   subConfigLabel: {
     fontSize: 12,
     color: '#475569',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   miniChip: {
     paddingVertical: 4,
     paddingHorizontal: 10,
-    borderRadius: 8,
+    borderRadius: 6,
     backgroundColor: '#E2E8F0',
   },
   miniChipActive: {
     backgroundColor: '#10B981',
   },
   miniChipText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#475569',
   },
@@ -694,102 +863,92 @@ const styles = StyleSheet.create({
   },
   brightnessChip: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
     borderRadius: 10,
     backgroundColor: '#F1F5F9',
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
   brightnessChipActive: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FEF3C7',
     borderColor: '#F59E0B',
   },
   brightnessChipText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#475569',
   },
   brightnessChipTextActive: {
-    color: 'white',
+    color: '#D97706',
   },
   timeInputsRow: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
-    backgroundColor: '#FFFBEB',
-    padding: 10,
-    borderRadius: 10,
   },
   timeInputCol: {
     flex: 1,
   },
   timeInputLabel: {
-    fontSize: 11,
-    color: '#92400E',
-    fontWeight: '700',
+    fontSize: 12,
+    color: '#64748B',
     marginBottom: 4,
   },
   timeInput: {
-    backgroundColor: 'white',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#FCD34D',
+    borderColor: '#CBD5E1',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 13,
-    fontWeight: '700',
+    padding: 8,
+    fontSize: 14,
     color: '#0F172A',
+    fontWeight: '600',
   },
   telemetryBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0F172A',
     borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginTop: 10,
+    padding: 14,
+    marginTop: 12,
+    gap: 8,
   },
   telemetryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 3,
   },
   telKey: {
     fontSize: 12,
-    color: '#64748B',
-    fontWeight: '600',
+    color: '#94A3B8',
   },
   telVal: {
     fontSize: 12,
-    color: '#0F172A',
     fontWeight: '700',
+    color: 'white',
   },
   mono: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#38BDF8',
   },
   testButtonsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 6,
+    marginTop: 4,
   },
   testBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
     backgroundColor: '#F1F5F9',
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    flex: 1,
-    minWidth: '45%',
-    justifyContent: 'center',
+    borderColor: '#CBD5E1',
   },
   testBtnText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#1E293B',
+    fontWeight: '600',
+    color: '#0F172A',
   },
 });

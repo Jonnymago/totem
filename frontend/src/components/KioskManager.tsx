@@ -34,6 +34,7 @@ export default function KioskManager({ children }: KioskManagerProps) {
 
   const [settings, setSettings] = useState<Settings | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [activeCustomerNightSession, setActiveCustomerNightSession] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const promoSlideIndexRef = useRef(0);
   const [promoSlide, setPromoSlide] = useState(0);
@@ -43,6 +44,19 @@ export default function KioskManager({ children }: KioskManagerProps) {
     initKiosk();
     getSettings().then(setSettings).catch(() => {});
   }, [initKiosk]);
+
+  // Gestione tocco universale
+  const handleUniversalActivity = useCallback(() => {
+    recordActivity();
+    if (nightDimmingActive && !activeCustomerNightSession) {
+      setActiveCustomerNightSession(true);
+    }
+  }, [recordActivity, nightDimmingActive, activeCustomerNightSession]);
+
+  const handleWakeFromScreensaver = useCallback(() => {
+    triggerWake();
+    handleUniversalActivity();
+  }, [triggerWake, handleUniversalActivity]);
 
   // Animazione pulsazione per i salvaschermo
   useEffect(() => {
@@ -115,6 +129,7 @@ export default function KioskManager({ children }: KioskManagerProps) {
       ) {
         // Chiude la sessione linguistica cliente quando scatta il salvaschermo per inattività
         resetCustomerSessionLanguage();
+        setActiveCustomerNightSession(false);
         
         if (!screensaverActive) {
           triggerScreensaver();
@@ -145,7 +160,10 @@ export default function KioskManager({ children }: KioskManagerProps) {
   ]);
 
   // Calcolo oscuramento luminosità (Dimmer Overlay)
-  const effectiveBrightness = dimmedActive || nightDimmingActive ? 10 : (config.brightnessLevel || 90);
+  // Se è orario notturno ma c'è una sessione cliente attiva, usa luminosità piena
+  const effectiveBrightness = dimmedActive || (nightDimmingActive && !activeCustomerNightSession && screensaverActive)
+    ? 10
+    : (config.brightnessLevel || 90);
   const dimmerOpacity = effectiveBrightness < 100 ? ((100 - effectiveBrightness) / 100) * 0.82 : 0;
 
   const restaurantName = settings?.restaurant_name || 'Totem Self-Service';
@@ -172,7 +190,15 @@ export default function KioskManager({ children }: KioskManagerProps) {
   return (
     <View
       style={styles.rootContainer}
-      onTouchStart={recordActivity}
+      onStartShouldSetResponderCapture={() => {
+        handleUniversalActivity();
+        return false;
+      }}
+      onMoveShouldSetResponderCapture={() => {
+        handleUniversalActivity();
+        return false;
+      }}
+      onTouchStart={handleUniversalActivity}
     >
       {/* Applicazione Principale */}
       {children}
@@ -190,7 +216,7 @@ export default function KioskManager({ children }: KioskManagerProps) {
         <TouchableOpacity
           activeOpacity={1}
           style={styles.screensaverContainer}
-          onPress={triggerWake}
+          onPress={handleWakeFromScreensaver}
         >
           {config.screensaverMode === 'promo_banner' && (
             <View style={styles.screensaverContent}>

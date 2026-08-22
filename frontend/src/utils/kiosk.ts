@@ -3,7 +3,13 @@ import { Platform, StatusBar as RNStatusBar } from 'react-native';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import * as Network from 'expo-network';
-import { startKioskMode, stopKioskMode } from '../../modules/kiosk-mode/src';
+import {
+  startKioskMode,
+  stopKioskMode,
+  setNativeScreenOrientation,
+  setNativeScreenBrightness,
+  playNativeHardwareBeep,
+} from '../../modules/kiosk-mode/src';
 
 const STORAGE_KEY_KIOSK = 'TOTEM_KIOSK_CONFIG_V1';
 
@@ -118,7 +124,31 @@ export async function applyKioskHardwareSettings(config: KioskConfig): Promise<v
       RNStatusBar.setHidden(Boolean(config.immersiveFullscreen), 'fade');
     }
 
-    // 3. Kiosk Lock Task Mode (Android)
+    // 3. Orientamento Display (Android + Web)
+    const targetOrientation = config.screenOrientation || 'portrait';
+    if (Platform.OS === 'android') {
+      await setNativeScreenOrientation(targetOrientation).catch(() => {});
+    } else if (Platform.OS === 'web' && typeof window !== 'undefined' && typeof screen !== 'undefined') {
+      try {
+        const anyScreen = screen as any;
+        if (anyScreen.orientation?.lock) {
+          if (targetOrientation === 'portrait') {
+            anyScreen.orientation.lock('portrait').catch(() => {});
+          } else if (targetOrientation === 'landscape') {
+            anyScreen.orientation.lock('landscape').catch(() => {});
+          } else {
+            anyScreen.orientation.unlock?.();
+          }
+        }
+      } catch {}
+    }
+
+    // 4. Luminosità Schermo Hardware
+    if (Platform.OS === 'android') {
+      await setNativeScreenBrightness(config.brightnessLevel || 90).catch(() => {});
+    }
+
+    // 5. Kiosk Lock Task Mode (Android)
     if (Platform.OS === 'android') {
       if (config.kioskEnabled) {
         await startKioskMode().catch(() => {});
@@ -161,10 +191,17 @@ export function isNightDimmingTime(startStr: string = '23:00', endStr: string = 
  * Genera feedback acustico e aptico
  */
 export function playKioskBeep(): void {
+  // 1. Hardware beep nativo Android
+  if (Platform.OS === 'android') {
+    playNativeHardwareBeep().catch(() => {});
+  }
+
+  // 2. Feedback aptico
   try {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   } catch {}
 
+  // 3. WebAudio sintetizzatore
   try {
     if (typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;

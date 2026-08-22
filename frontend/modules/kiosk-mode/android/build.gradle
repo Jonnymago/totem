@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+group = 'expo.modules.kioskmode'
+version = '1.0.0'
+
+def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+
+android {
+  compileSdkVersion project.findProperty('compileSdkVersion') ?: 35
+  namespace 'expo.modules.kioskmode'
+  defaultConfig {
+    minSdkVersion project.findProperty('minSdkVersion') ?: 24
+    targetSdkVersion project.findProperty('targetSdkVersion') ?: 35
+    versionCode 1
+    versionName "1.0.0"
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  implementation project(':expo-modules-core')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
+  implementation "androidx.core:core-ktx:1.13.1"
+}

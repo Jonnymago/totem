@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 
 const RECEIVER_CLASS = 'expo.modules.kioskmode.KioskDeviceAdminReceiver';
+const BOOT_RECEIVER_CLASS = 'expo.modules.kioskmode.BootCompletedReceiver';
 
 function addLockTaskToManifest(androidManifest) {
   const { manifest } = androidManifest;
@@ -17,9 +18,20 @@ function addLockTaskToManifest(androidManifest) {
     return androidManifest;
   }
 
+  // Aggiungi permesso avvio al boot
+  if (!manifest['uses-permission']) {
+    manifest['uses-permission'] = [];
+  }
+  const hasBootPerm = manifest['uses-permission'].some(
+    (p) => p.$ && p.$['android:name'] === 'android.permission.RECEIVE_BOOT_COMPLETED'
+  );
+  if (!hasBootPerm) {
+    manifest['uses-permission'].push({
+      $: { 'android:name': 'android.permission.RECEIVE_BOOT_COMPLETED' },
+    });
+  }
+
   const app = manifest.application[0];
-  // application-level: always is more reliable on non-DPC environments (FydeOS)
-  app.$['android:lockTaskMode'] = 'always';
 
   if (app.activity) {
     for (const act of app.activity) {
@@ -39,9 +51,10 @@ function addLockTaskToManifest(androidManifest) {
 
   app['receiver'] = app['receiver'].filter((r) => {
     const name = r.$ && r.$['android:name'];
-    return name !== '.KioskDeviceAdminReceiver' && name !== RECEIVER_CLASS;
+    return name !== '.KioskDeviceAdminReceiver' && name !== RECEIVER_CLASS && name !== BOOT_RECEIVER_CLASS;
   });
 
+  // 1. Device Admin Receiver per LockTask
   app['receiver'].push({
     $: {
       'android:name': RECEIVER_CLASS,
@@ -64,6 +77,23 @@ function addLockTaskToManifest(androidManifest) {
               'android:name': 'android.app.action.DEVICE_ADMIN_ENABLED',
             },
           },
+        ],
+      },
+    ],
+  });
+
+  // 2. Boot Completed Receiver per Auto-Boot
+  app['receiver'].push({
+    $: {
+      'android:name': BOOT_RECEIVER_CLASS,
+      'android:enabled': 'true',
+      'android:exported': 'true',
+    },
+    'intent-filter': [
+      {
+        action: [
+          { $: { 'android:name': 'android.intent.action.BOOT_COMPLETED' } },
+          { $: { 'android:name': 'android.intent.action.QUICKBOOT_POWERON' } },
         ],
       },
     ],

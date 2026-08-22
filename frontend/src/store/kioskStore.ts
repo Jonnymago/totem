@@ -75,11 +75,14 @@ export const useKioskStore = create<KioskStore>((set, get) => ({
   },
 
   triggerWake: () => {
+    const { config } = get();
     set({
       screensaverActive: false,
       dimmedActive: false,
       lastActivityTimestamp: Date.now(),
     });
+    playKioskBeep();
+    applyKioskHardwareSettings(config).catch(() => {});
   },
 
   triggerScreensaver: () => {

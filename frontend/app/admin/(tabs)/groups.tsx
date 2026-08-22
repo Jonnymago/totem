@@ -6,6 +6,7 @@ import { getGlobalGroups, createGlobalGroup, updateGlobalGroup, deleteGlobalGrou
 
 import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 export default function GroupsManagementScreen() {
+  const router = useRouter();
   const [groups, setGroups] = useState<GlobalOptionGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -179,9 +180,15 @@ export default function GroupsManagementScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Gruppi Extra Globali</Text>
-        <TouchableOpacity style={styles.addButton} onPress={openNewModal}>
-          <Ionicons name="add-circle" size={36} color="white" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity onPress={() => router.replace('/')} style={styles.totemBtnHeader}>
+            <Ionicons name="storefront" size={18} color="white" />
+            <Text style={styles.totemBtnHeaderText}>Totem</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addButton} onPress={openNewModal}>
+            <Ionicons name="add-circle" size={36} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
       <FlatList
         data={groups}
@@ -261,6 +268,20 @@ const styles = StyleSheet.create({
   header: { backgroundColor: '#FF6B6B', paddingTop: 50, paddingBottom: 20, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: 'white' },
   addButton: { padding: 8 },
+  totemBtnHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  totemBtnHeaderText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   card: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 12, flexDirection: 'row', alignItems: 'center', elevation: 2 },
   name: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },

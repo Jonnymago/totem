@@ -183,9 +183,15 @@ export default function CategoriesManagementScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Gestione Categorie</Text>
-        <TouchableOpacity onPress={openCreateModal} style={styles.addButton}>
-          <Ionicons name="add-circle" size={32} color="white" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity onPress={() => router.replace('/')} style={styles.totemBtnHeader}>
+            <Ionicons name="storefront" size={18} color="white" />
+            <Text style={styles.totemBtnHeaderText}>Totem</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openCreateModal} style={styles.addButton}>
+            <Ionicons name="add-circle" size={32} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
@@ -330,6 +336,20 @@ const styles = StyleSheet.create({
   },
   addButton: {
     padding: 8,
+  },
+  totemBtnHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  totemBtnHeaderText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '700',
   },
   content: {
     flex: 1,
