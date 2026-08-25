@@ -11,6 +11,7 @@ import { scanPrinters, getPairedPrinters, PairedPrinter } from '@/src/utils/prin
 import * as Network from 'expo-network';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { SupportedLanguage, useI18n } from '@/src/utils/i18n';
+import { getAppVersionInfo, checkForAppUpdates, downloadAndApplyAppUpdate, AppVersionInfo } from '@/src/utils/updates';
 
 import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 function deviceIdentifier(device: PairedPrinter): string {
@@ -55,6 +56,50 @@ export default function SettingsScreen() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [credentialSaving, setCredentialSaving] = useState(false);
+
+  const [updateInfo, setUpdateInfo] = useState<AppVersionInfo>(getAppVersionInfo());
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [downloadingUpdate, setDownloadingUpdate] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateStatusMsg, setUpdateStatusMsg] = useState<string | null>(null);
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    setUpdateStatusMsg(null);
+    try {
+      const res = await checkForAppUpdates();
+      if (res.isAvailable) {
+        setUpdateAvailable(true);
+        setUpdateStatusMsg('🎉 Nuovo aggiornamento OTA disponibile!');
+      } else if (res.error) {
+        setUpdateStatusMsg(res.error);
+      } else {
+        setUpdateStatusMsg('✅ L\'applicazione è aggiornata all\'ultima versione.');
+      }
+    } catch (e: any) {
+      setUpdateStatusMsg('Errore: ' + (e?.message || 'Impossibile verificare.'));
+    } finally {
+      setCheckingUpdate(false);
+      setUpdateInfo(getAppVersionInfo());
+    }
+  };
+
+  const handleApplyUpdate = async () => {
+    setDownloadingUpdate(true);
+    setUpdateStatusMsg('Scaricamento dell\'aggiornamento in corso...');
+    try {
+      const res = await downloadAndApplyAppUpdate();
+      if (!res.success && res.error) {
+        Alert.alert('Errore Aggiornamento', res.error);
+        setUpdateStatusMsg('❌ ' + res.error);
+      }
+    } catch (e: any) {
+      Alert.alert('Errore', e?.message || 'Errore durante l\'applicazione.');
+      setUpdateStatusMsg('❌ ' + (e?.message || 'Errore'));
+    } finally {
+      setDownloadingUpdate(false);
+    }
+  };
 
   useEffect(() => {
     loadSettings();
@@ -916,6 +961,75 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Sezione Aggiornamenti Over-The-Air (OTA) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="cloud-download" size={18} color="#2196F3" /> Aggiornamenti Totem (OTA)
+          </Text>
+          <Text style={styles.desc}>
+            Aggiorna all'istante l'interfaccia, i listini e le funzionalità scaricando l'ultima versione compilata su GitHub senza dover reinstallare l'APK.
+          </Text>
+
+          <View style={styles.updateInfoBox}>
+            <View style={styles.updateInfoRow}>
+              <Text style={styles.updateInfoLabel}>Versione App:</Text>
+              <Text style={styles.updateInfoValue}>{updateInfo.version} (Build {updateInfo.versionCode})</Text>
+            </View>
+            <View style={styles.updateInfoRow}>
+              <Text style={styles.updateInfoLabel}>Stato OTA:</Text>
+              <Text style={styles.updateInfoValue}>
+                {updateInfo.isDev ? 'Ambiente Dev' : (updateInfo.updateId ? `Attivo (${updateInfo.updateId.slice(0, 8)}...)` : 'Build Nativa')}
+              </Text>
+            </View>
+            {updateInfo.channel && (
+              <View style={styles.updateInfoRow}>
+                <Text style={styles.updateInfoLabel}>Canale:</Text>
+                <Text style={styles.updateInfoValue}>{updateInfo.channel}</Text>
+              </View>
+            )}
+          </View>
+
+          {updateStatusMsg ? (
+            <View style={[styles.statusBox, updateAvailable ? styles.statusBoxAvailable : styles.statusBoxNeutral]}>
+              <Text style={styles.statusText}>{updateStatusMsg}</Text>
+            </View>
+          ) : null}
+
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <TouchableOpacity
+              style={[styles.otaCheckBtn, checkingUpdate && { opacity: 0.6 }]}
+              onPress={handleCheckUpdate}
+              disabled={checkingUpdate || downloadingUpdate}
+            >
+              {checkingUpdate ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons name="sync-outline" size={18} color="white" />
+                  <Text style={styles.otaCheckBtnText}>Verifica Aggiornamenti</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {updateAvailable && (
+              <TouchableOpacity
+                style={[styles.otaApplyBtn, downloadingUpdate && { opacity: 0.6 }]}
+                onPress={handleApplyUpdate}
+                disabled={downloadingUpdate}
+              >
+                {downloadingUpdate ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Ionicons name="flash" size={18} color="white" />
+                    <Text style={styles.otaApplyBtnText}>Scarica & Applica</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             <Ionicons name="key" size={18} color="#FF6B6B" /> Credenziali Admin
@@ -1101,4 +1215,80 @@ const styles = StyleSheet.create({
   remoteUrlLabel: { fontSize: 12, color: '#888', marginBottom: 4 },
   remoteUrl: { fontSize: 15, fontWeight: '700', color: '#FF6B6B', fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
   remoteHint: { fontSize: 13, color: '#666', lineHeight: 20 },
+  updateInfoBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 8,
+    marginBottom: 8,
+  },
+  updateInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  updateInfoLabel: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  updateInfoValue: {
+    fontSize: 13,
+    color: '#0F172A',
+    fontWeight: '700',
+  },
+  statusBox: {
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 6,
+    borderWidth: 1,
+  },
+  statusBoxAvailable: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#10B981',
+  },
+  statusBoxNeutral: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#CBD5E1',
+  },
+  statusText: {
+    fontSize: 13,
+    color: '#334155',
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  otaCheckBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2563EB',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    gap: 8,
+  },
+  otaCheckBtnText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  otaApplyBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#10B981',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    gap: 8,
+  },
+  otaApplyBtnText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });

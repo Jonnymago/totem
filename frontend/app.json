@@ -44,6 +44,14 @@
       ],
       "versionCode": 136
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 1500
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "web": {
       "bundler": "metro",
       "output": "single",
@@ -80,7 +88,8 @@
           "photosPermission": "L'app ha bisogno di accedere alle foto per il logo e le immagini prodotti."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true

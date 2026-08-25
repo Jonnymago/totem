@@ -1,14 +1,45 @@
-# 📱 Guida Completa alla Compilazione APK Standalone (GitHub Actions)
+# 📱 Guida Completa: Compilazione APK & Aggiornamenti OTA (GitHub Actions)
 
-Questa guida documenta l'architettura, la configurazione e il flusso di compilazione automatica dell'APK Android per i Totem e i dispositivi con **FydeOS / Android nativo**.
+Questa guida descrive i due metodi ufficiali per compilare e aggiornare l'applicazione Totem QuickBite su dispositivi Android e sistemi **FydeOS**.
 
 ---
 
-## 🏗️ 1. Architettura della Pipeline di Build
+## ⚡ Guida Rapida: Quale Metodo Usare?
 
-La pipeline è gestita tramite **GitHub Actions** nel file `.github/workflows/build_apk.yml`.  
-Tutti i passaggi avvengono su macchine virtuali isolate `ubuntu-latest` senza richiedere EAS a pagamento o server esterni (come Kaggle).
+| Tipo di Modifica | Metodo Consigliato | Tempo di Build | Azione sul Tablet |
+| :--- | :--- | :--- | :--- |
+| **Grafica, testi, pulsanti, listini, logica carrello, layout o scontrini** | ⚡ **Aggiornamento OTA (Expo)** | **~30 secondi** | **Zero reinstallazioni** (1 tap su *Verifica Aggiornamenti* nel menu Admin o al riavvio) |
+| **Aggiunta nuove periferiche native C++, nuovi driver Bluetooth a basso livello o nuovi permessi `AndroidManifest`** | 🔨 **Compilazione Completa APK** | **~10-15 minuti** | Download del nuovo file `.apk` e installazione |
 
+---
+
+## ⚡ METODO 1: Aggiornamento Istantaneo Over-The-Air (OTA) in ~30 Secondi
+
+Con l'aggiornamento OTA, GitHub compila esclusivamente il bundle JavaScript ed Hermes (`index.bundle` + asset). **Non serve ricompilare il codice nativo Android né reinstallare l'APK.**
+
+### 1. Come Avviare l'Aggiornamento OTA da GitHub
+1. Vai sul tuo repository GitHub: `https://github.com/Jonnymago/totem`
+2. Clicca sulla scheda **Actions** in alto.
+3. Nel menu a sinistra, seleziona:  
+   👉 **`⚡ Aggiornamento Istantaneo Totem (Expo OTA Updates)`**
+4. Clicca sul pulsante **Run workflow**, inserisci una breve descrizione (es. *"Nuovo menu estivo e scontrino aggiornato"*) e conferma cliccando su **Run workflow**.
+5. In **~30-40 secondi**, il nuovo bundle è pronto e pubblicato!
+
+### 2. Come Ricevere l'Aggiornamento sul Totem
+* **Automatico:** All'avvio dell'applicazione, il Totem controlla se ci sono aggiornamenti e li scarica in background.
+* **Manuale dal Menu Admin:**
+  1. Apri il pannello Admin del Totem (icona lucchetto / PIN).
+  2. Vai su **Impostazioni** -> Sezione **🔄 Aggiornamenti Totem (OTA)**.
+  3. Clicca su **Verifica Aggiornamenti**.
+  4. Se disponibile, clicca su **Scarica & Applica**: il Totem si riavvierà con la nuova versione all'istante!
+
+---
+
+## 🔨 METODO 2: Compilazione Completa APK Nativo (GitHub Actions)
+
+La pipeline compila l'intero ecosistema Android nativo (C++, Kotlin, Java, Hermes, V8, React Native Engine) su una macchina virtuale Ubuntu isolata.
+
+### 1. Architettura della Pipeline Gradle
 ```
 [ Push su main / Trigger manuale ]
                │
@@ -32,72 +63,33 @@ Tutti i passaggi avvengono su macchine virtuali isolate `ubuntu-latest` senza ri
 [ 2. Pubblicazione Release GitHub: Totem-QuickBite-Universal.apk (Download Diretto) ]
 ```
 
----
+### 2. Ottimizzazione Architetture CPU (`ARM-only`)
+* Target: **`armeabi-v7a`** (32-bit) e **`arm64-v8a`** (64-bit).
+* **Compatibilità FydeOS (Totem PC x86/AMD):** FydeOS include un bridge di traduzione ARM (`libndk_translation`), garantendo 60/120 FPS fluidi.
+* **Vantaggi:** Dimensione APK ridotta da ~170 MB a **~80 MB** e tempo di compilazione dimezzato.
 
-## ⚙️ 2. Scelte Tecniche e Ottimizzazioni
+### 3. Come Avviare la Compilazione APK
+* **Automatica:** Eseguendo un `git push` sul branch `main`.
+* **Manuale:**
+  1. Vai su **Actions** su GitHub.
+  2. Seleziona **`Build Totem Android APK (GitHub Actions)`**.
+  3. Clicca su **Run workflow**.
 
-### A. Architetture CPU Target (`armeabi-v7a,arm64-v8a`)
-* **Tablet Android Moderni (64-bit):** Eseguono direttamente i binari compilati a 64-bit (`arm64-v8a`).
-* **Tablet Meno Recenti (32-bit):** Eseguono i binari `armeabi-v7a`.
-* **FydeOS (Totem PC x86 / AMD):** Esegue le architetture ARM attraverso il bridge di traduzione nativo integrato in FydeOS (`libndk_translation` / `Houdini`), garantendo fluidità a 60/120 FPS senza la necessità di includere pesanti binari x86_64.
-* **Risultato:** Dimensione APK ridotta da ~170 MB a **~80 MB** e tempo di compilazione C++ dimezzato.
-
-### B. Strategia di Caching Multilivello
-* **NPM Cache:** Memorizza i pacchetti `node_modules` in base all'hash di `frontend/package.json`.
-* **Gradle Cache (`gradle/actions/setup-gradle@v4`):** Memorizza l'intera directory `~/.gradle/caches` (~1.04 GB di dipendenze Maven, Google Maven, Kotlin Compiler Daemon e wrapper binari). I download di rete successivi al primo impiegano meno di 30 secondi.
-
-### C. Debug Signing su Release
-Nei progetti Expo Prebuild, la configurazione release standard richiede una keystore di produzione firmata. Per consentire l'installazione immediata e autonoma dell'APK su qualsiasi tablet o totem senza dover configurare certificati esterni o password, lo script inietta automaticamente:
-```gradle
-buildTypes {
-    release {
-        signingConfig signingConfigs.debug
-    }
-}
-```
-
----
-
-## 🚀 3. Come Avviare una Nuova Compilazione
-
-### Metodo A: Push Automatico
-Ogni volta che esegui una modifica al codice sorgente e fai il push sul branch principale:
-```bash
-git add .
-git commit -m "feat: aggiornamento interfaccia totem"
-git push origin main
-```
-*(Nota: le modifiche ai soli file `.md` e `.gitignore` non avviano build inutili).*
-
-### Metodo B: Avvio Manuale (Workflow Dispatch)
-1. Vai su GitHub nel tuo repository.
-2. Clicca sulla scheda **Actions** in alto.
-3. Nel menu a sinistra, seleziona **Build Totem Android APK (GitHub Actions)**.
-4. Clicca sul pulsante **Run workflow** -> **Run workflow**.
-
----
-
-## 📥 4. Come Scaricare l'APK Compilato
-
-### Download Diretto `.apk` (1 solo clic - Consigliato per Tablet)
-1. Vai alla sezione **Releases** del repository:  
-   `https://github.com/<TUO_UTENTE>/totem/releases`
+### 4. Come Scaricare l'APK Compilato sul Tablet (1 Solo Clic)
+1. Sul browser del tablet/totem, apri:  
+   `https://github.com/Jonnymago/totem/releases`
 2. Apri la release **`Totem QuickBite Standalone APK (Latest Build)`**.
-3. Nella sezione **Assets**, clicca direttamente sul file:
+3. Nella sezione **Assets**, tocca direttamente:  
    👉 **`Totem-QuickBite-Universal.apk`**
-4. Il tablet scaricherà direttamente il file `.apk` e avvierà l'installazione (senza dover estrarre alcun archivio ZIP).
-
-### Download da Artifacts (Archivio ZIP con checksum)
-1. Dalla scheda **Actions**, clicca sull'esecuzione del workflow completata.
-2. Scorri in fondo alla pagina fino alla sezione **Artifacts**.
-3. Clicca su **`Totem-QuickBite-Android-APK`** per scaricare lo ZIP contenente l'APK e il file `checksums.sha256`.
+4. Il download si avvierà come file `.apk` diretto (nessun file ZIP da estrarre).
 
 ---
 
-## 🛠️ 5. Risoluzione dei Problemi Frequenti
+## 🛠️ Risoluzione Problemi e Domande Frequenti
 
-| Problema | Causa | Soluzione |
+| Situazione | Causa | Soluzione |
 | :--- | :--- | :--- |
-| **Download in formato `.zip`** | Hai scaricato dalla sezione *Artifacts* anziché da *Releases*. | Scarica il file diretto dalla pagina **Releases** del repository. |
-| **"App non installata" sul tablet** | Versione precedente installata con firma differente. | Disinstalla prima la vecchia versione dal tablet e reinstalla il nuovo APK. |
-| **Cache Gradle corrotta** | Cambio radicale di librerie native. | Avvia il workflow manualmente spuntando la casella `clean_build: true`. |
+| **"Nessun aggiornamento disponibile" in OTA** | Il codice non contiene modifiche o il Totem è già all'ultima versione. | Esegui una nuova build OTA da GitHub Actions. |
+| **"App non installata" durante l'update APK** | Firma crittografica differente rispetto all'APK precedentemente installato. | Disinstalla prima la vecchia app e installa il nuovo APK. |
+| **Download scaricato in formato `.zip`** | È stato scaricato dalla sezione *Artifacts* anziché da *Releases*. | Usa il link diretto nella sezione **Releases** di GitHub. |
+| **Cache Gradle corrotta durante la build APK** | Modifiche radicali alle dipendenze native. | Avvia il workflow manuale spuntando l'opzione `clean_build: true`. |

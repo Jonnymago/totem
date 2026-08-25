@@ -1,0 +1,95 @@
+name: ⚡ Aggiornamento Istantaneo Totem (Expo OTA Updates)
+
+on:
+  workflow_dispatch:
+    inputs:
+      update_message:
+        description: 'Messaggio o descrizione dell'aggiornamento OTA'
+        required: false
+        type: string
+        default: 'Aggiornamento interfaccia e logica Totem'
+      publish_channel:
+        description: 'Canale di rilascio (es. default, production)'
+        required: false
+        type: string
+        default: 'default'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ota-update:
+    name: ⚡ Genera & Pubblica Aggiornamento OTA (~30s)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Scarica Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🟢 Setup Node.js 20 & Cache NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: 📦 Installazione Dipendenze Frontend
+        working-directory: frontend
+        run: |
+          npm install --prefer-offline --no-audit --no-fund
+
+      - name: ⚡ Compilazione Bundle JavaScript/Hermes (npx expo export)
+        working-directory: frontend
+        run: |
+          echo "🚀 Inizio esportazione bundle OTA..."
+          npx expo export --platform android --output-dir dist
+          echo "✅ Bundle OTA generato con successo in frontend/dist."
+
+      - name: 🔍 Calcola Checksum e Metadati Bundle
+        working-directory: frontend
+        run: |
+          cd dist
+          find . -type f -exec sha256sum {} + > ../../ota-bundle-checksums.txt
+          cd ../..
+          tar -czvf Totem-OTA-Update-Bundle.tar.gz -C frontend/dist .
+          echo "📦 Dimensione archivio bundle OTA: $(du -sh Totem-OTA-Update-Bundle.tar.gz | cut -f1)"
+
+      - name: 📤 Carica Artefatti OTA (GitHub Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Totem-OTA-Update-Bundle
+          path: |
+            Totem-OTA-Update-Bundle.tar.gz
+            ota-bundle-checksums.txt
+          retention-days: 30
+
+      - name: 🏷️ Aggiorna Release GitHub con Bundle OTA
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: latest
+          name: "Totem QuickBite Standalone APK & OTA (Latest Build)"
+          body: |
+            ## 📱 Totem QuickBite - Rilascio & Aggiornamenti
+            
+            * **Ultimo aggiornamento OTA:** ${{ github.event.inputs.update_message || github.event.head_commit.message || 'Build automatica' }}
+            * **Commit:** `${{ github.sha }}`
+            * **Canale OTA:** `${{ github.event.inputs.publish_channel || 'default' }}`
+            * **Data e Ora:** ${{ github.event.repository.updated_at }}
+            
+            ---
+            ### 📥 Download Disponibili
+            * **APK Standalone Universale:** `Totem-QuickBite-Universal.apk` (Installabile su Tablet Android & FydeOS)
+            * **Bundle Aggiornamento OTA:** `Totem-OTA-Update-Bundle.tar.gz` (Bundle JS ultra-leggero per aggiornamenti istantanei)
+          files: |
+            Totem-OTA-Update-Bundle.tar.gz
+            ota-bundle-checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
