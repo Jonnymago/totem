@@ -27,7 +27,7 @@ def run_cmd(cmd, cwd=None, check=True):
 
 def main():
     print("==================================================")
-    print("📦 [1/4] Estrazione e preparazione sorgenti...")
+    print("📦 [1/4] Estrazione codice sorgente...")
     print("==================================================")
     if os.path.exists(PROJECT_DIR):
         shutil.rmtree(PROJECT_DIR)
@@ -37,36 +37,38 @@ def main():
     print(f"✅ Sorgenti preparate in {{PROJECT_DIR}}")
 
     print("==================================================")
-    print("⚡ [2/4] Setup Java & Android SDK Cache / Fallback...")
+    print("⚡ [2/4] Setup Java & Android SDK (Cache / Fallback)...")
     print("==================================================")
     run_cmd("apt-get update -qq && apt-get install -y -qq openjdk-17-jdk unzip wget curl > /dev/null 2>&1", check=False)
     os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-17-openjdk-amd64"
     os.environ["PATH"] = f"{{os.environ.get('JAVA_HOME', '')}}/bin:" + os.environ.get("PATH", "")
 
-    CACHE_SDK_PATHS = [
-        "/kaggle/input/android-sdk-cache/android-sdk",
-        "/kaggle/input/android-sdk-cache"
-    ]
-    CACHE_SDK = None
-    for p in CACHE_SDK_PATHS:
-        if os.path.exists(os.path.join(p, "platforms")) or os.path.exists(os.path.join(p, "platform-tools")):
-            CACHE_SDK = p
-            break
+    # Ricerca automatica e ricorsiva dell'Android SDK in /kaggle/input
+    print("🔍 Ricerca Android SDK nel dataset di cache...")
+    sdk_found = None
+    if os.path.exists("/kaggle/input"):
+        for root, dirs, files in os.walk("/kaggle/input"):
+            if "platforms" in dirs and ("build-tools" in dirs or "platform-tools" in dirs or "cmdline-tools" in dirs):
+                sdk_found = root
+                break
 
     WORK_SDK = "/kaggle/working/android-sdk"
 
-    if CACHE_SDK and os.path.exists(CACHE_SDK):
-        print(f"🚀 Utilizzo Android SDK pre-caricato da Cache ({{CACHE_SDK}})...")
-        os.environ["ANDROID_HOME"] = CACHE_SDK
-        os.environ["ANDROID_SDK_ROOT"] = CACHE_SDK
-        os.environ["PATH"] += f":{{CACHE_SDK}}/cmdline-tools/latest/bin:{{CACHE_SDK}}/platform-tools"
+    if sdk_found:
+        print(f"🚀 Android SDK rilevato nel dataset di cache: {{sdk_found}}")
+        os.environ["ANDROID_HOME"] = sdk_found
+        os.environ["ANDROID_SDK_ROOT"] = sdk_found
+        for cmd_dir in ["cmdline-tools/latest/bin", "platform-tools", "tools/bin"]:
+            p = os.path.join(sdk_found, cmd_dir)
+            if os.path.exists(p):
+                os.environ["PATH"] = f"{{p}}:" + os.environ.get("PATH", "")
     else:
-        print("⚠️ Cache non rilevata: installazione SDK da zero...")
+        print("⚠️ Cache non presente: installazione manuale dell'SDK...")
         sdk_path = WORK_SDK
         cmd_tools_dir = f"{{sdk_path}}/cmdline-tools/latest/bin"
         os.environ["ANDROID_HOME"] = sdk_path
         os.environ["ANDROID_SDK_ROOT"] = sdk_path
-        os.environ["PATH"] += f":{{cmd_tools_dir}}:{{sdk_path}}/platform-tools"
+        os.environ["PATH"] = f"{{cmd_tools_dir}}:{{sdk_path}}/platform-tools:" + os.environ.get("PATH", "")
         
         if not os.path.exists(f"{{cmd_tools_dir}}/sdkmanager"):
             os.makedirs(f"{{sdk_path}}/cmdline-tools", exist_ok=True)
@@ -94,7 +96,7 @@ def main():
     os.chdir(gradle_target_dir)
     run_cmd("chmod +x ./gradlew")
 
-    # Compilazione mirata per ARM + FydeOS (escluso x86 32-bit per ottimizzare tempi C++)
+    # Compilazione mirata: smartphone + tablet + FydeOS (escluso x86 32-bit per ottimizzare tempi C++)
     gradle_cmd = (
         "./gradlew assembleDebug "
         "-Pandroid.injected.build.abi=arm64-v8a,armeabi-v7a,x86_64 "
@@ -106,7 +108,7 @@ def main():
     build_res = subprocess.run(gradle_cmd, shell=True, cwd=gradle_target_dir)
 
     print("==================================================")
-    print("📤 [4/4] Finalizzazione APK Output...")
+    print("📤 [4/4] Output APK finale...")
     print("==================================================")
     apks = glob.glob(f"{{PROJECT_DIR}}/**/build/outputs/apk/**/*.apk", recursive=True)
     if not apks:
@@ -116,9 +118,9 @@ def main():
         target_output = "/kaggle/working/app-debug.apk"
         shutil.copy2(apks[0], target_output)
         size_mb = os.path.getsize(target_output) / (1024 * 1024)
-        print(f"✅ APK pronto per il download: {{target_output}} ({{size_mb:.2f}} MB)")
+        print(f"✅ APK pronto: {{target_output}} ({{size_mb:.2f}} MB)")
     else:
-        print("❌ Errore durante la compilazione Gradle.")
+        print("❌ Errore durante la compilazione.")
         sys.exit(1)
 
     print("🎉 Build completata con successo!")

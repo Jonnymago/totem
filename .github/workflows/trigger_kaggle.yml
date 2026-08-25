@@ -45,6 +45,40 @@ jobs:
           chmod 600 ~/.kaggle/access_token || true
           echo "KAGGLE_API_TOKEN=$TOKEN" >> $GITHUB_ENV
 
+      - name: Auto-Discovery Dataset Cache & Configura Metadata
+        run: |
+          python3 -c "
+          import json, os
+          from kaggle.api.kaggle_api_extended import KaggleApi
+
+          api = KaggleApi()
+          api.authenticate()
+
+          print('🔍 Verifica dataset utente disponibili su Kaggle...')
+          target_ds = 'giovannipriolo/android-sdk-cache'
+          try:
+              user_datasets = api.dataset_list(mine=True)
+              ds_refs = [d.ref for d in user_datasets]
+              print('Dataset trovati:', ds_refs)
+              for ref in ds_refs:
+                  if 'android-sdk-cache' in ref or 'sdk-cache' in ref:
+                      target_ds = ref
+                      print(f'✅ Aggancio dataset cache: {target_ds}')
+                      break
+          except Exception as e:
+              print('Avviso ricerca dataset:', e)
+
+          with open('kernel-metadata.json', 'r') as f:
+              meta = json.load(f)
+
+          meta['dataset_sources'] = [target_ds]
+          with open('kernel-metadata.json', 'w') as f:
+              json.dump(meta, f, indent=2)
+
+          print('Kernel metadata pronto:')
+          print(json.dumps(meta, indent=2))
+          "
+
       - name: Genera Runner Script Kaggle Multi-Arch
         run: |
           python3 scripts/generate_kaggle_payload.py "${{ secrets.GITHUB_TOKEN }}" "${{ github.repository }}" "${{ github.sha }}"
