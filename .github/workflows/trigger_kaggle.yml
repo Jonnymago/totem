@@ -1,4 +1,4 @@
-name: Compila APK su Kaggle
+name: Compila APK Universale su Kaggle con Cache
 
 on:
   push:
@@ -79,7 +79,7 @@ jobs:
           print(json.dumps(meta, indent=2))
           "
 
-      - name: Genera Runner Script Kaggle Multi-Arch
+      - name: Genera Runner Script Kaggle APK Universale & Cache
         env:
           GH_PAT: ${{ secrets.GH_PAT || secrets.PAT || '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' }}
         run: |
