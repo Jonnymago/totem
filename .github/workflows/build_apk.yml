@@ -24,7 +24,7 @@ jobs:
   build-apk:
     name: 📱 Build Standalone Android APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
 
     permissions:
       contents: read
@@ -98,8 +98,10 @@ jobs:
           ./gradlew assembleRelease \
             --no-daemon \
             --parallel \
-            --max-workers=4 \
-            -Dorg.gradle.jvmargs="-Xmx6g -XX:+UseParallelGC"
+            --max-workers=2 \
+            -Dorg.gradle.caching=true \
+            -Dorg.gradle.vfs.watch=false \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC -XX:MaxMetaspaceSize=1g"
 
       - name: 📦 Raccogli e Valida APK Generato
         id: collect-apk
