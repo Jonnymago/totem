@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 90
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: 📥 Scarica Repository
@@ -141,3 +141,24 @@ jobs:
           path: dist-apk/
           if-no-files-found: error
           retention-days: 30
+
+      - name: 🚀 Pubblica Release con Download Diretto APK
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag_name: latest
+          name: "Totem QuickBite Standalone APK (Latest Build)"
+          body: |
+            ### 📱 Totem QuickBite - Android Standalone APK
+            Compilazione automatica generata da GitHub Actions con bundle JS offline Hermes.
+
+            - **Download Diretto APK:** Clicca sul file `Totem-QuickBite-Universal.apk` allegato qui sotto nella sezione Assets per scaricare e installare direttamente sul tablet.
+            - **Commit:** `${{ github.sha }}`
+          files: |
+            dist-apk/Totem-QuickBite-Universal.apk
+            dist-apk/checksums.sha256
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
