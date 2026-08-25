@@ -35,8 +35,8 @@ export const DIRECT_APK_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releas
  * Ottiene i dettagli completi sulla versione e sull'aggiornamento attivo.
  */
 export function getAppVersionInfo(): AppVersionInfo {
-  const version = Constants.expoConfig?.version || '1.2.15';
-  const versionCode = Constants.expoConfig?.android?.versionCode || 136;
+  const version = Constants.expoConfig?.version || '1.2.16';
+  const versionCode = Constants.expoConfig?.android?.versionCode || 137;
   const sdkVersion = Constants.expoConfig?.sdkVersion || '54.0.0';
   const isDev = __DEV__;
 

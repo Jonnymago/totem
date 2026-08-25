@@ -3,7 +3,7 @@
     "name": "Totem QuickBite ordinazioni",
     "slug": "totem",
     "owner": "fajom12250s-team",
-    "version": "1.2.15",
+    "version": "1.2.16",
     "sdkVersion": "54.0.0",
     "platforms": [
       "android",
@@ -42,7 +42,7 @@
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "versionCode": 136
+      "versionCode": 137
     },
     "updates": {
       "enabled": true,
