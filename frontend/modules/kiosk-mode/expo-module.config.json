@@ -1,0 +1,7 @@
+{
+  "name": "kiosk-mode",
+  "platforms": ["android"],
+  "android": {
+    "modules": ["expo.modules.kioskmode.KioskModeModule"]
+  }
+}

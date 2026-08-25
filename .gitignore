@@ -1,0 +1,53 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Keystores & credentials
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore_base64.txt
+.keystore_b64.env
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+node_modules
+.vite/
+
+# One-off patch / hotfix scripts
+fix_*.py
+fix_*.sh
+fix_*.cjs
+fix_*.js
+patch_*.py
+patch_*.sh
+patch_*.cjs
+patch_*.js
+rewrite_*.cjs
+update_*.sh
+test_chunk.cjs
