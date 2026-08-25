@@ -1,25 +1,22 @@
-name: Trigger Kaggle APK Build
+name: Compila APK su Kaggle
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
-  kaggle_build:
-    name: Package and Push to Kaggle
+  bundle-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Checkout Repository
+      - name: Scarica repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -29,41 +26,43 @@ jobs:
           python -m pip install --upgrade pip
           pip install kaggle requests
 
-      - name: Configure Kaggle Credentials
+      - name: Configura Credenziali Kaggle
         env:
           APK_TOKEN: ${{ secrets.APK_TOKEN }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         run: |
           mkdir -p ~/.kaggle
-          # Check if APK_TOKEN is JSON or token string
-          if [[ "$APK_TOKEN" =~ ^\{.*\}$ ]]; then
-            echo "$APK_TOKEN" > ~/.kaggle/kaggle.json
-            chmod 600 ~/.kaggle/kaggle.json
+          TOKEN="${APK_TOKEN:-$KAGGLE_KEY}"
+          USERNAME="${KAGGLE_USERNAME:-giovannipriolo}"
+          if [[ "$TOKEN" =~ ^\{.*\}$ ]]; then
+            echo "$TOKEN" > ~/.kaggle/kaggle.json
           else
-            echo "$APK_TOKEN" > ~/.kaggle/access_token
-            chmod 600 ~/.kaggle/access_token
-            echo "{\"username\":\"giovannipriolo\",\"key\":\"$APK_TOKEN\"}" > ~/.kaggle/kaggle.json
-            chmod 600 ~/.kaggle/kaggle.json
+            echo "$TOKEN" > ~/.kaggle/access_token
+            echo "{\"username\":\"$USERNAME\",\"key\":\"$TOKEN\"}" > ~/.kaggle/kaggle.json
           fi
-          echo "KAGGLE_API_TOKEN=$APK_TOKEN" >> $GITHUB_ENV
+          chmod 600 ~/.kaggle/kaggle.json || true
+          chmod 600 ~/.kaggle/access_token || true
+          echo "KAGGLE_API_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Generate Lightweight Kaggle Builder Script
+      - name: Genera Runner Script Kaggle Multi-Arch
         run: |
           python3 scripts/generate_kaggle_payload.py "${{ secrets.GITHUB_TOKEN }}" "${{ github.repository }}" "${{ github.sha }}"
 
-      - name: Validate Metadata and Kernel Script
+      - name: Valida Metadata e Kernel Script
         run: |
           test -f kernel-metadata.json || (echo "Missing kernel-metadata.json!" && exit 1)
           test -f kaggle_build.py || (echo "Missing kaggle_build.py!" && exit 1)
           cat kernel-metadata.json
 
-      - name: Push Kernel to Kaggle
+      - name: Invio ed esecuzione su Kaggle
         run: |
           kaggle kernels push -p .
 
-      - name: Check Kaggle Kernel Status
+      - name: Verifica Stato Kernel Kaggle
         run: |
           sleep 5
           kaggle kernels status giovannipriolo/apk-builder || true
           echo "=================================================="
-          echo "🚀 Monitor on Kaggle: https://www.kaggle.com/code/giovannipriolo/apk-builder"
+          echo "🚀 Monitora su Kaggle: https://www.kaggle.com/code/giovannipriolo/apk-builder"
           echo "=================================================="
