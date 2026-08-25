@@ -11,7 +11,18 @@ import { scanPrinters, getPairedPrinters, PairedPrinter } from '@/src/utils/prin
 import * as Network from 'expo-network';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { SupportedLanguage, useI18n } from '@/src/utils/i18n';
-import { getAppVersionInfo, checkForAppUpdates, downloadAndApplyAppUpdate, AppVersionInfo } from '@/src/utils/updates';
+import {
+  getAppVersionInfo,
+  checkForGitHubRelease,
+  downloadApkFile,
+  launchApkInstallation,
+  openDirectDownloadInBrowser,
+  checkForAppUpdates,
+  downloadAndApplyAppUpdate,
+  AppVersionInfo,
+  GitHubReleaseInfo,
+  DIRECT_APK_DOWNLOAD_URL,
+} from '@/src/utils/updates';
 
 import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 function deviceIdentifier(device: PairedPrinter): string {
@@ -62,19 +73,31 @@ export default function SettingsScreen() {
   const [downloadingUpdate, setDownloadingUpdate] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updateStatusMsg, setUpdateStatusMsg] = useState<string | null>(null);
+  const [latestRelease, setLatestRelease] = useState<GitHubReleaseInfo | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<{ percent: number; current: string; total: string } | null>(null);
 
   const handleCheckUpdate = async () => {
     setCheckingUpdate(true);
     setUpdateStatusMsg(null);
+    setDownloadProgress(null);
     try {
-      const res = await checkForAppUpdates();
-      if (res.isAvailable) {
+      // 1. Prova a verificare l'ultima release APK su GitHub
+      const ghRes = await checkForGitHubRelease();
+      if (ghRes.success && ghRes.release) {
+        setLatestRelease(ghRes.release);
         setUpdateAvailable(true);
-        setUpdateStatusMsg('🎉 Nuovo aggiornamento OTA disponibile!');
-      } else if (res.error) {
-        setUpdateStatusMsg(res.error);
+        setUpdateStatusMsg(`🚀 Nuova build disponibile: ${ghRes.release.name} (${ghRes.release.apkSizeMb} MB)`);
       } else {
-        setUpdateStatusMsg('✅ L\'applicazione è aggiornata all\'ultima versione.');
+        // Fallback su OTA
+        const otaRes = await checkForAppUpdates();
+        if (otaRes.isAvailable) {
+          setUpdateAvailable(true);
+          setUpdateStatusMsg('🎉 Nuovo aggiornamento OTA disponibile!');
+        } else if (otaRes.error) {
+          setUpdateStatusMsg(otaRes.error);
+        } else {
+          setUpdateStatusMsg('✅ L\'applicazione è all\'ultima versione disponibile.');
+        }
       }
     } catch (e: any) {
       setUpdateStatusMsg('Errore: ' + (e?.message || 'Impossibile verificare.'));
@@ -85,6 +108,38 @@ export default function SettingsScreen() {
   };
 
   const handleApplyUpdate = async () => {
+    if (latestRelease) {
+      // Download dell'APK da GitHub
+      setDownloadingUpdate(true);
+      setUpdateStatusMsg(`Download APK in corso (0%)...`);
+      setDownloadProgress({ percent: 0, current: '0', total: latestRelease.apkSizeMb });
+
+      try {
+        const dlRes = await downloadApkFile(latestRelease.apkUrl, (percent, dlMb, totMb) => {
+          setDownloadProgress({ percent, current: dlMb, total: totMb });
+          setUpdateStatusMsg(`Download APK: ${percent}% (${dlMb} MB / ${totMb} MB)`);
+        });
+
+        if (dlRes.success && dlRes.localUri) {
+          setUpdateStatusMsg('✅ Download completato! Avvio installazione...');
+          const installRes = await launchApkInstallation(dlRes.localUri);
+          if (!installRes.success && installRes.error) {
+            Alert.alert('Installazione', installRes.error);
+          }
+        } else {
+          Alert.alert('Errore Download', dlRes.error || 'Impossibile scaricare l\'APK.');
+          setUpdateStatusMsg('❌ ' + (dlRes.error || 'Errore download'));
+        }
+      } catch (e: any) {
+        Alert.alert('Errore', e?.message || 'Errore durante il download.');
+        setUpdateStatusMsg('❌ ' + (e?.message || 'Errore'));
+      } finally {
+        setDownloadingUpdate(false);
+      }
+      return;
+    }
+
+    // Modalità OTA standard
     setDownloadingUpdate(true);
     setUpdateStatusMsg('Scaricamento dell\'aggiornamento in corso...');
     try {
@@ -99,6 +154,10 @@ export default function SettingsScreen() {
     } finally {
       setDownloadingUpdate(false);
     }
+  };
+
+  const handleOpenBrowserDownload = () => {
+    openDirectDownloadInBrowser();
   };
 
   useEffect(() => {
@@ -961,32 +1020,34 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Sezione Aggiornamenti Over-The-Air (OTA) */}
+        {/* Sezione Aggiornamenti Totem (In-App & OTA) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            <Ionicons name="cloud-download" size={18} color="#2196F3" /> Aggiornamenti Totem (OTA)
+            <Ionicons name="cloud-download" size={18} color="#2196F3" /> Aggiornamenti Totem
           </Text>
           <Text style={styles.desc}>
-            Aggiorna all'istante l'interfaccia, i listini e le funzionalità scaricando l'ultima versione compilata su GitHub senza dover reinstallare l'APK.
+            Verifica la presenza di nuove versioni su GitHub. Puoi scaricare e installare l'APK direttamente dall'app con 1 tap o aprirlo nel browser.
           </Text>
 
           <View style={styles.updateInfoBox}>
             <View style={styles.updateInfoRow}>
-              <Text style={styles.updateInfoLabel}>Versione App:</Text>
+              <Text style={styles.updateInfoLabel}>Versione Installata:</Text>
               <Text style={styles.updateInfoValue}>{updateInfo.version} (Build {updateInfo.versionCode})</Text>
             </View>
-            <View style={styles.updateInfoRow}>
-              <Text style={styles.updateInfoLabel}>Stato OTA:</Text>
-              <Text style={styles.updateInfoValue}>
-                {updateInfo.isDev ? 'Ambiente Dev' : (updateInfo.updateId ? `Attivo (${updateInfo.updateId.slice(0, 8)}...)` : 'Build Nativa')}
-              </Text>
-            </View>
-            {updateInfo.channel && (
+            {latestRelease && (
               <View style={styles.updateInfoRow}>
-                <Text style={styles.updateInfoLabel}>Canale:</Text>
-                <Text style={styles.updateInfoValue}>{updateInfo.channel}</Text>
+                <Text style={styles.updateInfoLabel}>Ultima Release GitHub:</Text>
+                <Text style={[styles.updateInfoValue, { color: '#059669' }]}>
+                  {latestRelease.name} ({latestRelease.apkSizeMb} MB)
+                </Text>
               </View>
             )}
+            <View style={styles.updateInfoRow}>
+              <Text style={styles.updateInfoLabel}>Stato Aggiornamenti:</Text>
+              <Text style={styles.updateInfoValue}>
+                {updateInfo.isDev ? 'Ambiente Dev' : (updateInfo.updateId ? `OTA Attivo (${updateInfo.updateId.slice(0, 8)}...)` : 'Build Nativa')}
+              </Text>
+            </View>
           </View>
 
           {updateStatusMsg ? (
@@ -995,38 +1056,54 @@ export default function SettingsScreen() {
             </View>
           ) : null}
 
-          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-            <TouchableOpacity
-              style={[styles.otaCheckBtn, checkingUpdate && { opacity: 0.6 }]}
-              onPress={handleCheckUpdate}
-              disabled={checkingUpdate || downloadingUpdate}
-            >
-              {checkingUpdate ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <>
-                  <Ionicons name="sync-outline" size={18} color="white" />
-                  <Text style={styles.otaCheckBtnText}>Verifica Aggiornamenti</Text>
-                </>
-              )}
-            </TouchableOpacity>
+          {downloadProgress && (
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBarFill, { width: `${downloadProgress.percent}%` }]} />
+            </View>
+          )}
 
-            {updateAvailable && (
+          <View style={{ flexDirection: 'column', gap: 10, marginTop: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
               <TouchableOpacity
-                style={[styles.otaApplyBtn, downloadingUpdate && { opacity: 0.6 }]}
-                onPress={handleApplyUpdate}
-                disabled={downloadingUpdate}
+                style={[styles.otaCheckBtn, checkingUpdate && { opacity: 0.6 }]}
+                onPress={handleCheckUpdate}
+                disabled={checkingUpdate || downloadingUpdate}
               >
-                {downloadingUpdate ? (
+                {checkingUpdate ? (
                   <ActivityIndicator color="white" />
                 ) : (
                   <>
-                    <Ionicons name="flash" size={18} color="white" />
-                    <Text style={styles.otaApplyBtnText}>Scarica & Applica</Text>
+                    <Ionicons name="sync-outline" size={18} color="white" />
+                    <Text style={styles.otaCheckBtnText}>Verifica Aggiornamenti</Text>
                   </>
                 )}
               </TouchableOpacity>
-            )}
+
+              {updateAvailable && (
+                <TouchableOpacity
+                  style={[styles.otaApplyBtn, downloadingUpdate && { opacity: 0.6 }]}
+                  onPress={handleApplyUpdate}
+                  disabled={downloadingUpdate}
+                >
+                  {downloadingUpdate ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <>
+                      <Ionicons name="download" size={18} color="white" />
+                      <Text style={styles.otaApplyBtnText}>Scarica & Installa</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.browserDownloadBtn}
+              onPress={handleOpenBrowserDownload}
+            >
+              <Ionicons name="globe-outline" size={18} color="#2563EB" />
+              <Text style={styles.browserDownloadBtnText}>🌐 Scarica APK dal Browser (Link Diretto)</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -1290,5 +1367,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 15,
     fontWeight: '700',
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#10B981',
+  },
+  browserDownloadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    gap: 8,
+  },
+  browserDownloadBtnText: {
+    color: '#1D4ED8',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
