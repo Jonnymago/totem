@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       update_message:
-        description: 'Messaggio o descrizione dell'aggiornamento OTA'
+        description: "Messaggio o descrizione dell'aggiornamento OTA"
         required: false
         type: string
-        default: 'Aggiornamento interfaccia e logica Totem'
+        default: "Aggiornamento interfaccia e logica Totem"
       publish_channel:
-        description: 'Canale di rilascio (es. default, production)'
+        description: "Canale di rilascio (es. default, production)"
         required: false
         type: string
-        default: 'default'
+        default: "default"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
