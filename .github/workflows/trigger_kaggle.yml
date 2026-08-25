@@ -22,10 +22,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Kaggle CLI
+      - name: Install Kaggle CLI & Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install kaggle
+          pip install kaggle requests
 
       - name: Configure Kaggle Credentials
         env:
@@ -39,11 +39,25 @@ jobs:
           else
             echo "$APK_TOKEN" > ~/.kaggle/access_token
             chmod 600 ~/.kaggle/access_token
-            # Fallback legacy format for older kaggle CLI versions
             echo "{\"username\":\"giovannipriolo\",\"key\":\"$APK_TOKEN\"}" > ~/.kaggle/kaggle.json
             chmod 600 ~/.kaggle/kaggle.json
           fi
           echo "KAGGLE_API_TOKEN=$APK_TOKEN" >> $GITHUB_ENV
+
+      - name: Test Kaggle Authentication
+        run: |
+          python3 -c "
+          import os, sys
+          from kaggle.api.kaggle_api_extended import KaggleApi
+          try:
+              api = KaggleApi()
+              api.authenticate()
+              print('✅ Kaggle Authentication Successful!')
+          except Exception as e:
+              print(f'❌ Kaggle Auth Error: {e}')
+              if hasattr(e, 'response') and hasattr(e.response, 'text'):
+                  print(f'Response body: {e.response.text}')
+          "
 
       - name: Generate Kaggle Builder Script & Payload
         run: |
@@ -57,12 +71,27 @@ jobs:
 
       - name: Push Kernel to Kaggle
         run: |
-          kaggle kernels push -p .
+          python3 -c "
+          import os, sys, json
+          from kaggle.api.kaggle_api_extended import KaggleApi
+          api = KaggleApi()
+          api.authenticate()
+
+          try:
+              print('Pushing kernel to Kaggle...')
+              api.kernels_push_cli('.')
+              print('✅ Kernel pushed successfully!')
+          except Exception as e:
+              print(f'❌ Kaggle Push Exception: {e}')
+              if hasattr(e, 'response') and hasattr(e.response, 'text'):
+                  print(f'API Response: {e.response.text}')
+              sys.exit(1)
+          "
 
       - name: Check Kaggle Kernel Status
         run: |
           sleep 5
           kaggle kernels status giovannipriolo/apk-builder || true
           echo "=================================================="
-          echo "🚀 Kernel pushed to Kaggle: https://www.kaggle.com/code/giovannipriolo/apk-builder"
+          echo "🚀 Monitor on Kaggle: https://www.kaggle.com/code/giovannipriolo/apk-builder"
           echo "=================================================="
