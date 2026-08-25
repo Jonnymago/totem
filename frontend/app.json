@@ -47,7 +47,8 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 1500
+      "fallbackToCacheTimeout": 1500,
+      "url": "https://jonnymago.github.io/totem/api/manifest"
     },
     "runtimeVersion": {
       "policy": "appVersion"
