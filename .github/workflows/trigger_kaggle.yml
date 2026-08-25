@@ -11,6 +11,8 @@ jobs:
   kaggle_build:
     name: Package and Push to Kaggle
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -32,6 +34,7 @@ jobs:
           APK_TOKEN: ${{ secrets.APK_TOKEN }}
         run: |
           mkdir -p ~/.kaggle
+          # Check if APK_TOKEN is JSON or token string
           if [[ "$APK_TOKEN" =~ ^\{.*\}$ ]]; then
             echo "$APK_TOKEN" > ~/.kaggle/kaggle.json
             chmod 600 ~/.kaggle/kaggle.json
@@ -43,9 +46,9 @@ jobs:
           fi
           echo "KAGGLE_API_TOKEN=$APK_TOKEN" >> $GITHUB_ENV
 
-      - name: Generate Kaggle Builder Script & Payload
+      - name: Generate Lightweight Kaggle Builder Script
         run: |
-          python3 scripts/generate_kaggle_payload.py
+          python3 scripts/generate_kaggle_payload.py "${{ secrets.GITHUB_TOKEN }}" "${{ github.repository }}" "${{ github.sha }}"
 
       - name: Validate Metadata and Kernel Script
         run: |
@@ -53,39 +56,9 @@ jobs:
           test -f kaggle_build.py || (echo "Missing kaggle_build.py!" && exit 1)
           cat kernel-metadata.json
 
-      - name: Push Kernel to Kaggle (with Diagnostic Logging)
+      - name: Push Kernel to Kaggle
         run: |
-          python3 -c "
-          import os, sys, json, requests
-          from kaggle.api.kaggle_api_extended import KaggleApi
-
-          api = KaggleApi()
-          api.authenticate()
-
-          print('Checking existing kernels...')
-          try:
-              my_kernels = api.kernels_list(mine=True)
-              print('My kernels:', [k.ref for k in my_kernels])
-          except Exception as e:
-              print('Could not list kernels:', e)
-
-          with open('kernel-metadata.json', 'r') as f:
-              meta = json.load(f)
-          print('Pushing metadata:', json.dumps(meta, indent=2))
-
-          try:
-              api.kernels_push(folder='.')
-              print('🎉 Kernel pushed successfully to Kaggle!')
-          except requests.exceptions.HTTPError as e:
-              print(f'❌ Kaggle API HTTPError ({e.response.status_code}):')
-              print(f'API Response Body: {e.response.text}')
-              sys.exit(1)
-          except Exception as e:
-              print(f'❌ Kaggle Push Error: {e}')
-              if hasattr(e, 'response') and hasattr(e.response, 'text'):
-                  print(f'API Response Body: {e.response.text}')
-              sys.exit(1)
-          "
+          kaggle kernels push -p .
 
       - name: Check Kaggle Kernel Status
         run: |
