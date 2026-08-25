@@ -32,7 +32,6 @@ jobs:
           APK_TOKEN: ${{ secrets.APK_TOKEN }}
         run: |
           mkdir -p ~/.kaggle
-          # Check if APK_TOKEN is a JSON object or a raw token string (e.g. KGAT_...)
           if [[ "$APK_TOKEN" =~ ^\{.*\}$ ]]; then
             echo "$APK_TOKEN" > ~/.kaggle/kaggle.json
             chmod 600 ~/.kaggle/kaggle.json
@@ -44,10 +43,6 @@ jobs:
           fi
           echo "KAGGLE_API_TOKEN=$APK_TOKEN" >> $GITHUB_ENV
 
-      - name: Test Kaggle Authentication
-        run: |
-          kaggle competitions list --page 1 || true
-
       - name: Generate Kaggle Builder Script & Payload
         run: |
           python3 scripts/generate_kaggle_payload.py
@@ -58,9 +53,39 @@ jobs:
           test -f kaggle_build.py || (echo "Missing kaggle_build.py!" && exit 1)
           cat kernel-metadata.json
 
-      - name: Push Kernel to Kaggle
+      - name: Push Kernel to Kaggle (with Diagnostic Logging)
         run: |
-          kaggle kernels push -p .
+          python3 -c "
+          import os, sys, json, requests
+          from kaggle.api.kaggle_api_extended import KaggleApi
+
+          api = KaggleApi()
+          api.authenticate()
+
+          print('Checking existing kernels...')
+          try:
+              my_kernels = api.kernels_list(mine=True)
+              print('My kernels:', [k.ref for k in my_kernels])
+          except Exception as e:
+              print('Could not list kernels:', e)
+
+          with open('kernel-metadata.json', 'r') as f:
+              meta = json.load(f)
+          print('Pushing metadata:', json.dumps(meta, indent=2))
+
+          try:
+              api.kernels_push(folder='.')
+              print('🎉 Kernel pushed successfully to Kaggle!')
+          except requests.exceptions.HTTPError as e:
+              print(f'❌ Kaggle API HTTPError ({e.response.status_code}):')
+              print(f'API Response Body: {e.response.text}')
+              sys.exit(1)
+          except Exception as e:
+              print(f'❌ Kaggle Push Error: {e}')
+              if hasattr(e, 'response') and hasattr(e.response, 'text'):
+                  print(f'API Response Body: {e.response.text}')
+              sys.exit(1)
+          "
 
       - name: Check Kaggle Kernel Status
         run: |
