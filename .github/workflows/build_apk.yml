@@ -91,11 +91,12 @@ jobs:
                   print('ℹ️ signingConfig già configurato.')
           "
 
-      - name: 🔨 Compilazione Gradle APK Standalone (assembleRelease)
+      - name: 🔨 Compilazione Gradle APK Standalone (assembleRelease - ARM Only)
         working-directory: frontend/android
         run: |
           chmod +x ./gradlew
           ./gradlew assembleRelease \
+            -PreactNativeArchitectures=armeabi-v7a,arm64-v8a \
             --no-daemon \
             --parallel \
             --max-workers=2 \
