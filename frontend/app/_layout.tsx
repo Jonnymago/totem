@@ -14,13 +14,23 @@ import { requestAllAppPermissions } from '@/src/utils/permissions';
 
 LogBox.ignoreAllLogs(true);
 installLocalizedAlert();
-SplashScreen.preventAutoHideAsync();
+
+try {
+  SplashScreen.preventAutoHideAsync().catch(() => {});
+} catch {}
 
 export default function RootLayout() {
   const [loaded, error] = useIconFonts();
 
   useEffect(() => {
-    if (loaded || error) SplashScreen.hideAsync();
+    if (loaded || error) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+    // Failsafe timer: assicura la chiusura dello splash screen dopo 800ms anche in caso di timeout
+    const timer = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 800);
+    return () => clearTimeout(timer);
   }, [loaded, error]);
 
   useEffect(() => {
