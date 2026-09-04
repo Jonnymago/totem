@@ -724,6 +724,32 @@ export default function PrintersScreen() {
                     trackColor={{ false: '#CBD5E1', true: '#EA580C' }}
                   />
                 </View>
+                
+                {Boolean(p.print_kitchen) && categories.length > 0 && (
+                  <View style={{ marginTop: 8 }}>
+                    <Text style={styles.label}>Categorie KDS (Lascia vuoto per stamparle tutte)</Text>
+                    <View style={styles.pills}>
+                      {categories.map((cat) => {
+                        const on = (p.assigned_category_ids || []).includes(cat.id);
+                        return (
+                          <TouchableOpacity
+                            key={cat.id}
+                            style={[styles.pill, on && styles.pillOn]}
+                            onPress={async () => {
+                              const nextIds = on
+                                ? (p.assigned_category_ids || []).filter((id) => id !== cat.id)
+                                : [...(p.assigned_category_ids || []), cat.id];
+                              const saved = await upsertPrinterDevice({ ...p, assigned_category_ids: nextIds });
+                              setPrinters((list) => list.map((x) => (x.id === saved.id ? saved : x)));
+                            }}
+                          >
+                            <Text style={[styles.pillText, on && styles.pillTextOn]}>{cat.name}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
               </View>
             ))
           )}
@@ -1523,6 +1549,11 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 3 },
   rowLabel: { flex: 1, marginRight: 12, fontSize: 13, fontWeight: '700', color: '#1E293B' },
   label: { fontSize: 12, fontWeight: '700', color: '#334155', marginTop: 2 },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  pill: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8, backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0' },
+  pillOn: { backgroundColor: '#0F172A', borderColor: '#0F172A' },
+  pillText: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  pillTextOn: { color: '#FFF' },
   ghost: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   ghostText: { fontWeight: '700', color: '#0F766E', fontSize: 12 },
   primary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#0F766E', borderRadius: 10, paddingVertical: 10 },
