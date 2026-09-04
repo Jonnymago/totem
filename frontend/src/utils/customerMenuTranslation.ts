@@ -33,6 +33,29 @@ export function useCustomerMenuGlossary(): void {
 export const CUSTOMER_MENU_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> = {
   
   // === PRODOTTI DEMO & DESCRIZIONI ===
+
+  // === INGREDIENTI DEMO ===
+  "Pane brioche": { "it": "Pane brioche", "en": "Brioche bun", "fr": "Pain brioché", "es": "Pan brioche", "de": "Brioche-Brötchen" },
+  "Carne di manzo": { "it": "Carne di manzo", "en": "Beef", "fr": "Bœuf", "es": "Ternera", "de": "Rindfleisch" },
+  "Lattuga": { "it": "Lattuga", "en": "Lettuce", "fr": "Laitue", "es": "Lechuga", "de": "Salat" },
+  "Pomodoro": { "it": "Pomodoro", "en": "Tomato", "fr": "Tomate", "es": "Tomate", "de": "Tomate" },
+  "Salsa": { "it": "Salsa", "en": "Sauce", "fr": "Sauce", "es": "Salsa", "de": "Soße" },
+  "Extra Formaggio": { "it": "Extra Formaggio", "en": "Extra Cheese", "fr": "Extra Fromage", "es": "Extra Queso", "de": "Extra Käse" },
+  "Extra Bacon": { "it": "Extra Bacon", "en": "Extra Bacon", "fr": "Supplément Bacon", "es": "Bacon Extra", "de": "Extra Speck" },
+  "Uovo": { "it": "Uovo", "en": "Egg", "fr": "Œuf", "es": "Huevo", "de": "Ei" },
+  "Cheddar": { "it": "Cheddar", "en": "Cheddar", "fr": "Cheddar", "es": "Cheddar", "de": "Cheddar" },
+  "Salsa speciale": { "it": "Salsa speciale", "en": "Special sauce", "fr": "Sauce spéciale", "es": "Salsa especial", "de": "Spezialsauce" },
+  "Mozzarella": { "it": "Mozzarella", "en": "Mozzarella", "fr": "Mozzarella", "es": "Mozzarella", "de": "Mozzarella" },
+  "Basilico": { "it": "Basilico", "en": "Basil", "fr": "Basilic", "es": "Albahaca", "de": "Basilikum" },
+  "Extra Mozzarella": { "it": "Extra Mozzarella", "en": "Extra Mozzarella", "fr": "Supplément Mozzarella", "es": "Extra Mozzarella", "de": "Extra Mozzarella" },
+  "Bordo Ripieno": { "it": "Bordo Ripieno", "en": "Stuffed Crust", "fr": "Croûte fourrée", "es": "Borde Relleno", "de": "Gefüllter Rand" },
+  "Salame piccante": { "it": "Salame piccante", "en": "Spicy salami", "fr": "Salami piquant", "es": "Salami picante", "de": "Scharfe Salami" },
+  "Lattuga romana": { "it": "Lattuga romana", "en": "Romaine lettuce", "fr": "Laitue romaine", "es": "Lechuga romana", "de": "Römersalat" },
+  "Pollo grigliato": { "it": "Pollo grigliato", "en": "Grilled chicken", "fr": "Poulet grillé", "es": "Pollo a la parrilla", "de": "Gegrilltes Hähnchen" },
+  "Parmigiano": { "it": "Parmigiano", "en": "Parmesan", "fr": "Parmesan", "es": "Parmesano", "de": "Parmesan" },
+  "Crostini": { "it": "Crostini", "en": "Croutons", "fr": "Croûtons", "es": "Picatostes", "de": "Croutons" },
+  "Extra Pollo": { "it": "Extra Pollo", "en": "Extra Chicken", "fr": "Supplément Poulet", "es": "Extra Pollo", "de": "Extra Hähnchen" },
+
   "Hamburger Classico": { "it": "Hamburger Classico", "en": "Classic Burger", "fr": "Burger Classique", "es": "Hamburguesa Clásica", "de": "Klassischer Burger" },
   "Cheeseburger Deluxe": { "it": "Cheeseburger Deluxe", "en": "Deluxe Cheeseburger", "fr": "Cheeseburger Deluxe", "es": "Hamburguesa Deluxe con Queso", "de": "Deluxe Cheeseburger" },
   "Margherita": { "it": "Margherita", "en": "Margherita", "fr": "Margherita", "es": "Margarita", "de": "Margherita" },
