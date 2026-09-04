@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useLanguage } from '@/src/utils/i18n';
+import { useI18n } from '@/src/utils/i18n';
 import * as Clipboard from 'expo-clipboard';
 import * as Network from 'expo-network';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,6 +49,7 @@ function isUsableLanIpv4(value: string): boolean {
 }
 
 export default function KitchenOrdersScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
