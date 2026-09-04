@@ -13,6 +13,7 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import LicenseCreditsScreen from './license';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import * as WebBrowser from 'expo-web-browser';
@@ -367,11 +368,7 @@ export default function SettingsScreen() {
                 key={cat.id}
                 style={[styles.catPill, active && styles.catPillActive]}
                 onPress={() => {
-                  if (cat.id === 'license') {
-                    router.push('/admin/license');
-                  } else {
-                    setActiveCategory(cat.id as any);
-                  }
+                  setActiveCategory(cat.id as any);
                 }}
               >
                 <Ionicons name={cat.icon as any} size={15} color={active ? '#FFFFFF' : '#475569'} />
@@ -773,6 +770,13 @@ export default function SettingsScreen() {
         )}
 
 
+
+                {/* SECTION 5: LICENZA */}
+        {activeCategory === 'license' && (
+          <View style={{ flex: 1, minHeight: 600 }}>
+            <LicenseCreditsScreen embedded={true} />
+          </View>
+        )}
 
         {/* SECTION 6: GUIDA & MANUALE OPERATIVO */}
         {activeCategory === 'guide' && (

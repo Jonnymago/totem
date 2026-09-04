@@ -41,7 +41,7 @@ function offerSummary(offer: PlayBillingOffer): string {
     .join(' · ');
 }
 
-export default function LicenseCreditsScreen() {
+export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
@@ -172,7 +172,7 @@ export default function LicenseCreditsScreen() {
 
   return (
     <View style={styles.container}>
-      <AdminHeader
+      {!embedded && <AdminHeader
         title="Licenza Totem"
         subtitle="Stato attivazione, abbonamenti Google Play e conformità"
         emoji="📜"
@@ -182,7 +182,7 @@ export default function LicenseCreditsScreen() {
           text: isProActive ? 'PRO ATTIVO' : isTrial ? 'PROVA ATTIVA' : 'PIANO FREE',
           variant: isProActive ? 'success' : isTrial ? 'warning' : 'neutral',
         }}
-      />
+      />}
 
       <ScrollView
         style={styles.content}

@@ -378,7 +378,19 @@ export const api = {
       saveLocal('totem_categories', serverCats);
       return serverCats;
     } catch {
-      const cats = loadLocal<Category[]>('totem_categories', DEFAULT_CATEGORIES);
+      let cats = loadLocal<Category[]>('totem_categories', DEFAULT_CATEGORIES);
+      let changed = false;
+      cats = cats.map(c => {
+        if (!c.image) {
+          const def = DEFAULT_CATEGORIES.find(d => d.id === c.id);
+          if (def && def.image) {
+            changed = true;
+            return { ...c, image: def.image };
+          }
+        }
+        return c;
+      });
+      if (changed) saveLocal('totem_categories', cats);
       return [...cats].sort((a, b) => (a.order_position ?? 99) - (b.order_position ?? 99));
     }
   },
@@ -389,7 +401,19 @@ export const api = {
       saveLocal('totem_products', serverProds);
       return serverProds;
     } catch {
-      const prods = loadLocal<Product[]>('totem_products', DEFAULT_PRODUCTS);
+      let prods = loadLocal<Product[]>('totem_products', DEFAULT_PRODUCTS);
+      let changed = false;
+      prods = prods.map(p => {
+        if (!p.image) {
+          const def = DEFAULT_PRODUCTS.find(d => d.id === p.id);
+          if (def && def.image) {
+            changed = true;
+            return { ...p, image: def.image };
+          }
+        }
+        return p;
+      });
+      if (changed) saveLocal('totem_products', prods);
       return [...prods].sort((a, b) => (a.order_position ?? 99) - (b.order_position ?? 99));
     }
   },
