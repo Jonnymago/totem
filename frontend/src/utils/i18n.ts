@@ -1148,6 +1148,11 @@ export function translateSourceText(value: string): string {
 // Mantenerle in un glossario esplicito evita che il selettore mostri una lingua
 // diversa da quella effettivamente visualizzata.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Impostazioni': 'Settings',
   'Configurazione generale, stampanti bluetooth e accesso remoto': 'General setup, Bluetooth printers and remote access',
   'Attività & Lingua': 'Business & Language',
@@ -1205,6 +1210,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Chiudi': 'Close',
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Impostazioni': 'Ajustes', 'Configurazione generale, stampanti bluetooth e accesso remoto': 'Configuración general, impresoras Bluetooth y acceso remoto',
   'Attività & Lingua': 'Negocio e idioma', 'Nome Ristorante / Attività': 'Nombre del restaurante / negocio', 'Logo Attività': 'Logo del negocio', 'Scegli Logo': 'Elegir logo', 'Lingua Principale Interfaccia': 'Idioma principal de la interfaz',
   'IP Wi-Fi rilevato': 'IP Wi-Fi detectada', 'Copia Link': 'Copiar enlace', 'Condividi': 'Compartir', 'Apri Browser': 'Abrir navegador',
@@ -1229,6 +1239,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   'Modifica': 'Editar', 'Elimina': 'Eliminar', 'Duplica': 'Duplicar', 'Salva': 'Guardar', 'Annulla': 'Cancelar', 'Chiudi': 'Cerrar',
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Impostazioni': 'Paramètres', 'Configurazione generale, stampanti bluetooth e accesso remoto': 'Configuration générale, imprimantes Bluetooth et accès distant',
   'Attività & Lingua': 'Établissement et langue', 'Nome Ristorante / Attività': 'Nom du restaurant / établissement', 'Logo Attività': 'Logo de l’établissement', 'Scegli Logo': 'Choisir le logo', 'Lingua Principale Interfaccia': 'Langue principale de l’interface',
   'IP Wi-Fi rilevato': 'IP Wi-Fi détectée', 'Copia Link': 'Copier le lien', 'Condividi': 'Partager', 'Apri Browser': 'Ouvrir le navigateur',
@@ -1253,6 +1268,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   'Modifica': 'Modifier', 'Elimina': 'Supprimer', 'Duplica': 'Dupliquer', 'Salva': 'Enregistrer', 'Annulla': 'Annuler', 'Chiudi': 'Fermer',
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Impostazioni': 'Einstellungen', 'Configurazione generale, stampanti bluetooth e accesso remoto': 'Allgemeine Einrichtung, Bluetooth-Drucker und Fernzugriff',
   'Attività & Lingua': 'Betrieb und Sprache', 'Nome Ristorante / Attività': 'Name des Restaurants / Betriebs', 'Logo Attività': 'Betriebslogo', 'Scegli Logo': 'Logo wählen', 'Lingua Principale Interfaccia': 'Primäre Oberflächensprache',
   'IP Wi-Fi rilevato': 'WLAN-IP erkannt', 'Copia Link': 'Link kopieren', 'Condividi': 'Teilen', 'Apri Browser': 'Browser öffnen',
@@ -1278,6 +1298,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Stampa Scontrino Cortesia (Cassa)': 'Print Courtesy Receipt (Counter)',
   'Stampa Automatica Cucina': 'Automatic Kitchen Printing',
   'Invia subito la comanda in cucina ad ogni nuovo ordine': 'Send each new order directly to the kitchen.',
@@ -1292,6 +1317,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   '3. Assicurati che lo smartphone sia connesso al WiFi del locale': '3. Ensure your smartphone is connected to the venue Wi-Fi'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Stampa Scontrino Cortesia (Cassa)': 'Imprimir recibo de cortesía (caja)', 'Stampa Automatica Cucina': 'Impresión automática de cocina',
   'Invia subito la comanda in cucina ad ogni nuovo ordine': 'Envía cada pedido nuevo directamente a cocina.', 'Completa l’ordine e stampa il ticket cortesia': 'Completa el pedido e imprime el ticket de cortesía.',
   '80 mm (Larga)': '80 mm (Ancho)', '🧾 Stampante Cassa / Cortesia:': '🧾 Impresora de caja / cortesía:', '🍳 Stampante Comande Cucina:': '🍳 Impresora de pedidos de cocina:',
@@ -1299,6 +1329,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   '1. Apri la Fotocamera del cellulare': '1. Abre la cámara del teléfono', '2. Inquadra il QR per entrare istantaneamente': '2. Escanea el QR para entrar al instante', '3. Assicurati che lo smartphone sia connesso al WiFi del locale': '3. Comprueba que el teléfono esté conectado al Wi-Fi del local'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Stampa Scontrino Cortesia (Cassa)': 'Imprimer le ticket de courtoisie (caisse)', 'Stampa Automatica Cucina': 'Impression automatique cuisine',
   'Invia subito la comanda in cucina ad ogni nuovo ordine': 'Envoie chaque nouvelle commande directement en cuisine.', 'Completa l’ordine e stampa il ticket cortesia': 'Terminez la commande et imprimez le ticket de courtoisie.',
   '80 mm (Larga)': '80 mm (Large)', '🧾 Stampante Cassa / Cortesia:': '🧾 Imprimante caisse / courtoisie :', '🍳 Stampante Comande Cucina:': '🍳 Imprimante des commandes cuisine :',
@@ -1306,6 +1341,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   '1. Apri la Fotocamera del cellulare': '1. Ouvrez l’appareil photo du téléphone', '2. Inquadra il QR per entrare istantaneamente': '2. Scannez le QR pour accéder immédiatement', '3. Assicurati che lo smartphone sia connesso al WiFi del locale': '3. Vérifiez que le téléphone est connecté au Wi-Fi de l’établissement'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Stampa Scontrino Cortesia (Cassa)': 'Kulanzbon drucken (Kasse)', 'Stampa Automatica Cucina': 'Automatischer Küchendruck',
   'Invia subito la comanda in cucina ad ogni nuovo ordine': 'Jede neue Bestellung direkt an die Küche senden.', 'Completa l’ordine e stampa il ticket cortesia': 'Bestellung abschließen und Kulanzbon drucken.',
   '80 mm (Larga)': '80 mm (Breit)', '🧾 Stampante Cassa / Cortesia:': '🧾 Kassen- / Kulanzdrucker:', '🍳 Stampante Comande Cucina:': '🍳 Küchendrucker:',
@@ -1317,6 +1357,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 // Le apostrofi ASCII e le frasi con valori dinamici non possono dipendere dal
 // glossario letterale generato automaticamente.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Non serve digitare l'indirizzo IP a mano: inquadra semplicemente il codice QR con la fotocamera del tuo smartphone per aprire il pannello di controllo cassa e ordini.": 'No need to type the IP address: scan the QR code with your smartphone camera to open the cash and order management panel.',
   'Stampa ricevuta cliente con numero ordine al completamento': 'Print the customer receipt with the order number when the order is completed.',
   'Nuovo Username': 'New username', 'Nuova Password': 'New password', 'Versione Installata': 'Installed version',
@@ -1328,6 +1373,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Maionese': 'Mayonnaise'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Non serve digitare l'indirizzo IP a mano: inquadra semplicemente il codice QR con la fotocamera del tuo smartphone per aprire il pannello di controllo cassa e ordini.": 'No es necesario escribir la dirección IP: escanea el código QR con la cámara del teléfono para abrir el panel de caja y pedidos.',
   'Stampa ricevuta cliente con numero ordine al completamento': 'Imprime el recibo del cliente con el número de pedido al completarlo.',
   'Nuovo Username': 'Nuevo usuario', 'Nuova Password': 'Nueva contraseña', 'Versione Installata': 'Versión instalada',
@@ -1339,6 +1389,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   'Maionese': 'Mayonesa'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Non serve digitare l'indirizzo IP a mano: inquadra semplicemente il codice QR con la fotocamera del tuo smartphone per aprire il pannello di controllo cassa e ordini.": 'Inutile de saisir l’adresse IP : scannez le code QR avec l’appareil photo du téléphone pour ouvrir le panneau de caisse et des commandes.',
   'Stampa ricevuta cliente con numero ordine al completamento': 'Imprimez le ticket client avec le numéro de commande une fois terminée.',
   'Nuovo Username': 'Nouveau nom d’utilisateur', 'Nuova Password': 'Nouveau mot de passe', 'Versione Installata': 'Version installée',
@@ -1350,6 +1405,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   'Maionese': 'Mayonnaise'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Non serve digitare l'indirizzo IP a mano: inquadra semplicemente il codice QR con la fotocamera del tuo smartphone per aprire il pannello di controllo cassa e ordini.": 'Die IP-Adresse muss nicht eingegeben werden: Scannen Sie den QR-Code mit der Smartphone-Kamera, um die Kassen- und Bestellverwaltung zu öffnen.',
   'Stampa ricevuta cliente con numero ordine al completamento': 'Kundenbon mit Bestellnummer nach Abschluss drucken.',
   'Nuovo Username': 'Neuer Benutzername', 'Nuova Password': 'Neues Passwort', 'Versione Installata': 'Installierte Version',
@@ -1364,24 +1424,44 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 // Etichette ricorrenti delle schermate amministrative: dichiarate qui per
 // prevalere sulle varianti legacy e mantenere coerente la barra di navigazione.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Salva': 'Save', 'Prodotti': 'Products', 'Categorie': 'Categories', 'Gruppi': 'Groups', 'Comande': 'Orders', 'Kiosk': 'Kiosk', 'Licenza': 'License',
   'Credenziali & PIN Amministratore': 'Admin Credentials & PIN', 'Nuovo PIN': 'New PIN', 'Sviluppo': 'Development',
   'Consente la gestione visuale delle comande dal totem o da tablet cucina': 'Enables visual order management from the kiosk or kitchen tablet.',
   'Include aggiornamenti gratuiti, cloud sync e supporto prioritario': 'Includes free updates, cloud sync and priority support.'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Salva': 'Guardar', 'Prodotti': 'Productos', 'Categorie': 'Categorías', 'Gruppi': 'Grupos', 'Comande': 'Pedidos', 'Kiosk': 'Quiosco', 'Licenza': 'Licencia',
   'Credenziali & PIN Amministratore': 'Credenciales y PIN de administrador', 'Nuovo PIN': 'Nuevo PIN', 'Sviluppo': 'Desarrollo',
   'Consente la gestione visuale delle comande dal totem o da tablet cucina': 'Permite gestionar visualmente los pedidos desde el quiosco o la tableta de cocina.',
   'Include aggiornamenti gratuiti, cloud sync e supporto prioritario': 'Incluye actualizaciones gratuitas, sincronización en la nube y soporte prioritario.'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Salva': 'Enregistrer', 'Prodotti': 'Produits', 'Categorie': 'Catégories', 'Gruppi': 'Groupes', 'Comande': 'Commandes', 'Kiosk': 'Borne', 'Licenza': 'Licence',
   'Credenziali & PIN Amministratore': 'Identifiants et PIN administrateur', 'Nuovo PIN': 'Nouveau PIN', 'Sviluppo': 'Développement',
   'Consente la gestione visuale delle comande dal totem o da tablet cucina': 'Permet la gestion visuelle des commandes depuis la borne ou une tablette de cuisine.',
   'Include aggiornamenti gratuiti, cloud sync e supporto prioritario': 'Inclut les mises à jour gratuites, la synchronisation cloud et le support prioritaire.'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Salva': 'Speichern', 'Prodotti': 'Produkte', 'Categorie': 'Kategorien', 'Gruppi': 'Gruppen', 'Comande': 'Bestellungen', 'Kiosk': 'Kiosk', 'Licenza': 'Lizenz',
   'Credenziali & PIN Amministratore': 'Administratorzugangsdaten und PIN', 'Nuovo PIN': 'Neue PIN', 'Sviluppo': 'Entwicklung',
   'Consente la gestione visuale delle comande dal totem o da tablet cucina': 'Ermöglicht die visuelle Bestellverwaltung am Kiosk oder Küchen-Tablet.',
@@ -1389,6 +1469,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Gestione catalogo e personalizzazioni': 'Catalog and customization management', 'Traduzioni': 'Translations', 'Nuovo': 'New',
   'Cerca prodotto, ingrediente o allergene...': 'Search product, ingredient, or allergen...', 'Tutti': 'All', 'Disponibile': 'Available', 'Duplica': 'Duplicate', 'Modifica': 'Edit',
   'Gruppi Globali': 'Global Groups', 'Libreria ingredienti riutilizzabili su più prodotti': 'Reusable ingredient library across products',
@@ -1397,6 +1482,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Cerca gruppo di opzioni...': 'Search option group...', 'Ingredienti:': 'Ingredients:', 'Scelte (min ': 'Choices (min ', 'Nessuno': 'None', 'Nessuna': 'None', 'Elimina': 'Delete'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Gestione catalogo e personalizzazioni': 'Gestión del catálogo y las personalizaciones', 'Traduzioni': 'Traducciones', 'Nuovo': 'Nuevo',
   'Cerca prodotto, ingrediente o allergene...': 'Buscar producto, ingrediente o alérgeno...', 'Tutti': 'Todos', 'Disponibile': 'Disponible', 'Duplica': 'Duplicar', 'Modifica': 'Editar',
   'Gruppi Globali': 'Grupos globales', 'Libreria ingredienti riutilizzabili su più prodotti': 'Biblioteca de ingredientes reutilizables en varios productos',
@@ -1405,6 +1495,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   'Cerca gruppo di opzioni...': 'Buscar grupo de opciones...', 'Ingredienti:': 'Ingredientes:', 'Scelte (min ': 'Opciones (mín. ', 'Nessuno': 'Ninguno', 'Nessuna': 'Ninguna', 'Elimina': 'Eliminar'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Gestione catalogo e personalizzazioni': 'Gestion du catalogue et des personnalisations', 'Traduzioni': 'Traductions', 'Nuovo': 'Nouveau',
   'Cerca prodotto, ingrediente o allergene...': 'Rechercher un produit, ingrédient ou allergène...', 'Tutti': 'Tous', 'Disponibile': 'Disponible', 'Duplica': 'Dupliquer', 'Modifica': 'Modifier',
   'Gruppi Globali': 'Groupes globaux', 'Libreria ingredienti riutilizzabili su più prodotti': 'Bibliothèque d’ingrédients réutilisables sur plusieurs produits',
@@ -1413,6 +1508,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   'Cerca gruppo di opzioni...': 'Rechercher un groupe d’options...', 'Ingredienti:': 'Ingrédients :', 'Scelte (min ': 'Choix (min. ', 'Nessuno': 'Aucun', 'Nessuna': 'Aucune', 'Elimina': 'Supprimer'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Gestione catalogo e personalizzazioni': 'Katalog- und Anpassungsverwaltung', 'Traduzioni': 'Übersetzungen', 'Nuovo': 'Neu',
   'Cerca prodotto, ingrediente o allergene...': 'Produkt, Zutat oder Allergen suchen...', 'Tutti': 'Alle', 'Disponibile': 'Verfügbar', 'Duplica': 'Duplizieren', 'Modifica': 'Bearbeiten',
   'Gruppi Globali': 'Globale Gruppen', 'Libreria ingredienti riutilizzabili su più prodotti': 'Bibliothek wiederverwendbarer Zutaten für mehrere Produkte',
@@ -1423,6 +1523,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // Schermata Kiosk: stringhe operative verificate nella resa amministrativa.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Controllo Kiosk': 'Kiosk Control',
   'Gestione blocco schermo, watchdog FreeKiosk e hardware': 'Screen lock, FreeKiosk watchdog and hardware management',
   'Device Owner Attivo (Blocco Schermo Totale)': 'Device Owner Active (Full Screen Lock)',
@@ -1446,6 +1551,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Modalità Kiosk ancora attiva': 'Kiosk Mode Still Active', 'Android non ha confermato lo sblocco. Usa la gestione Device Owner del tablet e riprova.': 'Android did not confirm the unlock. Use the tablet Device Owner controls and try again.'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Controllo Kiosk': 'Control del quiosco', 'Gestione blocco schermo, watchdog FreeKiosk e hardware': 'Gestión del bloqueo de pantalla, vigilancia FreeKiosk y hardware',
   'Device Owner Attivo (Blocco Schermo Totale)': 'Propietario del dispositivo activo (bloqueo total de pantalla)', 'Device Owner Non Attivo': 'Propietario del dispositivo inactivo',
   'Il tablet è protetto. Barra di navigazione, notifiche e tasti fisici sono disabilitati.': 'La tableta está protegida. La barra de navegación, las notificaciones y los botones físicos están desactivados.',
@@ -1464,6 +1574,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   'Modalità Kiosk ancora attiva': 'Modo quiosco aún activo', 'Android non ha confermato lo sblocco. Usa la gestione Device Owner del tablet e riprova.': 'Android no confirmó el desbloqueo. Usa los controles de propietario del dispositivo de la tableta e inténtalo de nuevo.'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Controllo Kiosk': 'Contrôle de la borne', 'Gestione blocco schermo, watchdog FreeKiosk e hardware': 'Gestion du verrouillage écran, du superviseur FreeKiosk et du matériel',
   'Device Owner Attivo (Blocco Schermo Totale)': 'Propriétaire de l’appareil actif (verrouillage total)', 'Device Owner Non Attivo': 'Propriétaire de l’appareil inactif',
   'Il tablet è protetto. Barra di navigazione, notifiche e tasti fisici sono disabilitati.': 'La tablette est protégée. La barre de navigation, les notifications et les boutons physiques sont désactivés.',
@@ -1482,6 +1597,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   'Modalità Kiosk ancora attiva': 'Mode borne toujours actif', 'Android non ha confermato lo sblocco. Usa la gestione Device Owner del tablet e riprova.': 'Android n’a pas confirmé le déverrouillage. Utilisez les contrôles propriétaire de la tablette et réessayez.'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Controllo Kiosk': 'Kiosk-Steuerung', 'Gestione blocco schermo, watchdog FreeKiosk e hardware': 'Verwaltung von Bildschirmsperre, FreeKiosk-Wächter und Hardware',
   'Device Owner Attivo (Blocco Schermo Totale)': 'Geräteinhaber aktiv (vollständige Bildschirmsperre)', 'Device Owner Non Attivo': 'Geräteinhaber inaktiv',
   'Il tablet è protetto. Barra di navigazione, notifiche e tasti fisici sono disabilitati.': 'Das Tablet ist geschützt. Navigationsleiste, Benachrichtigungen und physische Tasten sind deaktiviert.',
@@ -1576,22 +1696,42 @@ Object.assign(TRANSLATIONS.de, {
   'settings.reset_failed': 'Bestellnummerierung und Küchenbestellungen konnten nicht zurückgesetzt werden.'
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "L'indirizzo viene rilevato automaticamente. Se la rete del locale richiede un IP preciso, inseriscilo qui: QR, copia e apertura browser useranno subito l'IP scelto.": 'The address is detected automatically. If the venue network requires a specific IP, enter it here: the QR code, copy link and browser opening will immediately use the chosen IP.',
   'IP manuale per pannello remoto (opzionale)': 'Manual IP for remote panel (optional)'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   '58 mm (Standard)': '58 mm (Estándar)',
   'Test': 'Prueba',
   "L'indirizzo viene rilevato automaticamente. Se la rete del locale richiede un IP preciso, inseriscilo qui: QR, copia e apertura browser useranno subito l'IP scelto.": 'La dirección se detecta automáticamente. Si la red del local requiere una IP concreta, introdúcela aquí: el QR, la copia y la apertura del navegador usarán de inmediato la IP elegida.',
   'IP manuale per pannello remoto (opzionale)': 'IP manual para panel remoto (opcional)'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   '58 mm (Standard)': '58 mm (Standard)',
   'Video/Promo': 'Vidéo/Promo',
   "L'indirizzo viene rilevato automaticamente. Se la rete del locale richiede un IP preciso, inseriscilo qui: QR, copia e apertura browser useranno subito l'IP scelto.": 'L’adresse est détectée automatiquement. Si le réseau de l’établissement exige une IP précise, saisissez-la ici : le QR, la copie et l’ouverture du navigateur utiliseront immédiatement l’IP choisie.',
   'IP manuale per pannello remoto (opzionale)': 'IP manuelle pour panneau distant (facultatif)'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   '58 mm (Standard)': '58 mm (Standard)',
   'Video/Promo': 'Video/Werbung',
   "L'indirizzo viene rilevato automaticamente. Se la rete del locale richiede un IP preciso, inseriscilo qui: QR, copia e apertura browser useranno subito l'IP scelto.": 'Die Adresse wird automatisch erkannt. Wenn das Netzwerk des Betriebs eine bestimmte IP erfordert, geben Sie sie hier ein: QR-Code, Linkkopie und Browseröffnung verwenden sofort die gewählte IP.',
@@ -1600,6 +1740,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // BEGIN GENERATED_LITERAL_I18N_COVERAGE
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Caricamento categorie...": "Loading categories...",
   "Organizzazione e reparti del menu": "Menu organization and sections",
   "Cerca categoria...": "Search category...",
@@ -1730,6 +1875,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "Nessun argomento trovato per la ricerca “": "No topics found for search “",
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Caricamento categorie...": "Cargando categorías...",
   "Organizzazione e reparti del menu": "Organización y secciones del menú",
   "Cerca categoria...": "Buscar categoría...",
@@ -1860,6 +2010,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   "Nessun argomento trovato per la ricerca “": "No se encontraron temas para la búsqueda “",
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Caricamento categorie...": "Chargement des catégories...",
   "Organizzazione e reparti del menu": "Organisation et sections du menu",
   "Cerca categoria...": "Rechercher une catégorie...",
@@ -1990,6 +2145,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   "Nessun argomento trovato per la ricerca “": "Aucun sujet trouvé pour la recherche “",
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Caricamento categorie...": "Kategorien werden geladen...",
   "Organizzazione e reparti del menu": "Organisation und Bereiche des Menüs",
   "Cerca categoria...": "Kategorie suchen...",
@@ -2120,6 +2280,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
   "Nessun argomento trovato per la ricerca “": "Keine Themen für die Suche gefunden “",
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Caricamento ingredienti...': 'Loading ingredients...',
   'Ingredienti': 'Ingredients',
   'Libreria di ingredienti, salse, extra e scelte riutilizzabili su più prodotti': 'Library of ingredients, sauces, extras and choices reusable across multiple products',
@@ -2131,6 +2296,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Tipo di ingredienti': 'Ingredient type'
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Caricamento ingredienti...': 'Cargando ingredientes...',
   'Ingredienti': 'Ingredientes',
   'Libreria di ingredienti, salse, extra e scelte riutilizzabili su più prodotti': 'Biblioteca de ingredientes, salsas, extras y opciones reutilizables en varios productos',
@@ -2142,6 +2312,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   'Tipo di ingredienti': 'Tipo de ingredientes'
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Caricamento ingredienti...': 'Chargement des ingrédients...',
   'Ingredienti': 'Ingrédients',
   'Libreria di ingredienti, salse, extra e scelte riutilizzabili su più prodotti': 'Bibliothèque d’ingrédients, sauces, suppléments et choix réutilisables sur plusieurs produits',
@@ -2153,6 +2328,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   'Tipo di ingredienti': 'Type d’ingrédients'
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Caricamento ingredienti...': 'Zutaten werden geladen...',
   'Ingredienti': 'Zutaten',
   'Libreria di ingredienti, salse, extra e scelte riutilizzabili su più prodotti': 'Bibliothek von Zutaten, Saucen, Extras und Auswahlmöglichkeiten zur Wiederverwendung in mehreren Produkten',
@@ -2321,6 +2501,11 @@ export const useTranslation = useI18n;
 
 // Security and recovery UI — incremental literal translations.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Sicurezza accesso amministratore": "Administrator access security",
   "Username configurato:": "Configured username:",
   ". Password e PIN non vengono mai mostrati né salvati nel backup.": ". Password and PIN are never displayed or included in backups.",
@@ -2358,6 +2543,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Sicurezza accesso amministratore": "Seguridad de acceso de administrador",
   "Username configurato:": "Nombre de usuario configurado:",
   ". Password e PIN non vengono mai mostrati né salvati nel backup.": ". La contraseña y el PIN nunca se muestran ni se incluyen en la copia de seguridad.",
@@ -2395,6 +2585,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Sicurezza accesso amministratore": "Sécurité de l’accès administrateur",
   "Username configurato:": "Nom d’utilisateur configuré :",
   ". Password e PIN non vengono mai mostrati né salvati nel backup.": ". Le mot de passe et le PIN ne sont jamais affichés ni inclus dans la sauvegarde.",
@@ -2432,6 +2627,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Sicurezza accesso amministratore": "Sicherheit des Administratorzugangs",
   "Username configurato:": "Eingerichteter Benutzername:",
   ". Password e PIN non vengono mai mostrati né salvati nel backup.": ". Passwort und PIN werden niemals angezeigt oder im Backup gespeichert.",
@@ -2469,18 +2669,38 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   'Ultima verifica backend Play:': 'Last Play backend verification:',
   'Cache offline valida fino a:': 'Offline cache valid until:',
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   'Ultima verifica backend Play:': 'Última verificación del backend Play:',
   'Cache offline valida fino a:': 'Caché sin conexión válida hasta:',
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   'Ultima verifica backend Play:': 'Dernière vérification du backend Play :',
   'Cache offline valida fino a:': 'Cache hors ligne valide jusqu’au :',
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   'Ultima verifica backend Play:': 'Letzte Play-Backend-Prüfung:',
   'Cache offline valida fino a:': 'Offline-Cache gültig bis:',
 });
@@ -2488,6 +2708,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // Primo accesso amministratore — istruzioni, requisiti e messaggi di errore.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Configura e accedi al pannello": "Configure and access the dashboard",
   "Almeno 6 caratteri, 3 tipi di caratteri": "At least 6 characters, 3 character types",
   "3-4 cifre non banali": "3–4 non-trivial digits",
@@ -2515,6 +2740,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Configura e accedi al pannello": "Configurar y acceder al panel",
   "Almeno 6 caratteri, 3 tipi di caratteri": "Al menos 6 caracteres y 3 tipos de caracteres",
   "3-4 cifre non banali": "3–4 dígitos no triviales",
@@ -2542,6 +2772,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Configura e accedi al pannello": "Configurer et accéder au tableau de bord",
   "Almeno 6 caratteri, 3 tipi di caratteri": "Au moins 6 caractères et 3 types de caractères",
   "3-4 cifre non banali": "3–4 chiffres non triviaux",
@@ -2569,6 +2804,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Configura e accedi al pannello": "Einrichten und zum Dashboard wechseln",
   "Almeno 6 caratteri, 3 tipi di caratteri": "Mindestens 6 Zeichen und 3 Zeichentypen",
   "3-4 cifre non banali": "3–4 nicht triviale Ziffern",
@@ -2596,42 +2836,82 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "6+ caratteri": "6+ characters",
   "3-4 cifre": "3–4 digits",
   "La password richiede almeno 6 caratteri e tre tipi di caratteri. Il PIN richiede 3-4 cifre non banali. La modifica revoca tutte le altre sessioni.": "Password requires at least 6 characters and three character types. PIN requires 3–4 non-trivial digits. The change revokes all other sessions."
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "6+ caratteri": "6+ caracteres",
   "3-4 cifre": "3–4 dígitos",
   "La password richiede almeno 6 caratteri e tre tipi di caratteri. Il PIN richiede 3-4 cifre non banali. La modifica revoca tutte le altre sessioni.": "La contraseña requiere al menos 6 caracteres y tres tipos de caracteres. El PIN requiere 3–4 dígitos no triviales. El cambio revoca todas las demás sesiones."
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "6+ caratteri": "6+ caractères",
   "3-4 cifre": "3–4 chiffres",
   "La password richiede almeno 6 caratteri e tre tipi di caratteri. Il PIN richiede 3-4 cifre non banali. La modifica revoca tutte le altre sessioni.": "Le mot de passe requiert au moins 6 caractères et trois types de caractères. Le PIN requiert 3 à 4 chiffres non triviaux. La modification révoque toutes les autres sessions."
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "6+ caratteri": "6+ Zeichen",
   "3-4 cifre": "3–4 Ziffern",
   "La password richiede almeno 6 caratteri e tre tipi di caratteri. Il PIN richiede 3-4 cifre non banali. La modifica revoca tutte le altre sessioni.": "Das Passwort benötigt mindestens 6 Zeichen und drei Zeichentypen. Die PIN benötigt 3–4 nicht triviale Ziffern. Die Änderung widerruft alle anderen Sitzungen."
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Mostra": "Show",
   "Nascondi": "Hide",
   "PIN amministratore (alternativa)": "Administrator PIN (alternative)"
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Mostra": "Mostrar",
   "Nascondi": "Ocultar",
   "PIN amministratore (alternativa)": "PIN de administrador (alternativo)"
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Mostra": "Afficher",
   "Nascondi": "Masquer",
   "PIN amministratore (alternativa)": "PIN administrateur (alternative)"
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Mostra": "Anzeigen",
   "Nascondi": "Ausblenden",
   "PIN amministratore (alternativa)": "Administrator-PIN (Alternative)"
@@ -2639,6 +2919,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Primo accesso: crea il tuo PIN a 6 cifre per accedere e gestire il Totem.": "First access: create your 6-digit PIN to access and manage the Totem.",
   "Inserisci il PIN a 6 cifre per accedere al pannello di controllo.": "Enter your 6-digit PIN to access the control panel.",
   "Inserisci il Recovery Code e crea un nuovo PIN a 6 cifre.": "Enter the Recovery Code and create a new 6-digit PIN.",
@@ -2927,6 +3212,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "Cambia la lingua dell&apos;interfaccia amministrativa e del totem": "Change the language of the admin interface and totem"
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Primo accesso: crea il tuo PIN a 6 cifre per accedere e gestire il Totem.": "Primer acceso: crea tu PIN de 6 dígitos para acceder y gestionar el Tótem.",
   "Inserisci il PIN a 6 cifre per accedere al pannello di controllo.": "Introduce el PIN de 6 dígitos para acceder al panel de control.",
   "Inserisci il Recovery Code e crea un nuovo PIN a 6 cifre.": "Introduce el código de recuperación y crea un nuevo PIN de 6 dígitos.",
@@ -3215,6 +3505,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   "Cambia la lingua dell&apos;interfaccia amministrativa e del totem": "Cambiar el idioma de la interfaz de administración y del tótem"
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Primo accesso: crea il tuo PIN a 6 cifre per accedere e gestire il Totem.": "Premier accès : créez votre code PIN à 6 chiffres pour accéder et gérer la Borne.",
   "Inserisci il PIN a 6 cifre per accedere al pannello di controllo.": "Saisissez le code PIN à 6 chiffres pour accéder au panneau de configuration.",
   "Inserisci il Recovery Code e crea un nuovo PIN a 6 cifre.": "Saisissez le code de récupération et créez un nouveau code PIN à 6 chiffres.",
@@ -3503,6 +3798,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   "Cambia la lingua dell&apos;interfaccia amministrativa e del totem": "Changer la langue de l'interface d'administration et de la borne"
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Primo accesso: crea il tuo PIN a 6 cifre per accedere e gestire il Totem.": "Erster Zugriff: Erstellen Sie Ihre 6-stellige PIN für den Zugriff und die Verwaltung des Kiosks.",
   "Inserisci il PIN a 6 cifre per accedere al pannello di controllo.": "Geben Sie die 6-stellige PIN ein, um auf das Bedienfeld zuzugreifen.",
   "Inserisci il Recovery Code e crea un nuovo PIN a 6 cifre.": "Geben Sie den Wiederherstellungscode ein und erstellen Sie eine neue 6-stellige PIN.",
@@ -3792,6 +4092,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "LAN · Multi-totem · Stampanti": "LAN · Multi-totem · Printers",
   "Display Queue, KDS, Hub, Master/Satellite e stampanti per reparto": "Display Queue, KDS, Hub, Master/Satellite and department printers",
   "Stampanti per reparto": "Department printers",
@@ -3824,6 +4129,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "LAN · Multi-totem · Stampanti": "LAN · Multi-tótem · Impresoras",
   "Display Queue, KDS, Hub, Master/Satellite e stampanti per reparto": "Display Queue, KDS, Hub, Master/Satélite e impresoras por departamento",
   "Stampanti per reparto": "Impresoras por departamento",
@@ -3856,6 +4166,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "LAN · Multi-totem · Stampanti": "LAN · Multi-borne · Imprimantes",
   "Display Queue, KDS, Hub, Master/Satellite e stampanti per reparto": "Display Queue, KDS, Hub, Master/Satellite et imprimantes par rayon",
   "Stampanti per reparto": "Imprimantes par rayon",
@@ -3888,6 +4203,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "LAN · Multi-totem · Stampanti": "LAN · Multi-Terminal · Drucker",
   "Display Queue, KDS, Hub, Master/Satellite e stampanti per reparto": "Display Queue, KDS, Hub, Master/Satellit und Abteilungsdrucker",
   "Stampanti per reparto": "Drucker nach Abteilung",
@@ -3920,6 +4240,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Preparazione primo accesso...": "Preparing first access...",
   "Salva su file": "Save to file",
   "Invia con messaggi o email": "Send via messaging or email",
@@ -3976,6 +4301,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "Stampanti e KDS": "Printers and KDS"
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Preparazione primo accesso...": "Preparando el primer acceso...",
   "Salva su file": "Guardar en archivo",
   "Invia con messaggi o email": "Enviar por mensajería o correo",
@@ -4032,6 +4362,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   "Stampanti e KDS": "Impresoras y KDS"
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Preparazione primo accesso...": "Préparation du premier accès...",
   "Salva su file": "Enregistrer dans un fichier",
   "Invia con messaggi o email": "Envoyer par messagerie ou e-mail",
@@ -4088,6 +4423,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   "Stampanti e KDS": "Imprimantes et KDS"
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Preparazione primo accesso...": "Ersten Zugang vorbereiten...",
   "Salva su file": "In Datei speichern",
   "Invia con messaggi o email": "Per Nachricht oder E-Mail senden",
@@ -4144,6 +4484,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
   "Stampanti e KDS": "Drucker und KDS"
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Tutti i reparti": "All stations",
   "Solo abbonamento mensile. Nessun piano annuale. Il Totem Mono ha le funzioni base, il Totem Multi quelle avanzate.": "Monthly subscription only. No yearly plan. Mono Totem has basic features, Multi Totem has advanced features.",
   "Attivo": "Active",
@@ -4221,6 +4566,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "AA:BB:CC:DD:EE:FF oppure 192.168.1.50:9100": "AA:BB:CC:DD:EE:FF or 192.168.1.50:9100"
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Tutti i reparti": "Todos los departamentos",
   "Solo abbonamento mensile. Nessun piano annuale. Il Totem Mono ha le funzioni base, il Totem Multi quelle avanzate.": "Solo suscripción mensual. Sin plan anual. Totem Mono tiene las funciones básicas, Totem Multi las avanzadas.",
   "Attivo": "Activo",
@@ -4298,6 +4648,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   "AA:BB:CC:DD:EE:FF oppure 192.168.1.50:9100": "AA:BB:CC:DD:EE:FF o 192.168.1.50:9100"
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Tutti i reparti": "Tous les postes",
   "Solo abbonamento mensile. Nessun piano annuale. Il Totem Mono ha le funzioni base, il Totem Multi quelle avanzate.": "Abonnement mensuel uniquement. Pas d’offre annuelle. Totem Mono a les fonctions de base, Totem Multi les avancées.",
   "Attivo": "Actif",
@@ -4375,6 +4730,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   "AA:BB:CC:DD:EE:FF oppure 192.168.1.50:9100": "AA:BB:CC:DD:EE:FF ou 192.168.1.50:9100"
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Tutti i reparti": "Alle Stationen",
   "Solo abbonamento mensile. Nessun piano annuale. Il Totem Mono ha le funzioni base, il Totem Multi quelle avanzate.": "Nur monatliches Abo. Kein Jahrestarif. Totem Mono hat Basisfunktionen, Totem Multi die erweiterten.",
   "Attivo": "Aktiv",
@@ -4453,6 +4813,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Preparazione primo accesso...": "Preparing first access...",
   "Salva su file": "Save to file",
   "Salvato su file": "Saved to file",
@@ -4481,6 +4846,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "TV sala": "Hall TV",
 });
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Preparazione primo accesso...": "Preparando el primer acceso...",
   "Salva su file": "Guardar en archivo",
   "Salvato su file": "Guardado en archivo",
@@ -4509,6 +4879,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
   "TV sala": "TV sala",
 });
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Preparazione primo accesso...": "Préparation du premier accès...",
   "Salva su file": "Enregistrer dans un fichier",
   "Salvato su file": "Enregistré dans un fichier",
@@ -4537,6 +4912,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
   "TV sala": "TV salle",
 });
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Preparazione primo accesso...": "Erster Zugriff wird vorbereitet...",
   "Salva su file": "In Datei speichern",
   "Salvato su file": "In Datei gespeichert",
@@ -4566,6 +4946,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Ogni monitor ha un IP / URL dedicato, sempre visibile": "Every screen has a dedicated IP / URL, always visible",
   "URL cucina principale": "Main kitchen URL",
   "Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.": "Connect the tablet to Wi-Fi. The IP appears automatically. You can also set it in Settings → Network.",
@@ -4588,6 +4973,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Ogni monitor ha un IP / URL dedicato, sempre visibile": "Cada pantalla tiene una IP / URL dedicada, siempre visible",
   "URL cucina principale": "URL cocina principal",
   "Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.": "Conecta la tableta al Wi-Fi. La IP aparece sola. También puedes ajustarla en Ajustes → Red.",
@@ -4610,6 +5000,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Ogni monitor ha un IP / URL dedicato, sempre visibile": "Chaque écran a une IP / URL dédiée, toujours visible",
   "URL cucina principale": "URL cuisine principale",
   "Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.": "Connectez la tablette au Wi-Fi. L'IP apparaît automatiquement. Vous pouvez aussi la définir dans Paramètres → Réseau.",
@@ -4632,6 +5027,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Ogni monitor ha un IP / URL dedicato, sempre visibile": "Jeder Monitor hat eine dedizierte IP / URL, immer sichtbar",
   "URL cucina principale": "Haupt-Küchen-URL",
   "Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.": "Tablet mit dem WLAN verbinden. Die IP erscheint automatisch. Du kannst sie auch unter Einstellungen → Netzwerk anpassen.",
@@ -4654,6 +5054,11 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  "Impostazioni": "Settings",
+  "Comande & KDS": "Orders & KDS",
+  "Categorie": "Categories",
+  "Prodotti": "Products",
+  "Varianti": "Variants",
   "Nome Attività (Intestazione)": "Business Name (Header)",
   "Stampa il nome del ristorante, pizzeria o marchio in cima allo scontrino a caratteri grandi.": "Prints the restaurant, pizzeria or brand name at the top of the receipt in large characters.",
   "Modificabile direttamente nel campo testo sopra o in Impostazioni Locale.": "Editable directly in the text field above or in Venue Settings.",
@@ -4717,6 +5122,11 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.es, {
+  "Impostazioni": "Ajustes",
+  "Comande & KDS": "Pedidos y KDS",
+  "Categorie": "Categorías",
+  "Prodotti": "Productos",
+  "Varianti": "Variantes",
   "Nome Attività (Intestazione)": "Nombre del negocio (Encabezado)",
   "Stampa il nome del ristorante, pizzeria o marchio in cima allo scontrino a caratteri grandi.": "Imprime el nombre del restaurante, pizzería o marca en la parte superior del recibo en letras grandes.",
   "Modificabile direttamente nel campo testo sopra o in Impostazioni Locale.": "Editable directamente en el campo de texto superior o en Configuración del local.",
@@ -4780,6 +5190,11 @@ Object.assign(LITERAL_TRANSLATIONS.es, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.fr, {
+  "Impostazioni": "Paramètres",
+  "Comande & KDS": "Commandes & KDS",
+  "Categorie": "Catégories",
+  "Prodotti": "Produits",
+  "Varianti": "Variantes",
   "Nome Attività (Intestazione)": "Nom de l’établissement (En-tête)",
   "Stampa il nome del ristorante, pizzeria o marchio in cima allo scontrino a caratteri grandi.": "Imprime le nom du restaurant, de la pizzeria ou de la marque en haut du reçu en gros caractères.",
   "Modificabile direttamente nel campo testo sopra o in Impostazioni Locale.": "Modifiable directement dans le champ de texte ci-dessus ou dans Paramètres de l’établissement.",
@@ -4843,6 +5258,11 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.de, {
+  "Impostazioni": "Einstellungen",
+  "Comande & KDS": "Bestellungen & KDS",
+  "Categorie": "Kategorien",
+  "Prodotti": "Produkte",
+  "Varianti": "Varianten",
   "Nome Attività (Intestazione)": "Betriebsname (Kopfzeile)",
   "Stampa il nome del ristorante, pizzeria o marchio in cima allo scontrino a caratteri grandi.": "Druckt den Namen des Restaurants, der Pizzeria oder der Marke ganz oben auf den Beleg in großen Buchstaben.",
   "Modificabile direttamente nel campo testo sopra o in Impostazioni Locale.": "Direkt im Textfeld oben oder in den Betriebseinstellungen bearbeitbar.",

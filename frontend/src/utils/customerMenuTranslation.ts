@@ -31,6 +31,22 @@ export function useCustomerMenuGlossary(): void {
  * ingredienti, allergeni, salse, bevande e diciture tipiche dei menù ristorante/fast-food/pizzeria.
  */
 export const CUSTOMER_MENU_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> = {
+  
+  // === PRODOTTI DEMO & DESCRIZIONI ===
+  "Hamburger Classico": { "it": "Hamburger Classico", "en": "Classic Burger", "fr": "Burger Classique", "es": "Hamburguesa Clásica", "de": "Klassischer Burger" },
+  "Cheeseburger Deluxe": { "it": "Cheeseburger Deluxe", "en": "Deluxe Cheeseburger", "fr": "Cheeseburger Deluxe", "es": "Hamburguesa Deluxe con Queso", "de": "Deluxe Cheeseburger" },
+  "Margherita": { "it": "Margherita", "en": "Margherita", "fr": "Margherita", "es": "Margarita", "de": "Margherita" },
+  "Diavola": { "it": "Diavola", "en": "Diavola", "fr": "Diavola", "es": "Diavola", "de": "Diavola" },
+  "Caesar Salad": { "it": "Caesar Salad", "en": "Caesar Salad", "fr": "Salade César", "es": "Ensalada César", "de": "Caesar Salad" },
+  "Burger Combo": { "it": "Burger Combo", "en": "Burger Combo", "fr": "Menu Burger", "es": "Combo Hamburguesa", "de": "Burger Combo" },
+  "Carne di manzo 180g su pane brioche con lattuga, pomodoro e salsa": { "it": "Carne di manzo 180g su pane brioche con lattuga, pomodoro e salsa", "en": "180g beef patty on brioche bun with lettuce, tomato, and sauce", "fr": "Steak de bœuf de 180g sur pain brioché avec laitue, tomate et sauce", "es": "Hamburguesa de ternera de 180g en pan brioche con lechuga, tomate y salsa", "de": "180g Rindfleisch-Patty auf Brioche-Brötchen mit Salat, Tomate und Soße" },
+  "Hamburger con doppio cheddar e salsa speciale": { "it": "Hamburger con doppio cheddar e salsa speciale", "en": "Burger with double cheddar and special sauce", "fr": "Burger avec double cheddar et sauce spéciale", "es": "Hamburguesa con doble queso cheddar y salsa especial", "de": "Burger mit doppelt Cheddar und Spezialsauce" },
+  "Pomodoro, mozzarella di bufala, basilico fresco": { "it": "Pomodoro, mozzarella di bufala, basilico fresco", "en": "Tomato, buffalo mozzarella, fresh basil", "fr": "Tomate, mozzarella di bufala, basilic frais", "es": "Tomate, mozzarella de búfala, albahaca fresca", "de": "Tomaten, Büffelmozzarella, frisches Basilikum" },
+  "Pomodoro, mozzarella, salame piccante": { "it": "Pomodoro, mozzarella, salame piccante", "en": "Tomato, mozzarella, spicy salami", "fr": "Tomate, mozzarella, salami piquant", "es": "Tomate, mozzarella, salami picante", "de": "Tomaten, Mozzarella, scharfe Salami" },
+  "Lattuga romana, pollo grigliato, parmigiano e crostini": { "it": "Lattuga romana, pollo grigliato, parmigiano e crostini", "en": "Romaine lettuce, grilled chicken, parmesan, and croutons", "fr": "Laitue romaine, poulet grillé, parmesan et croûtons", "es": "Lechuga romana, pollo a la parrilla, parmesano y picatostes", "de": "Römersalat, gegrilltes Hähnchen, Parmesan und Croutons" },
+  "Hamburger + patatine + bevanda": { "it": "Hamburger + patatine + bevanda", "en": "Burger + fries + drink", "fr": "Burger + frites + boisson", "es": "Hamburguesa + patatas + bebida", "de": "Burger + Pommes + Getränk" },
+  "Scegli il Burger": { "it": "Scegli il Burger", "en": "Choose your Burger", "fr": "Choisissez le Burger", "es": "Elige tu Hamburguesa", "de": "Wähle deinen Burger" },
+
   // === CATEGORIE & REPARTI ===
   "Panini": { "it": "Panini", "en": "Sandwiches", "fr": "Sandwichs", "es": "Bocadillos", "de": "Sandwiches" },
   "Panino": { "it": "Panino", "en": "Sandwich", "fr": "Sandwich", "es": "Bocadillo", "de": "Sandwich" },
