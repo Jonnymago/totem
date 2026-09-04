@@ -19,6 +19,11 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
 
 export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   it: {
+  'Impostazioni': 'Impostazioni',
+  'Comande & KDS': 'Comande & KDS',
+  'Categorie': 'Categorie',
+  'Prodotti': 'Prodotti',
+  'Varianti': 'Varianti',
   'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino': 'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino',
   'Stampanti, Reparti & Coda': 'Stampanti, Reparti & Coda',
   'Giorni di prova rimanenti:': 'Giorni di prova rimanenti:',
@@ -270,6 +275,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   en: {
+  'Impostazioni': 'Settings',
+  'Comande & KDS': 'Orders & KDS',
+  'Categorie': 'Categories',
+  'Prodotti': 'Products',
+  'Varianti': 'Variants',
   'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino': 'Manage LAN/Bluetooth thermal printers and advanced receipt editor',
   'Stampanti, Reparti & Coda': 'Printers, Departments & Queue',
   'Giorni di prova rimanenti:': 'Trial days remaining:',
@@ -521,6 +531,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   es: {
+  'Impostazioni': 'Ajustes',
+  'Comande & KDS': 'Pedidos y KDS',
+  'Categorie': 'Categorías',
+  'Prodotti': 'Productos',
+  'Varianti': 'Variantes',
   'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino': 'Manage LAN/Bluetooth thermal printers and advanced receipt editor',
   'Stampanti, Reparti & Coda': 'Printers, Departments & Queue',
   'Giorni di prova rimanenti:': 'Días de prueba restantes:',
@@ -772,6 +787,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   fr: {
+  'Impostazioni': 'Paramètres',
+  'Comande & KDS': 'Commandes & KDS',
+  'Categorie': 'Catégories',
+  'Prodotti': 'Produits',
+  'Varianti': 'Variantes',
   'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino': 'Manage LAN/Bluetooth thermal printers and advanced receipt editor',
   'Stampanti, Reparti & Coda': 'Printers, Departments & Queue',
   'Giorni di prova rimanenti:': "Jours d'essai restants :",
@@ -1023,6 +1043,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   de: {
+  'Impostazioni': 'Einstellungen',
+  'Comande & KDS': 'Bestellungen & KDS',
+  'Categorie': 'Kategorien',
+  'Prodotti': 'Produkte',
+  'Varianti': 'Varianten',
   'Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino': 'Manage LAN/Bluetooth thermal printers and advanced receipt editor',
   'Stampanti, Reparti & Coda': 'Printers, Departments & Queue',
   'Giorni di prova rimanenti:': 'Verbleibende Probetage:',
