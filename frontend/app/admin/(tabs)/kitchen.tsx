@@ -693,6 +693,10 @@ export default function KitchenOrdersScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#F8FAFC',

@@ -408,6 +408,20 @@ const DEFAULT_SETTINGS: Settings = {
     categories_config: {},
   },
   display_queue_calling: null,
+  display_queue_config: {
+    show_only_number: false,
+    show_header: true,
+    show_clock: true,
+    show_ready_list: true,
+    show_prep_list: true,
+    show_instruction: true,
+    number_size: 'gigantic',
+    theme: 'dark-pure',
+    sound_enabled: true,
+    call_label: '',
+    instruction_text: '',
+    show_prefix: false,
+  },
   dq_mode: 'full',
   dq_theme: 'dark',
   dq_cols: 4,
@@ -1194,6 +1208,12 @@ export const updateSettings = async (data: Partial<Settings>): Promise<Settings>
   }
   if (next.station_topology && localDb.settings.station_topology) {
     next.station_topology = { ...localDb.settings.station_topology, ...next.station_topology };
+  }
+  if (next.display_queue_config) {
+    next.display_queue_config = {
+      ...(localDb.settings.display_queue_config || DEFAULT_SETTINGS.display_queue_config || {}),
+      ...next.display_queue_config,
+    };
   }
   localDb.settings = { ...localDb.settings, ...next };
   if (localDb.settings.known_printers) {

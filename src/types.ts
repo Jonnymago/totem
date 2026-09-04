@@ -145,6 +145,7 @@ export interface Settings {
   department_kds?: DepartmentKDS[];
   signage_screens?: SignageScreen[];
   display_queue_calling?: number | null;
+  display_queue_config?: DisplayQueueConfig;
   dq_mode?: 'full' | 'products';
   dq_theme?: 'dark' | 'light';
   dq_cols?: number;
@@ -152,6 +153,21 @@ export interface Settings {
   dq_hero?: boolean;
   dq_dayparting?: boolean;
   dq_animation?: 'kenburns' | 'slide' | 'fade';
+}
+
+export interface DisplayQueueConfig {
+  show_prefix?: boolean;
+  show_only_number?: boolean;
+  show_header?: boolean;
+  show_clock?: boolean;
+  show_ready_list?: boolean;
+  show_prep_list?: boolean;
+  show_instruction?: boolean;
+  number_size?: 'normal' | 'huge' | 'gigantic' | 'standard' | 'large' | 'giant';
+  call_label?: string;
+  instruction_text?: string;
+  theme?: 'dark-navy' | 'dark-pure' | 'light' | 'nero-led' | 'oled' | 'contrast';
+  sound_enabled?: boolean;
 }
 
 export type UiSectionType = 'free_chips' | 'paid_extras' | 'single_choice' | 'multi_choice' | 'combo_group';

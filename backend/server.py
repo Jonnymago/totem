@@ -462,8 +462,27 @@ async def admin_pin_login(credentials: PinLogin):
 
 
 def _settings_or_default(doc):
+    default_dq = {
+        "show_only_number": False,
+        "show_header": True,
+        "show_clock": True,
+        "show_ready_list": True,
+        "show_prep_list": True,
+        "show_instruction": True,
+        "number_size": "gigantic",
+        "theme": "dark-pure",
+        "sound_enabled": True,
+        "call_label": "",
+        "instruction_text": "",
+        "show_prefix": False,
+    }
     if doc:
-        return Settings(**serialize_doc(doc))
+        d = serialize_doc(doc)
+        if not d.get("display_queue_config"):
+            d["display_queue_config"] = default_dq
+        else:
+            d["display_queue_config"] = {**default_dq, **d["display_queue_config"]}
+        return Settings(**d)
     return Settings(
         restaurant_name="TOTEM RISTORANTE",
         logo="",
@@ -472,6 +491,7 @@ def _settings_or_default(doc):
         order_reset_mode="daily",
         reset_time="06:00",
         admin_pin=None,
+        display_queue_config=default_dq,
     )
 
 
@@ -503,6 +523,10 @@ async def update_settings(settings_update: SettingsUpdate, username: str = Depen
         data["department_kds"] = [
             p.dict() if hasattr(p, "dict") else p for p in data["department_kds"]
         ]
+    if "display_queue_config" in data and data["display_queue_config"] is not None:
+        merged_dq = (existing.get("display_queue_config") or {}) if existing else {}
+        merged_dq = {**merged_dq, **data["display_queue_config"]}
+        data["display_queue_config"] = merged_dq
     data["updated_at"] = datetime.now(UTC)
     if existing:
         await db.settings.update_one({"_id": existing["_id"]}, {"$set": data})

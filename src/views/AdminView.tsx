@@ -13,6 +13,7 @@ import {
   PrinterDevice,
   StationTopologyConfig,
   StationRole,
+  DisplayQueueConfig,
 } from '../types';
 import {
   Ticket,
@@ -271,6 +272,52 @@ export const AdminView: React.FC = () => {
       }
     } catch {
       showNotification('Errore aggiornamento numero chiamata', 'info');
+    }
+  };
+
+  const [orderResetting, setOrderResetting] = useState(false);
+
+  const handleSaveDqConfig = async (patch: Partial<DisplayQueueConfig>) => {
+    const baseConfig: DisplayQueueConfig = {
+      show_prefix: false,
+      show_only_number: false,
+      show_header: true,
+      show_clock: true,
+      show_ready_list: true,
+      show_prep_list: true,
+      show_instruction: true,
+      number_size: 'gigantic',
+      theme: 'dark-pure',
+      sound_enabled: true,
+      call_label: '',
+      instruction_text: '',
+    };
+    const current = settingsForm.display_queue_config || settings?.display_queue_config || baseConfig;
+    const next: DisplayQueueConfig = { ...baseConfig, ...current, ...patch };
+    setSettingsForm(prev => ({ ...prev, display_queue_config: next }));
+    try {
+      await api.updateSettings({ display_queue_config: next });
+      await fetchSettings();
+      showNotification('Configurazione tabellone TV aggiornata!');
+    } catch {
+      showNotification('Errore salvataggio tabellone TV', 'info');
+    }
+  };
+
+  const handleResetOrderCounter = async () => {
+    if (!window.confirm('Azzerare la numerazione degli ordini? Il contatore dei nuovi scontrini ripartirà da #1 e le comande attive verranno archiviate.')) {
+      return;
+    }
+    try {
+      setOrderResetting(true);
+      await api.resetOrderNumber(1);
+      await loadAdminData();
+      showNotification('Numerazione ordini azzerata a #1!');
+      playSuccessBeep();
+    } catch {
+      alert('Impossibile azzerare la numerazione ordini.');
+    } finally {
+      setOrderResetting(false);
     }
   };
 
@@ -3416,38 +3463,499 @@ export const AdminView: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB: CONTACODA NUMERICO (sezione separata dal signage)    */}
+      {/* TAB: CONTACODA NUMERICO (sezione avanzata gestione sala)  */}
       {/* ========================================================= */}
-      {tab === 'queue' && (
-        <div className="space-y-6 max-w-3xl">
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-5">
-            <div>
-              <h3 className="text-xl font-black text-white">Contacoda numerico</h3>
-              <p className="text-xs text-zinc-400 mt-1">La vetrina prodotti e le animazioni sono nella tab Vetrina TV. Qui si chiama il numero di ritiro.</p>
+      {tab === 'queue' && (() => {
+        const dqCfg: DisplayQueueConfig = {
+          show_prefix: false,
+          show_only_number: false,
+          show_header: true,
+          show_clock: true,
+          show_ready_list: true,
+          show_prep_list: true,
+          show_instruction: true,
+          number_size: 'gigantic',
+          theme: 'dark-pure',
+          sound_enabled: true,
+          call_label: '',
+          instruction_text: '',
+          ...(settings?.display_queue_config || {}),
+          ...(settingsForm.display_queue_config || {}),
+        };
+        const currentTheme = dqCfg.theme || 'dark-pure';
+        const currentSize = dqCfg.number_size || 'gigantic';
+        const tvUrl = typeof window !== 'undefined'
+          ? `${window.location.origin}/display-queue/?mode=full`
+          : '/display-queue/?mode=full';
+
+        return (
+          <div className="space-y-6 max-w-4xl pb-12">
+            {/* Header / Intro */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 p-6 rounded-3xl">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🔔</span>
+                  <h3 className="text-xl font-black text-white">Contacoda Numerico Sala</h3>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Gestione avanzata della chiamata clienti, monitor Smart TV per sala/ritiro e sincronizzazione in tempo reale.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={tvUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition-colors shadow-lg shadow-rose-900/30"
+                >
+                  <Tv className="w-4 h-4" />
+                  <span>Apri Tabellone TV</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
+              </div>
             </div>
-            <div className="flex items-center justify-center p-8 bg-zinc-950 border border-zinc-800 rounded-2xl">
-              <div className="text-center">
-                <span className="text-[11px] uppercase tracking-widest text-zinc-400 block font-bold mb-1">Numero in chiamata</span>
-                <div className="text-6xl font-black font-mono text-rose-400">
-                  {dqCallingNum != null ? `#${dqCallingNum}` : '—'}
+
+            {/* Top 2 Columns: Live Calling & TV Link */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card 1: Chiamata Clienti in Sala */}
+              <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider">Chiamata Clienti in Sala</h4>
+                    <p className="text-[11px] text-zinc-400">Aggiorna istantaneamente tutti i monitor collegati</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-[10px] font-bold rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    LIVE
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center p-8 bg-zinc-950 border border-zinc-800/80 rounded-2xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-radial from-rose-500/10 via-transparent to-transparent pointer-events-none" />
+                  <div className="text-center relative z-10">
+                    <span className="text-[11px] uppercase tracking-widest text-zinc-400 block font-bold mb-1">
+                      {dqCfg.call_label || 'Numero in Chiamata'}
+                    </span>
+                    <div className="text-6xl sm:text-7xl font-black font-mono text-rose-400 drop-shadow-md">
+                      {dqCallingNum != null ? (dqCfg.show_prefix !== false ? `#${dqCallingNum}` : `${dqCallingNum}`) : '—'}
+                    </div>
+                    <span className="text-[11px] text-zinc-500 mt-2 block">
+                      {dqCallingNum != null ? 'In onda su tutti i display' : 'Nessun numero attivo al momento'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Step Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => updateDisplayQueueCalling((dqCallingNum ?? 0) + 1)}
+                    className="p-3.5 bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-rose-950/40"
+                  >
+                    <span>+1 Successivo</span>
+                  </button>
+                  <button
+                    onClick={() => updateDisplayQueueCalling(Math.max(1, (dqCallingNum ?? 1) - 1))}
+                    disabled={!dqCallingNum || dqCallingNum <= 1}
+                    className="p-3.5 bg-zinc-800 hover:bg-zinc-750 disabled:opacity-40 text-zinc-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <span>-1 Precedente</span>
+                  </button>
+                </div>
+
+                {/* Manual Input Row */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="Es. 42"
+                    value={dqManualInput}
+                    onChange={(e) => setDqManualInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const n = parseInt(dqManualInput, 10);
+                        if (!isNaN(n) && n >= 0) {
+                          updateDisplayQueueCalling(n);
+                          setDqManualInput('');
+                        }
+                      }
+                    }}
+                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono placeholder:text-zinc-600 focus:outline-none focus:border-rose-500"
+                  />
+                  <button
+                    onClick={() => {
+                      const n = parseInt(dqManualInput, 10);
+                      if (!isNaN(n) && n >= 0) {
+                        updateDisplayQueueCalling(n);
+                        setDqManualInput('');
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Chiama
+                  </button>
+                  <button
+                    onClick={() => updateDisplayQueueCalling(null)}
+                    className="px-3.5 py-2.5 text-red-400 hover:bg-red-950/30 border border-red-900/30 font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Azzera
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Link Monitor TV Ritiro */}
+              <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-5 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Tv className="w-5 h-5 text-rose-400" />
+                    <h4 className="text-sm font-black text-white uppercase tracking-wider">Link Monitor TV Ritiro</h4>
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Apri questo indirizzo sul browser della Smart TV, Fire TV Stick, tablet a parete o mini PC collegato allo schermo in sala.
+                  </p>
+
+                  <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-2xl flex items-center justify-between gap-3">
+                    <code className="text-xs text-rose-300 font-mono break-all line-clamp-2 select-all">
+                      {tvUrl}
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard(tvUrl)}
+                      className="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors shrink-0"
+                      title="Copia link negli appunti"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span>Modalità schermo</span>
+                    <span className="text-zinc-200 font-bold">Automatico (OLED / LED Ready)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span>Aggiornamento</span>
+                    <span className="text-emerald-400 font-bold">Push istantaneo WebSocket</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span>Suono Smart TV</span>
+                    <span className={dqCfg.sound_enabled !== false ? 'text-emerald-400 font-bold' : 'text-zinc-500 font-bold'}>
+                      {dqCfg.sound_enabled !== false ? 'Attivo (Doppio Gong)' : 'Muto'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    onClick={() => copyToClipboard(tvUrl)}
+                    className="p-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copia Indirizzo</span>
+                  </button>
+                  <a
+                    href={tvUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Schermo Intero</span>
+                  </a>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => updateDisplayQueueCalling((dqCallingNum ?? 0) + 1)} className="p-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs">+1 Chiama</button>
-              <button onClick={() => updateDisplayQueueCalling(Math.max(1, (dqCallingNum ?? 1) - 1))} disabled={!dqCallingNum || dqCallingNum <= 1} className="p-3.5 bg-zinc-800 disabled:opacity-40 text-zinc-200 font-bold rounded-xl text-xs">-1 Prec.</button>
+
+            {/* Card 3: Aspetto & Personalizzazione TV */}
+            <div className="p-6 sm:p-8 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-6">
+              <div>
+                <h4 className="text-base font-black text-white flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5 text-rose-400" />
+                  <span>Aspetto & Personalizzazione TV</span>
+                </h4>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Configura grafica, contrasto, scala tipografica e comportamento sonoro dello schermo in sala.
+                </p>
+              </div>
+
+              {/* Tema Colore Schermo */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 block">Tema Colore Schermo</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { id: 'dark-pure', label: 'Nero OLED / LED', sub: 'Massimo contrasto nero puro' },
+                    { id: 'dark-navy', label: 'Blu Notte Navy', sub: 'Elegante e moderno' },
+                    { id: 'contrast', label: 'Alto Contrasto', sub: 'Giallo e ciano su nero' },
+                    { id: 'light', label: 'Chiaro Minimal', sub: 'Per ambienti molto illuminati' },
+                  ].map((tItem) => {
+                    const isSel = currentTheme === tItem.id;
+                    return (
+                      <button
+                        key={tItem.id}
+                        type="button"
+                        onClick={() => handleSaveDqConfig({ theme: tItem.id as any })}
+                        className={`p-3.5 rounded-2xl border text-left transition-all ${
+                          isSel
+                            ? 'bg-rose-950/40 border-rose-500 text-white shadow-md shadow-rose-950/30'
+                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-xs font-bold ${isSel ? 'text-rose-400' : 'text-zinc-200'}`}>
+                            {tItem.label}
+                          </span>
+                          {isSel && <Check className="w-3.5 h-3.5 text-rose-400" />}
+                        </div>
+                        <span className="text-[10px] text-zinc-500 block leading-tight">{tItem.sub}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Dimensione Cifra Chiamata */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 block">Dimensione Cifra Chiamata</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'gigantic', label: 'Gigantesco (Consigliato)', desc: 'Visibile anche a 20+ metri di distanza' },
+                    { id: 'huge', label: 'Enorme', desc: 'Bilanciato per TV da 43" a 55"' },
+                    { id: 'normal', label: 'Standard (Compatto)', desc: 'Adatto a tablet o schermi piccoli' },
+                  ].map((sItem) => {
+                    const isSel = currentSize === sItem.id;
+                    return (
+                      <button
+                        key={sItem.id}
+                        type="button"
+                        onClick={() => handleSaveDqConfig({ number_size: sItem.id as any })}
+                        className={`p-3.5 rounded-2xl border text-left transition-all ${
+                          isSel
+                            ? 'bg-rose-950/40 border-rose-500 text-white shadow-md shadow-rose-950/30'
+                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-xs font-bold ${isSel ? 'text-rose-400' : 'text-zinc-200'}`}>
+                            {sItem.label}
+                          </span>
+                          {isSel && <Check className="w-3.5 h-3.5 text-rose-400" />}
+                        </div>
+                        <span className="text-[10px] text-zinc-500 block leading-tight">{sItem.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Switches Grid */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 block">Opzioni & Interruttori Schermo TV</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Gong sonoro */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Gong sonoro su Smart TV</span>
+                      <span className="text-[11px] text-zinc-400">Doppio rintocco acustico alla chiamata</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ sound_enabled: !(dqCfg.sound_enabled !== false) })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.sound_enabled !== false ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.sound_enabled !== false ? 'Attivo' : 'Muto'}
+                    </button>
+                  </div>
+
+                  {/* Schermo solo numero */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Schermo Solo Numero Gigante</span>
+                      <span className="text-[11px] text-zinc-400">Nasconde liste ordini e mostra solo il numero</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ show_only_number: !dqCfg.show_only_number })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.show_only_number ? 'bg-rose-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.show_only_number ? 'Attivo' : 'No'}
+                    </button>
+                  </div>
+
+                  {/* Orologio digitale */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Orologio digitale in alto</span>
+                      <span className="text-[11px] text-zinc-400">Ora esatta sincronizzata in tempo reale</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ show_clock: !(dqCfg.show_clock !== false) })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.show_clock !== false ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.show_clock !== false ? 'Mostra' : 'Nascondi'}
+                    </button>
+                  </div>
+
+                  {/* Intestazione con nome ristorante */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Intestazione con nome attività</span>
+                      <span className="text-[11px] text-zinc-400">Barra superiore con logo e titolo</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ show_header: !(dqCfg.show_header !== false) })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.show_header !== false ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.show_header !== false ? 'Mostra' : 'Nascondi'}
+                    </button>
+                  </div>
+
+                  {/* Istruzioni per il ritiro */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Istruzioni per il ritiro</span>
+                      <span className="text-[11px] text-zinc-400">Testo guida mostrato sotto al numero</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ show_instruction: !(dqCfg.show_instruction !== false) })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.show_instruction !== false ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.show_instruction !== false ? 'Mostra' : 'Nascondi'}
+                    </button>
+                  </div>
+
+                  {/* Prefisso '#' davanti al numero */}
+                  <div className="p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Prefisso '#' davanti al numero</span>
+                      <span className="text-[11px] text-zinc-400">Es. "#42" invece di solo "42"</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveDqConfig({ show_prefix: !dqCfg.show_prefix })}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        dqCfg.show_prefix ? 'bg-rose-600 text-white' : 'bg-zinc-800 text-zinc-500'
+                      }`}
+                    >
+                      {dqCfg.show_prefix ? 'Mostra #' : 'Solo Cifre'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personalizzazione Testi Schermo TV */}
+              <div className="space-y-4 pt-2 border-t border-zinc-800/80">
+                <label className="text-xs font-bold text-zinc-300 block">Personalizzazione Testi Schermo TV</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+                      Etichetta Numero in Chiamata
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Es. NUMERO IN CHIAMATA"
+                      value={dqCfg.call_label || ''}
+                      onChange={(e) => handleSaveDqConfig({ call_label: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+                      Testo Istruzioni Ritiro
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Es. ⚡ Recarsi alla cassa o al banco di ritiro"
+                      value={dqCfg.instruction_text || ''}
+                      onChange={(e) => handleSaveDqConfig({ instruction_text: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input type="number" placeholder="Es. 42" value={dqManualInput} onChange={(e) => setDqManualInput(e.target.value)} className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white font-mono" />
-              <button onClick={() => { const n = parseInt(dqManualInput, 10); if (!isNaN(n) && n >= 0) { updateDisplayQueueCalling(n); setDqManualInput(''); } }} className="px-4 py-2.5 bg-zinc-800 text-white font-bold rounded-xl text-xs">Chiama</button>
-              <button onClick={() => updateDisplayQueueCalling(null)} className="px-3 py-2.5 text-red-400 border border-red-900/30 font-bold rounded-xl text-xs">Azzera</button>
-            </div>
-            <div className="text-xs text-zinc-500 font-mono break-all">
-              Tabellone: {typeof window !== 'undefined' ? `${window.location.origin}/display-queue/?mode=full` : '/display-queue/?mode=full'}
+
+            {/* Card 4: Numerazione Ordini & Reset Scontrini */}
+            <div className="p-6 sm:p-8 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base font-black text-white flex items-center gap-2">
+                    <RotateCcw className="w-5 h-5 text-rose-400" />
+                    <span>Numerazione Ordini & Reset Scontrini</span>
+                  </h4>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Configura la frequenza di azzeramento del numero scontrino emesso dal Totem e reimposta la numerazione da #1.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetOrderCounter}
+                  disabled={orderResetting}
+                  className="px-4 py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 font-bold rounded-xl text-xs flex items-center gap-2 transition-all shrink-0 disabled:opacity-50"
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${orderResetting ? 'animate-spin' : ''}`} />
+                  <span>{orderResetting ? 'Azzeramento in corso...' : 'Azzera Numerazione Ora'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-400 block">Modalità di Azzeramento</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'daily', label: 'Giornaliero' },
+                      { id: 'manual', label: 'Manuale' },
+                      { id: 'never', label: 'Mai' },
+                    ].map((m) => {
+                      const isSel = (settingsForm.order_reset_mode || 'daily') === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setSettingsForm({ ...settingsForm, order_reset_mode: m.id as any });
+                            api.updateSettings({ order_reset_mode: m.id as any });
+                          }}
+                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                            isSel
+                              ? 'bg-rose-600 border-rose-500 text-white'
+                              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                          }`}
+                        >
+                          {m.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-400 block">Orario di Azzeramento Automatico</label>
+                  <input
+                    type="time"
+                    value={settingsForm.order_reset_time || '00:00'}
+                    onChange={(e) => {
+                      setSettingsForm({ ...settingsForm, order_reset_time: e.target.value });
+                      api.updateSettings({ order_reset_time: e.target.value });
+                    }}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-rose-500"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================= */}
       {/* TAB: DIGITAL SIGNAGE & TV DISPLAY QUEUE (15% / 85%)       */}

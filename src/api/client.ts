@@ -113,6 +113,18 @@ const DEFAULT_SETTINGS: Settings = {
   order_reset_time: '00:00',
   station_topology: DEFAULT_STATION_TOPOLOGY,
   printers: DEFAULT_PRINTERS,
+  display_queue_config: {
+    show_prefix: false,
+    show_only_number: false,
+    show_header: true,
+    show_clock: true,
+    show_ready_list: true,
+    show_prep_list: true,
+    show_instruction: true,
+    number_size: 'gigantic',
+    theme: 'dark-pure',
+    sound_enabled: true,
+  },
 };
 
 const DEFAULT_KIOSK_SETTINGS: KioskSettings = {
@@ -553,17 +565,24 @@ export const api = {
   },
 
   updateSettings: async (update: Partial<Settings>): Promise<Settings> => {
+    const current = loadLocal<Settings>('totem_settings', DEFAULT_SETTINGS);
+    const merged: Settings = {
+      ...current,
+      ...update,
+      display_queue_config: update.display_queue_config
+        ? { ...(current.display_queue_config || {}), ...update.display_queue_config }
+        : (update.display_queue_config !== undefined ? update.display_queue_config : current.display_queue_config),
+    };
+    saveLocal('totem_settings', merged);
     try {
       const res = await fetchJson<Settings>('/admin/settings', {
         method: 'PUT',
-        body: JSON.stringify(update),
+        body: JSON.stringify(merged),
       });
-      saveLocal('totem_settings', res);
-      return res;
+      const finalSettings = { ...merged, ...res };
+      saveLocal('totem_settings', finalSettings);
+      return finalSettings;
     } catch {
-      const current = loadLocal<Settings>('totem_settings', DEFAULT_SETTINGS);
-      const merged = { ...current, ...update };
-      saveLocal('totem_settings', merged);
       return merged;
     }
   },

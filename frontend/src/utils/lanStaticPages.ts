@@ -334,13 +334,28 @@ export const QUEUE_HTML = `<!DOCTYPE html>
     }
 
     /* THEMES */
-    body.theme-midnight {
-      --bg: #000000;
-      --card-bg: #090D16;
-      --card-border: #1E293B;
-      --cyan: #38BDF8;
-      --cyan-glow: rgba(56, 189, 248, 0.4);
-      --hero-bg: radial-gradient(circle at 50% 30%, #0F172A 0%, #000000 100%);
+    body.theme-midnight, body.theme-dark-pure, body.theme-oled, body.theme-nero-led {
+      --bg: #000000 !important;
+      --card-bg: #000000 !important;
+      --card-border: #27272A !important;
+      --cyan: #38BDF8 !important;
+      --cyan-glow: rgba(56, 189, 248, 0.45) !important;
+      --green: #22C55E !important;
+      --green-glow: rgba(34, 197, 94, 0.4) !important;
+      --amber: #F59E0B !important;
+      --text: #FFFFFF !important;
+      --text-muted: #A1A1AA !important;
+      --hero-bg: #000000 !important;
+      background: #000000 !important;
+      background-color: #000000 !important;
+    }
+    body.theme-midnight #app, body.theme-dark-pure #app, body.theme-oled #app, body.theme-nero-led #app,
+    body.theme-midnight .hero-panel, body.theme-dark-pure .hero-panel, body.theme-oled .hero-panel, body.theme-nero-led .hero-panel,
+    body.theme-midnight .side-card, body.theme-dark-pure .side-card, body.theme-oled .side-card, body.theme-nero-led .side-card,
+    body.theme-midnight header, body.theme-dark-pure header, body.theme-oled header, body.theme-nero-led header {
+      background: #000000 !important;
+      background-color: #000000 !important;
+      border-color: #27272A !important;
     }
     body.theme-light {
       --bg: #F1F5F9;
@@ -368,9 +383,36 @@ export const QUEUE_HTML = `<!DOCTYPE html>
     }
 
     /* SIZE MODIFIERS */
-    body.size-giant { --num-size: clamp(9.5rem, 26vw, 28rem); }
-    body.size-large { --num-size: clamp(6.5rem, 18vw, 18rem); }
-    body.size-normal { --num-size: clamp(4.5rem, 13vw, 12rem); }
+    body.size-giant, body.size-gigantic {
+      --num-size: clamp(12rem, 32vw, 42rem) !important;
+    }
+    body.size-giant .number-display,
+    body.size-gigantic .number-display {
+      font-size: clamp(12rem, 32vw, 42rem) !important;
+      line-height: 0.85 !important;
+    }
+    body.size-giant.layout-only-number .number-display,
+    body.size-gigantic.layout-only-number .number-display {
+      font-size: clamp(16rem, 45vw, 60rem) !important;
+    }
+
+    body.size-large, body.size-huge {
+      --num-size: clamp(7.5rem, 20vw, 22rem) !important;
+    }
+    body.size-large .number-display,
+    body.size-huge .number-display {
+      font-size: clamp(7.5rem, 20vw, 22rem) !important;
+      line-height: 0.9 !important;
+    }
+
+    body.size-normal, body.size-standard {
+      --num-size: clamp(5rem, 13vw, 13rem) !important;
+    }
+    body.size-normal .number-display,
+    body.size-standard .number-display {
+      font-size: clamp(5rem, 13vw, 13rem) !important;
+      line-height: 0.95 !important;
+    }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -832,13 +874,32 @@ export const QUEUE_HTML = `<!DOCTYPE html>
     function applyConfigToDom() {
       // 1. Apply Theme
       document.body.className = '';
-      if (config.theme && config.theme !== 'dark') {
-        document.body.classList.add('theme-' + config.theme);
+      var th = (config.theme || 'dark-pure').toLowerCase().trim();
+      if (th === 'dark-pure' || th === 'midnight' || th === 'oled' || th.indexOf('pure') >= 0 || th.indexOf('oled') >= 0 || th.indexOf('led') >= 0 || th.indexOf('nero') >= 0) {
+        document.body.classList.add('theme-midnight');
+        document.body.classList.add('theme-dark-pure');
+        document.body.classList.add('theme-oled');
+        document.body.classList.add('theme-nero-led');
+      } else if (th === 'light' || th.indexOf('light') >= 0 || th.indexOf('chiaro') >= 0) {
+        document.body.classList.add('theme-light');
+      } else if (th === 'contrast') {
+        document.body.classList.add('theme-contrast');
+      } else {
+        document.body.classList.add('theme-dark-navy');
       }
 
       // 2. Apply Size
-      var sz = config.number_size || 'large';
-      document.body.classList.add('size-' + sz);
+      var sz = (config.number_size || 'gigantic').toLowerCase().trim();
+      if (sz === 'giant' || sz === 'gigantic' || sz.indexOf('gigan') >= 0) {
+        document.body.classList.add('size-giant');
+        document.body.classList.add('size-gigantic');
+      } else if (sz === 'large' || sz === 'huge' || sz.indexOf('enorme') >= 0) {
+        document.body.classList.add('size-large');
+        document.body.classList.add('size-huge');
+      } else {
+        document.body.classList.add('size-normal');
+        document.body.classList.add('size-standard');
+      }
 
       // 3. Layout: show only number
       if (config.show_only_number) {
