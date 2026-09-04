@@ -1,0 +1,101 @@
+{
+  "name": "totem",
+  "main": "expo-router/entry",
+  "version": "1.2.24",
+  "scripts": {
+    "start": "expo start",
+    "reset-project": "node ./scripts/reset-project.js",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "bundle:remote": "node ./scripts/bundle-web.js",
+    "postinstall": "node ./scripts/generate-assets.js && node ./scripts/bundle-web.js"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "6.1.2",
+    "@expo/vector-icons": "15.1.1",
+    "@noble/hashes": "^2.4.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "7.18.13",
+    "@shopify/flash-list": "2.0.2",
+    "buffer": "6.0.3",
+    "date-fns": "4.1.0",
+    "dayjs": "1.11.13",
+    "expo": "54.0.36",
+    "expo-blur": "15.0.8",
+    "expo-build-properties": "~1.0.10",
+    "expo-clipboard": "~8.0.8",
+    "expo-constants": "18.0.13",
+    "expo-crypto": "~15.0.9",
+    "expo-document-picker": "~14.0.7",
+    "expo-file-system": "~19.0.21",
+    "expo-font": "14.0.12",
+    "expo-haptics": "15.0.8",
+    "expo-image": "3.0.11",
+    "expo-image-picker": "~17.0.11",
+    "expo-keep-awake": "~15.0.8",
+    "expo-linear-gradient": "15.0.8",
+    "expo-linking": "8.0.12",
+    "expo-localization": "~17.0.9",
+    "expo-network": "~8.0.8",
+    "expo-print": "~15.0.8",
+    "expo-router": "6.0.24",
+    "expo-secure-store": "15.0.8",
+    "expo-sharing": "~14.0.7",
+    "expo-splash-screen": "31.0.13",
+    "expo-status-bar": "3.0.9",
+    "expo-symbols": "1.0.8",
+    "expo-system-ui": "6.0.9",
+    "expo-web-browser": "15.0.11",
+    "fs-extra": "11.3.0",
+    "jszip": "3.10.1",
+    "kiosk-mode": "file:./modules/kiosk-mode",
+    "play-billing": "file:./modules/play-billing",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-dotenv": "3.4.11",
+    "react-native-gesture-handler": "2.28.0",
+    "react-native-paper": "5.15.3",
+    "react-native-reanimated": "4.1.1",
+    "react-native-safe-area-context": "5.6.0",
+    "react-native-screens": "4.16.0",
+    "react-native-tcp-socket": "6.4.2",
+    "react-native-thermal-printer-driver": "0.1.1",
+    "react-native-web": "0.19.13",
+    "react-native-webview": "13.15.0",
+    "react-native-worklets": "0.5.1",
+    "zustand": "5.0.14"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~19.1.0",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true,
+  "expo": {
+    "install": {
+      "exclude": [
+        "react-native-web",
+        "@react-navigation/bottom-tabs",
+        "expo",
+        "expo-constants",
+        "expo-file-system"
+      ]
+    },
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false,
+        "exclude": [
+          "react-native-tcp-socket",
+          "kiosk-mode",
+          "play-billing",
+          "react-native-thermal-printer-driver"
+        ]
+      }
+    }
+  }
+}

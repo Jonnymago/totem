@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <title>Vetrina TV & Digital Signage — Totem</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141416;
+      --red: #E31C23;
+      --yellow: #F5C400;
+      --accent: #E31C23;
+      --gold: #D4AF37;
+      --text: #ffffff;
+      --text-muted: rgba(255,255,255,0.72);
+      --strip-h: clamp(64px, 11vh, 92px);
+      --rotate: 8s;
+      --font-display: Impact, -apple-system, BlinkMacSystemFont, "Arial Black", sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Template Themes */
+    body.theme-chalkboard {
+      --bg: #121417;
+      --card-bg: #1a1d21;
+      --red: #ff4757;
+      --yellow: #ffd32a;
+      --gold: #fbc531;
+    }
+    body.theme-fastfood-vibrant {
+      --bg: #0b0c10;
+      --card-bg: #1a1b22;
+      --red: #e81123;
+      --yellow: #ffb703;
+      --gold: #fb8500;
+    }
+    body.theme-dark-gold {
+      --bg: #070709;
+      --card-bg: #121215;
+      --red: #d4af37;
+      --yellow: #f3e5ab;
+      --gold: #d4af37;
+    }
+    body.theme-trattoria {
+      --bg: #140d0a;
+      --card-bg: #211612;
+      --red: #c0392b;
+      --yellow: #f39c12;
+      --gold: #e67e22;
+    }
+    body.theme-fresh-emerald {
+      --bg: #06140d;
+      --card-bg: #0d2218;
+      --red: #10b981;
+      --yellow: #34d399;
+      --gold: #6ee7b7;
+    }
+    body.theme-steakhouse {
+      --bg: #100a08;
+      --card-bg: #1e130e;
+      --red: #b91c1c;
+      --yellow: #ea580c;
+      --gold: #f97316;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #app {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+
+    /* Boot / Loading Overlay */
+    #boot {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #000000; z-index: 50;
+      flex-direction: column; gap: 14px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #boot.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Top Queue Header Strip */
+    #queue-strip {
+      height: var(--strip-h);
+      background: #09090b;
+      border-bottom: 3px solid var(--red);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(12px, 2.2vw, 32px);
+      gap: clamp(10px, 1.8vw, 28px);
+      flex-shrink: 0;
+      box-sizing: border-box;
+      z-index: 20;
+    }
+    #queue-strip.hidden { display: none; }
+
+    body.queue-only #queue-strip {
+      height: 100%; max-height: none; min-height: 100%;
+      flex-direction: column; justify-content: center;
+      border-bottom: 0; gap: 2.5rem;
+    }
+    body.queue-only #signage { display: none; }
+    body.queue-only .now-num { font-size: clamp(8rem, 36vw, 22rem); }
+    body.queue-only .now-lbl { font-size: 1.6rem; letter-spacing: 0.25em; }
+    body.queue-only .brand-name { font-size: 2.2rem; max-width: 85vw; }
+    body.queue-only .next, body.queue-only .clock { display: none; }
+
+    .brand-col { display: flex; flex-direction: column; min-width: 0; max-width: 26vw; }
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: clamp(0.9rem, 1.4vw, 1.35rem);
+      letter-spacing: 0.08em;
+      color: var(--yellow);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-transform: uppercase; line-height: 1.1;
+    }
+    .now-lbl {
+      font-size: clamp(0.58rem, 0.85vw, 0.78rem);
+      font-weight: 800; letter-spacing: 0.18em;
+      color: var(--red); text-transform: uppercase; white-space: nowrap;
+    }
+
+    .now-box { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .now-num {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6.2vh, 4.2rem);
+      font-weight: 900; font-variant-numeric: tabular-nums;
+      line-height: 1; color: var(--red); min-width: 2.2ch; text-align: center;
+      text-shadow: 0 0 24px rgba(227,28,35,0.6);
+    }
+    .now-num.pulse { animation: pulse 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.22); color: #ffffff; text-shadow: 0 0 35px var(--yellow); }
+      100% { transform: scale(1); }
+    }
+
+    .next { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .next-lbl { font-size: clamp(0.55rem, 0.8vw, 0.72rem); font-weight: 800; letter-spacing: 0.14em; color: var(--text-muted); white-space: nowrap; }
+    .chips { display: flex; gap: 8px; overflow: hidden; white-space: nowrap; }
+    .chip {
+      background: #18181b; border: 1px solid #27272a; border-radius: 999px;
+      padding: 3px 12px; font-weight: 800; font-variant-numeric: tabular-nums;
+      font-size: clamp(0.8rem, 1.05vw, 1rem); color: #f4f4f5;
+    }
+    .clock {
+      font-family: monospace; font-weight: 800; color: var(--yellow);
+      font-variant-numeric: tabular-nums; font-size: clamp(0.9rem, 1.3vw, 1.25rem);
+      white-space: nowrap;
+    }
+
+    /* Video Background Layer */
+    #bg-video-layer {
+      position: absolute; inset: 0; z-index: 1;
+      overflow: hidden; pointer-events: none;
+      opacity: 0.28; transition: opacity 0.5s ease;
+    }
+    #bg-video-layer video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    #bg-video-layer.hidden { display: none; }
+
+    /* Signage Main Stage */
+    #signage {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      position: relative;
+      background: transparent;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    #cat-banner {
+      padding: clamp(6px, 1.2vh, 12px) clamp(16px, 2.5vw, 36px) clamp(4px, 0.8vh, 8px);
+      flex-shrink: 0; display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 16px; z-index: 6;
+    }
+    #cat-header-wrap { display: flex; flex-direction: column; gap: 2px; }
+    #cat-kicker {
+      font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+      font-weight: 800; letter-spacing: 0.22em;
+      color: var(--yellow); text-transform: uppercase;
+    }
+    #cat-name {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4.2vw, 3.6rem);
+      font-weight: 900;
+      text-transform: uppercase; color: var(--red); letter-spacing: 0.04em;
+      line-height: 1.05; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+    #cat-name.swap { animation: titleIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes titleIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #page-ind {
+      color: rgba(255,255,255,0.65);
+      font-weight: 800;
+      font-size: clamp(0.75rem, 1.1vw, 1.1rem);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    #board {
+      flex: 1; min-height: 0;
+      padding: 0.4rem clamp(12px, 2vw, 28px) 0.6rem;
+      position: relative;
+      z-index: 6;
+    }
+    #product-grid {
+      height: 100%; width: 100%;
+      display: grid;
+      gap: clamp(10px, 1.4vw, 18px);
+      transition: all 0.35s ease;
+    }
+
+    /* Layout Definitions */
+    #product-grid.layout-2 { grid-template-columns: 1.2fr 1fr; }
+    #product-grid.layout-3 { grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; }
+    #product-grid.layout-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr 1fr; }
+    #product-grid.layout-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
+    #product-grid.layout-8 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; }
+    
+    #product-grid.layout-1-hero-4-grid {
+      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    #product-grid.layout-2-hero-2-grid {
+      grid-template-columns: 1.2fr 1.2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    #product-grid.layout-bento {
+      grid-template-columns: 1.5fr 1fr 1fr;
+      grid-template-rows: 1.3fr 1fr;
+    }
+    #product-grid.layout-hero-spotlight {
+      grid-template-columns: 1.6fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+
+    @media (orientation: portrait) {
+      #product-grid.layout-6, #product-grid.layout-8, #product-grid.layout-1-hero-4-grid, #product-grid.layout-2-hero-2-grid, #product-grid.layout-bento {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+      #product-grid.layout-3 { grid-template-columns: 1fr; grid-template-rows: none; }
+      .brand-name { max-width: 40vw; }
+    }
+
+    /* Cards */
+    .card {
+      position: relative; overflow: hidden;
+      border-radius: 14px;
+      background: var(--card-bg);
+      min-height: 0;
+      display: flex; flex-direction: column;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .card:nth-child(1){animation-delay:0.02s} .card:nth-child(2){animation-delay:0.06s}
+    .card:nth-child(3){animation-delay:0.10s} .card:nth-child(4){animation-delay:0.14s}
+    .card:nth-child(5){animation-delay:0.18s} .card:nth-child(6){animation-delay:0.22s}
+    .card:nth-child(7){animation-delay:0.26s} .card:nth-child(8){animation-delay:0.30s}
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.93) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Hero Cards */
+    .card.hero {
+      grid-row: span 2;
+      border: 2.5px solid var(--gold);
+      box-shadow: 0 12px 36px rgba(212,175,55,0.25);
+    }
+    .card.hero-wide {
+      grid-column: span 2;
+      border: 2.5px solid var(--red);
+    }
+
+    .card-img {
+      position: relative; flex: 1; min-height: 0;
+      overflow: hidden; background: #0c0d10;
+    }
+    .card-img img {
+      position: absolute; inset: -4%;
+      width: 108%; height: 108%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    /* Product Animations (Video-Editor Styles) */
+    .anim-ken-burns img {
+      animation: kenBurns 14s ease-in-out infinite alternate;
+    }
+    @keyframes kenBurns {
+      0% { transform: scale(1) translate3d(0,0,0); }
+      100% { transform: scale(1.18) translate3d(-3%, -2.5%, 0); }
+    }
+
+    .anim-pulse-glow {
+      animation: pulseGlow 2.8s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 14px rgba(227,28,35,0.3); border-color: rgba(227,28,35,0.5); }
+      100% { box-shadow: 0 0 38px rgba(245,196,0,0.75); border-color: var(--yellow); }
+    }
+
+    .anim-steam-float img {
+      animation: steamFloat 5.5s ease-in-out infinite alternate;
+    }
+    @keyframes steamFloat {
+      0% { transform: translateY(0) scale(1.02); }
+      100% { transform: translateY(-9px) scale(1.08); }
+    }
+
+    .anim-3d-pop {
+      animation: pop3d 4.5s ease-in-out infinite alternate;
+    }
+    @keyframes pop3d {
+      0% { transform: perspective(800px) rotateY(0deg) scale(1); }
+      100% { transform: perspective(800px) rotateY(4deg) scale(1.03); }
+    }
+
+    .anim-price-shimmer .card-price {
+      background: linear-gradient(90deg, #fff, var(--yellow), #fff);
+      background-size: 200% auto;
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: shine 3s linear infinite;
+    }
+    @keyframes shine {
+      to { background-position: 200% center; }
+    }
+
+    .ph {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.8rem; background: #16171b;
+    }
+
+    /* Card Captions */
+    .card-caption {
+      flex-shrink: 0; padding: 0.55rem 0.85rem 0.6rem;
+      background: #18191e;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .card:nth-child(odd) .card-caption { background: var(--yellow); }
+    .card:nth-child(odd) .card-name { color: #0a0a0c; }
+    .card:nth-child(odd) .card-price { color: var(--red); }
+    .card:nth-child(even) .card-name { color: #ffffff; }
+    .card:nth-child(even) .card-price { color: var(--yellow); }
+
+    .card.hero .card-caption {
+      background: #18191e;
+      padding: 0.75rem 1rem 0.8rem;
+    }
+    .card.hero .card-name { color: #ffffff; font-size: clamp(1.05rem, 1.8vw, 1.6rem); }
+    .card.hero .card-price { color: var(--gold); font-size: clamp(1.4rem, 2.4vw, 2.2rem); }
+
+    .card-name {
+      font-family: var(--font-body);
+      font-weight: 900;
+      font-size: clamp(0.88rem, 1.4vw, 1.3rem);
+      text-transform: uppercase; line-height: 1.15;
+      min-width: 0;
+      overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .card-price {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 2.1vw, 1.95rem);
+      white-space: nowrap; line-height: 1;
+      font-weight: 900;
+    }
+
+    /* Custom Tags / Badges */
+    .card-tag {
+      position: absolute; top: 12px; left: 12px; z-index: 5;
+      background: var(--red); color: #ffffff;
+      font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+      padding: 4px 12px; border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .card-tag.gold {
+      background: var(--gold); color: #000000;
+    }
+
+    /* Bottom Upselling Ticker Bar */
+    #ticker-bar {
+      height: 38px;
+      background: #111216;
+      border-top: 1.5px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center;
+      overflow: hidden; white-space: nowrap;
+      flex-shrink: 0; z-index: 10;
+    }
+    #ticker-prefix {
+      background: var(--red); color: #fff;
+      font-weight: 900; font-size: 0.75rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0 16px; height: 100%;
+      display: flex; align-items: center;
+      flex-shrink: 0; z-index: 2;
+    }
+    #ticker-content {
+      display: inline-block; padding-left: 100%;
+      animation: ticker 28s linear infinite;
+      font-size: 0.88rem; font-weight: 800;
+      color: var(--yellow); letter-spacing: 0.06em;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    #empty {
+      display: none; height: 100%;
+      align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 1.3rem; font-weight: 700;
+    }
+
+    /* Progress bar at slide bottom */
+    #progress { height: 4px; background: rgba(255,255,255,0.1); flex-shrink: 0; z-index: 10; }
+    #progress > span { display: block; height: 100%; width: 0; background: var(--red); }
+    #progress.run > span { animation: bar var(--rotate, 8s) linear; }
+    @keyframes bar { from { width: 0; } to { width: 100%; } }
+
+    /* Transitions & Curtain */
+    #curtain {
+      position: absolute; inset: 0; display: none;
+      align-items: center; justify-content: center;
+      background: #000000; z-index: 30; text-align: center;
+    }
+    #boot {
+      position: fixed; inset: 0; background: #0b0c10; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #boot.hide {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      display: none !important;
+    }
+
+    #curtain.show { display: flex; animation: curtainFade 0.45s ease both; }
+    @keyframes curtainFade { from { opacity: 0; } to { opacity: 1; } }
+
+    #curtain-kicker {
+      color: var(--yellow); letter-spacing: 0.35em;
+      font-weight: 900; font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+      margin-bottom: 0.6rem; text-transform: uppercase;
+    }
+    #curtain-cat {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 8.5vw, 6rem);
+      font-weight: 900; text-transform: uppercase;
+      color: var(--red); border-bottom: 6px solid var(--red);
+      display: inline-block; padding-bottom: 6px;
+    }
+  </style>
+</head>
+<body class="theme-chalkboard">
+  <div id="boot">
+    <div class="spinner"></div>
+    <div class="brand-name" style="font-size:1.3rem; margin-top:8px">CARICAMENTO VETRINA TV…</div>
+  </div>
+
+  <div id="app">
+    <!-- Queue Calling Strip -->
+    <div id="queue-strip">
+      <div class="brand-col">
+        <div class="brand-name" id="restaurant-name">TOTEM</div>
+        <div class="now-lbl">IN CHIAMATA</div>
+      </div>
+      <div class="now-box">
+        <div class="now-num" id="current-number">—</div>
+      </div>
+      <div class="next">
+        <div class="next-lbl">PROSSIMI</div>
+        <div class="chips" id="next-chips"></div>
+      </div>
+      <div class="clock" id="clock">--:--</div>
+    </div>
+
+    <!-- Signage Main Area -->
+    <main id="signage">
+      <div id="bg-video-layer" class="hidden">
+        <video id="bg-video-el" autoplay muted loop playsinline></video>
+      </div>
+
+      <div id="cat-banner">
+        <div id="cat-header-wrap">
+          <div id="cat-kicker">CATEGORIA</div>
+          <div id="cat-name">MENÙ</div>
+        </div>
+        <div id="page-ind"></div>
+      </div>
+
+      <section id="board">
+        <div id="product-grid" class="layout-6"></div>
+        <div id="empty">Nessun prodotto disponibile in questa categoria</div>
+      </section>
+
+      <div id="ticker-bar" style="display:none">
+        <div id="ticker-prefix">OFFERTE & SPECIALITÀ</div>
+        <div id="ticker-content"></div>
+      </div>
+
+      <div id="progress"><span></span></div>
+
+      <div id="curtain">
+        <div>
+          <div id="curtain-kicker">PROSSIMA CATEGORIA</div>
+          <div id="curtain-cat"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var path = (location.pathname || '').replace(/\/+$/, '');
+  var MODE = (params.get('mode') || '').toLowerCase();
+  if (path.slice(-6) === '/queue' || MODE === 'queue') MODE = 'queue';
+  else if (MODE !== 'products') MODE = 'full';
+
+  var DEFAULT_ROTATE_MS = 8000;
+  var ROTATE_MS = parseInt(params.get('rotate') || params.get('interval') || '8000', 10);
+  if (ROTATE_MS < 120) ROTATE_MS *= 1000;
+
+  var screenId = params.get('screen') || '';
+  var categoryIds = (params.get('categories') || params.get('categoryId') || '').split(',').filter(Boolean);
+  var forcedCols = parseInt(params.get('cols') || '0', 10);
+
+  if (MODE === 'products') document.getElementById('queue-strip').classList.add('hidden');
+  if (MODE === 'queue') document.body.classList.add('queue-only');
+
+  var categories = [], products = [], screens = [], pages = [];
+  var pageIndex = 0, currentCalling = null, pageBusy = false;
+  var rotateTimer = null, audioCtx = null, signageConfig = {};
+
+  // Fail-safe boot hide timer
+  setTimeout(function() {
+    var boot = document.getElementById('boot');
+    if (boot) boot.classList.add('hide');
+  }, 1000);
+
+  function fetchJson(url) {
+    return fetch(url, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function unlockAudio() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+
+  function playCallChime() {
+    unlockAudio();
+    try {
+      if (!audioCtx) return;
+      var now = audioCtx.currentTime;
+      [
+        [261.63, 0, 0.22, 'triangle', 0.6],
+        [659.25, 0.08, 0.26, 'sine', 0.9],
+        [880.00, 0.26, 0.32, 'triangle', 0.95],
+        [1174.66, 0.48, 0.45, 'sine', 1]
+      ].forEach(function (t) {
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = t[3];
+        osc.frequency.setValueAtTime(t[0], now + t[1]);
+        gain.gain.setValueAtTime(0.0001, now + t[1]);
+        gain.gain.exponentialRampToValueAtTime(t[4], now + t[1] + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + t[1] + t[2]);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now + t[1]); osc.stop(now + t[1] + t[2] + 0.02);
+      });
+    } catch (e) {}
+  }
+
+  function photoSrc(p) {
+    if (!p) return '';
+    return '/api/signage-photo/' + encodeURIComponent(p.id);
+  }
+
+  function applyTheme(themeName) {
+    var validThemes = ['chalkboard', 'fastfood-vibrant', 'dark-gold', 'trattoria', 'fresh-emerald', 'steakhouse'];
+    validThemes.forEach(function (t) { document.body.classList.remove('theme-' + t); });
+    var chosen = (themeName && validThemes.indexOf(themeName) >= 0) ? themeName : 'chalkboard';
+    document.body.classList.add('theme-' + chosen);
+  }
+
+  // Build Pages based on Categories (1 Category = 1 Page on TV)
+  function rebuildPages() {
+    var cats = categories.slice().sort(function (a, b) { return (a.order_index || 0) - (b.order_index || 0); });
+    if (categoryIds.length) {
+      cats = cats.filter(function (c) { return categoryIds.indexOf(String(c.id)) >= 0; });
+    }
+
+    pages = [];
+    cats.forEach(function (cat) {
+      var catConfig = (signageConfig.categories_config || {})[cat.id] || {};
+      if (catConfig.enabled === false) return;
+
+      // Smart Auto-Reflow: only take available products
+      var list = products.filter(function (p) {
+        if (p.available === false) return false;
+        return String(p.category_id) === String(cat.id);
+      });
+
+      // If category has product config order, sort by it
+      var prodConfigs = catConfig.products_config || {};
+      if (catConfig.product_order_ids && catConfig.product_order_ids.length) {
+        list.sort(function (a, b) {
+          var idxA = catConfig.product_order_ids.indexOf(a.id);
+          var idxB = catConfig.product_order_ids.indexOf(b.id);
+          if (idxA >= 0 && idxB >= 0) return idxA - idxB;
+          if (idxA >= 0) return -1;
+          if (idxB >= 0) return 1;
+          return 0;
+        });
+      }
+
+      // Filter out products explicitly disabled in TV config
+      list = list.filter(function (p) {
+        var pc = prodConfigs[p.id];
+        return !pc || pc.enabled !== false;
+      });
+
+      var layout = catConfig.layout || 'auto';
+      var pageSize = 8;
+      if (layout === '1-hero-4-grid') pageSize = 5;
+      else if (layout === '2-hero-2-grid' || layout === 'grid-4') pageSize = 4;
+      else if (layout === 'grid-6' || layout === 'bento') pageSize = 6;
+      else if (layout === 'hero-spotlight') pageSize = 3;
+
+      for (var i = 0; i < Math.max(list.length, 1); i += pageSize) {
+        pages.push({
+          id: cat.id,
+          name: cat.name || 'Menù',
+          products: list.slice(i, i + pageSize),
+          config: catConfig,
+          duration: (catConfig.duration_seconds || signageConfig.rotate_seconds || 8) * 1000
+        });
+      }
+    });
+
+    if (pageIndex >= pages.length) pageIndex = 0;
+  }
+
+  function renderQueue(withPulse) {
+    if (MODE === 'products') return;
+    var el = document.getElementById('current-number');
+    var nextText = currentCalling != null ? pad(currentCalling) : '—';
+    if (withPulse && el.textContent !== nextText) {
+      el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+      playCallChime();
+    }
+    el.textContent = nextText;
+  }
+
+  function layoutFor(page) {
+    var catLayout = page.config && page.config.layout;
+    if (catLayout && catLayout !== 'auto') return 'layout-' + catLayout;
+    var n = page.products.length;
+    if (forcedCols === 2) return 'layout-2';
+    if (forcedCols === 3) return n <= 3 ? 'layout-3' : 'layout-6';
+    if (forcedCols === 4) return n <= 4 ? 'layout-4' : 'layout-8';
+    if (n <= 2) return 'layout-2';
+    if (n === 3) return 'layout-3';
+    if (n <= 4) return 'layout-4';
+    if (n <= 6) return 'layout-6';
+    return 'layout-8';
+  }
+
+  function buildCards(page) {
+    var list = page.products;
+    var catConfig = page.config || {};
+    var heroIds = catConfig.hero_product_ids || [];
+    var prodConfigs = catConfig.products_config || {};
+
+    return list.map(function (p, idx) {
+      var pCfg = prodConfigs[p.id] || {};
+      var isHero = pCfg.is_hero || pCfg.slot_size === 'hero' || pCfg.slot_size === 'spotlight' || heroIds.indexOf(p.id) >= 0 || (list.length === 3 && idx === 0) || (list.length <= 2 && idx === 0);
+      var heroClass = isHero ? ' hero' : '';
+      var anim = pCfg.animation || 'ken-burns';
+      var animClass = anim !== 'none' ? ' anim-' + anim : '';
+
+      var tagText = pCfg.custom_tag || (p.is_featured ? '🔥 PIÙ VENDUTO' : (isHero ? '⭐ SPECIALITÀ' : ''));
+      var isGoldTag = tagText.indexOf('CHEF') >= 0 || tagText.indexOf('SPECIALITÀ') >= 0;
+      var tag = tagText ? '<div class="card-tag' + (isGoldTag ? ' gold' : '') + '">' + escapeHtml(tagText) + '</div>' : '';
+
+      var img = '<img src="' + escapeHtml(photoSrc(p)) + '" alt="" onerror="this.onerror=null;this.style.display=\'none\';this.parentNode.insertAdjacentHTML(\'afterbegin\',\'<div class=ph>🍽️</div>\');" />';
+
+      return '<article class="card' + heroClass + animClass + '" data-prod-id="' + escapeHtml(p.id) + '">' +
+        tag +
+        '<div class="card-img">' + img + '</div>' +
+        '<div class="card-caption">' +
+          '<div class="card-name">' + escapeHtml(p.name || '') + '</div>' +
+          '<div class="card-price">€' + Number(p.price || 0).toFixed(2) + '</div>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+  }
+
+  function renderPage(animate) {
+    if (MODE === 'queue') return;
+    var grid = document.getElementById('product-grid');
+    var empty = document.getElementById('empty');
+    var catName = document.getElementById('cat-name');
+    var pageInd = document.getElementById('page-ind');
+    var bgVideoLayer = document.getElementById('bg-video-layer');
+    var bgVideoEl = document.getElementById('bg-video-el');
+
+    if (!pages.length) {
+      grid.style.display = 'none';
+      empty.style.display = 'flex';
+      catName.textContent = 'Menù';
+      pageInd.textContent = '';
+      return;
+    }
+
+    empty.style.display = 'none';
+    grid.style.display = 'grid';
+    var page = pages[pageIndex % pages.length];
+    var catConfig = page.config || {};
+
+    // Apply per-category theme or global theme
+    applyTheme(catConfig.theme || signageConfig.default_theme || 'chalkboard');
+
+    // Handle background video loop
+    var videoUrl = catConfig.bg_video_url || signageConfig.video_loop_url || '';
+    if (videoUrl) {
+      if (bgVideoEl.src !== videoUrl) {
+        bgVideoEl.src = videoUrl;
+        bgVideoEl.play().catch(function () {});
+      }
+      bgVideoLayer.classList.remove('hidden');
+    } else {
+      bgVideoLayer.classList.add('hidden');
+      bgVideoEl.pause();
+    }
+
+    var apply = function () {
+      catName.textContent = page.name;
+      if (animate) {
+        catName.classList.remove('swap');
+        void catName.offsetWidth;
+        catName.classList.add('swap');
+      }
+      pageInd.textContent = pages.length > 1 ? ((pageIndex % pages.length) + 1) + ' / ' + pages.length : '';
+      grid.className = layoutFor(page);
+      grid.innerHTML = buildCards(page);
+
+      var durSec = (page.duration || ROTATE_MS) / 1000;
+      document.documentElement.style.setProperty('--rotate', durSec + 's');
+      var bar = document.getElementById('progress');
+      bar.classList.remove('run');
+      void bar.offsetWidth;
+      bar.classList.add('run');
+    };
+
+    if (!animate || pageBusy) {
+      apply();
+      return;
+    }
+
+    pageBusy = true;
+    var curtain = document.getElementById('curtain');
+    document.getElementById('curtain-cat').textContent = page.name;
+    curtain.classList.add('show');
+
+    setTimeout(function () {
+      apply();
+      setTimeout(function () {
+        curtain.classList.remove('show');
+        pageBusy = false;
+      }, 380);
+    }, 420);
+  }
+
+  function scheduleNextRotation() {
+    if (rotateTimer) clearTimeout(rotateTimer);
+    if (MODE === 'queue') return;
+    if (pages.length <= 1) return;
+
+    var currentPage = pages[pageIndex % pages.length];
+    var currentDuration = currentPage ? (currentPage.duration || ROTATE_MS) : ROTATE_MS;
+
+    rotateTimer = setTimeout(function () {
+      pageIndex = (pageIndex + 1) % pages.length;
+      renderPage(true);
+      scheduleNextRotation();
+    }, currentDuration);
+  }
+
+  function applyCatalog(catalog, isRefresh) {
+    if (!catalog) return;
+    if (catalog.restaurant_name) {
+      document.getElementById('restaurant-name').textContent = String(catalog.restaurant_name).toUpperCase();
+    }
+    if (catalog.accent_color) {
+      document.documentElement.style.setProperty('--red', catalog.accent_color);
+    }
+
+    categories = catalog.categories || [];
+    products = catalog.products || [];
+    screens = catalog.screens || [];
+    signageConfig = catalog.signage_config || {};
+
+    if (signageConfig.rotate_seconds) {
+      ROTATE_MS = signageConfig.rotate_seconds * 1000;
+    }
+
+    if (signageConfig.ticker_enabled && signageConfig.ticker_text) {
+      document.getElementById('ticker-bar').style.display = 'flex';
+      document.getElementById('ticker-content').textContent = signageConfig.ticker_text;
+    } else {
+      document.getElementById('ticker-bar').style.display = 'none';
+    }
+
+    if (screenId) {
+      var sc = screens.filter(function (s) { return String(s.id) === String(screenId); })[0];
+      if (sc) {
+        if (sc.mode === 'products') {
+          MODE = 'products';
+          document.getElementById('queue-strip').classList.add('hidden');
+        }
+        if ((sc.category_ids || []).length) categoryIds = sc.category_ids.map(String);
+      }
+    }
+
+    rebuildPages();
+    renderPage(false);
+    document.getElementById('boot').classList.add('hide');
+
+    if (!isRefresh) {
+      scheduleNextRotation();
+    }
+  }
+
+  function pollCalling() {
+    fetchJson('/api/display-queue/calling').then(function (data) {
+      if (!data) return;
+      var n = data.number == null ? null : Number(data.number);
+      if (n !== currentCalling) {
+        currentCalling = n;
+        renderQueue(true);
+      }
+    });
+  }
+
+  function tickClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Keyboard navigation & remote control
+  document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+      pageIndex = (pageIndex + 1) % Math.max(pages.length, 1);
+      renderPage(true);
+      scheduleNextRotation();
+    } else if (e.key === 'ArrowLeft') {
+      pageIndex = (pageIndex - 1 + Math.max(pages.length, 1)) % Math.max(pages.length, 1);
+      renderPage(true);
+      scheduleNextRotation();
+    }
+  });
+
+  // Initial Load
+  fetchJson('/api/signage-catalog').then(function (catalog) {
+    if (catalog && catalog.products) {
+      applyCatalog(catalog, false);
+    } else {
+      Promise.all([
+        fetchJson('/api/settings'),
+        fetchJson('/api/categories'),
+        fetchJson('/api/products')
+      ]).then(function (arr) {
+        var settings = arr[0] || {};
+        applyCatalog({
+          restaurant_name: settings.restaurant_name,
+          accent_color: settings.accent_color,
+          categories: arr[1] || [],
+          products: (arr[2] || []).map(function (p) {
+            return {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              category_id: p.category_id,
+              available: p.available !== false,
+              is_featured: p.is_featured,
+              has_image: !!p.image,
+              description: p.description || ''
+            };
+          }),
+          screens: settings.signage_screens || [],
+          signage_config: settings.signage_config || {}
+        }, false);
+      }).catch(function() {
+        document.getElementById('boot').classList.add('hide');
+      });
+    }
+  }).catch(function() {
+    document.getElementById('boot').classList.add('hide');
+  });
+
+  // Polling intervals
+  setTimeout(function () {
+    var b = document.getElementById('boot');
+    if (b) b.classList.add('hide');
+  }, 1200);
+
+  setInterval(function () {
+    fetchJson('/api/signage-catalog').then(function (c) {
+      if (c) applyCatalog(c, true);
+    });
+  }, 2500);
+
+  setInterval(pollCalling, 2000);
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  try {
+    if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(function () {});
+  } catch (e) {}
+})();
+  </script>
+</body>
+</html>

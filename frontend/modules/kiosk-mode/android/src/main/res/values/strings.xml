@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="kiosk_device_admin_description">Consente al totem di bloccare lo schermo quando la modalità kiosk è attiva.</string>
+</resources>

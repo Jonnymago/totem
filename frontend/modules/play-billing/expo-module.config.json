@@ -1,0 +1,7 @@
+{
+  "name": "play-billing",
+  "platforms": ["android"],
+  "android": {
+    "modules": ["expo.modules.playbilling.PlayBillingModule"]
+  }
+}

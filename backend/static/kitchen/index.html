@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#0B1220"/>
+<title>KDS Cucina — Totem</title>
+<style>
+:root{--bg:#0B1220;--card:#1E293B;--text:#F8FAFC;--muted:#94A3B8;--pending:#EAB308;--prep:#3B82F6;--ready:#22C55E;--accent:#FF6B6B}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden}
+#hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;background:#111827;border-bottom:2px solid var(--accent);gap:10px}
+#hdr h1{font-size:1.15rem;font-weight:900;display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+#hdr .meta{font-size:.85rem;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px}
+#dept-badge{font-size:0.75rem;font-weight:800;background:var(--accent);color:#fff;padding:3px 10px;border-radius:6px;margin-left:8px;vertical-align:middle;cursor:pointer}
+#cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;padding:.75rem;height:calc(100% - 56px)}
+.col{display:flex;flex-direction:column;min-height:0}
+.col-h{font-size:.85rem;font-weight:800;letter-spacing:.06em;padding:.4rem .6rem;border-radius:8px;margin-bottom:.5rem;text-align:center}
+.col-h.pending{background:rgba(234,179,8,.2);color:#FDE047}
+.col-h.prep{background:rgba(59,130,246,.2);color:#93C5FD}
+.col-h.ready{background:rgba(34,197,94,.2);color:#86EFAC}
+.col-body{flex:1;overflow:auto;display:flex;flex-direction:column;gap:.55rem}
+.ticket{background:var(--card);border-radius:12px;padding:.75rem;border-left:4px solid #64748B;animation:in .35s ease}
+.ticket.pending{border-left-color:var(--pending)}
+.ticket.preparing{border-left-color:var(--prep)}
+.ticket.ready{border-left-color:var(--ready)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.t-num{font-size:1.6rem;font-weight:900;font-variant-numeric:tabular-nums}
+.t-meta{font-size:.7rem;color:var(--muted);margin:.15rem 0 .4rem}
+.t-item{font-size:.85rem;font-weight:700;margin:.2rem 0}
+.t-note{font-size:.75rem;color:#FDE68A}
+.t-actions{display:flex;gap:.4rem;margin-top:.55rem}
+.t-actions button{flex:1;border:0;border-radius:8px;padding:.45rem;font-weight:800;font-size:.75rem;cursor:pointer;color:#0F172A}
+.btn-start{background:#93C5FD}.btn-ready{background:#86EFAC}.btn-done{background:#CBD5E1}
+.empty{color:var(--muted);text-align:center;padding:2rem .5rem;font-size:.85rem}
+#login{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:20}
+#login.show{display:flex}
+#login .box{background:#1E293B;padding:1.5rem;border-radius:14px;width:min(320px,90vw)}
+#login input{width:100%;padding:.6rem;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#fff;margin:.5rem 0}
+#login button{width:100%;padding:.65rem;border:0;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <h1>🍳 KDS <span id="dept-badge">TUTTE LE COMANDE</span></h1>
+  <div class="meta"><span id="rest">Totem</span> · <span id="clock">--:--</span> · <span id="count">0</span> <span data-i18n="active">attive</span></div>
+</div>
+<div id="cols">
+  <div class="col"><div class="col-h pending" data-i18n="pending">DA PREPARARE</div><div class="col-body" id="c-pending"></div></div>
+  <div class="col"><div class="col-h prep" data-i18n="prep">IN PREPARAZIONE</div><div class="col-body" id="c-prep"></div></div>
+  <div class="col"><div class="col-h ready" data-i18n="ready">PRONTO</div><div class="col-body" id="c-ready"></div></div>
+</div>
+<div id="login"><div class="box"><h2 style="margin-bottom:.5rem" data-i18n="pin_title">PIN operatore</h2><p style="font-size:.8rem;color:#94A3B8" data-i18n="pin_hint">Necessario per cambiare stato comanda</p><input id="pin" type="password" inputmode="numeric" placeholder="PIN"/><button id="pin-ok" data-i18n="login">Accedi</button></div></div>
+<script>
+(function(){
+  var I18N = {
+    it: { pending:'DA PREPARARE', prep:'IN PREPARAZIONE', ready:'PRONTO', active:'attive', pin_title:'PIN operatore', pin_hint:'Necessario per cambiare stato comanda', login:'Accedi', empty:'Nessuna comanda', all:'TUTTE LE COMANDE' },
+    en: { pending:'TO PREPARE', prep:'IN PROGRESS', ready:'READY', active:'active', pin_title:'Operator PIN', pin_hint:'Required to change order status', login:'Sign in', empty:'No orders', all:'ALL ORDERS' },
+    es: { pending:'POR PREPARAR', prep:'EN PREPARACIÓN', ready:'LISTO', active:'activas', pin_title:'PIN operador', pin_hint:'Necesario para cambiar el estado', login:'Entrar', empty:'Sin comandas', all:'TODOS LOS PEDIDOS' },
+    fr: { pending:'À PRÉPARER', prep:'EN PRÉPARATION', ready:'PRÊT', active:'actives', pin_title:'PIN opérateur', pin_hint:'Requis pour changer le statut', login:'Connexion', empty:'Aucune commande', all:'TOUTES LES COMMANDES' },
+    de: { pending:'VORBEREITEN', prep:'IN ZUBEREITUNG', ready:'FERTIG', active:'aktiv', pin_title:'Operator-PIN', pin_hint:'Erforderlich zum Ändern des Status', login:'Anmelden', empty:'Keine Bestellungen', all:'ALLE BESTELLUNGEN' }
+  };
+  var lang = (new URLSearchParams(location.search).get('lang') || navigator.language || 'it').slice(0,2).toLowerCase();
+  var dict = I18N[lang] || I18N.it;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){ var k=el.getAttribute('data-i18n'); if(dict[k]) el.textContent=dict[k]; });
+  var token=localStorage.getItem('kds_token')||'';
+  var orders=[];
+  var prevPendingIds=new Set();
+  var audioCtx=null;
+  var params=new URLSearchParams(location.search);
+  var filterCats=(params.get('categories')||params.get('category_ids')||'').split(',').map(function(s){return s.trim();}).filter(Boolean);
+  var currentFilterCats=filterCats;
+  var deptParam=(params.get('department')||params.get('reparto')||params.get('dept')||'').trim();
+  var nameParam=(params.get('name')||params.get('station')||'').trim();
+
+  var $=function(id){return document.getElementById(id);};
+
+  function playChime(){
+    try {
+      if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      var osc=audioCtx.createOscillator();
+      var gain=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.45);
+    }catch(e){}
+  }
+
+  function pad(n){return String(n).padStart(2,'0')}
+  function age(iso){try{var s=Math.floor((Date.now()-new Date(iso).getTime())/1000);if(s<60)return s+'s';return Math.floor(s/60)+'m'}catch(e){return ''}}
+  async function api(path,opts){
+    var h={'Content-Type':'application/json'};
+    if(token)h['Authorization']='Bearer '+token;
+    var r=await fetch(path,Object.assign({},opts||{},{headers:Object.assign({},h,(opts&&opts.headers)||{}),cache:'no-store'}));
+    if(r.status===401){token='';localStorage.removeItem('kds_token');throw new Error('auth')}
+    if(!r.ok)throw new Error(await r.text());
+    return r.json();
+  }
+  async function login(){
+    var pin=$('pin').value.trim();
+    var data=await fetch('/api/admin/pin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:pin})}).then(function(r){return r.json();});
+    if(data.access_token){token=data.access_token;localStorage.setItem('kds_token',token);$('login').classList.remove('show');load()}
+  }
+  $('pin-ok').onclick=function(){login().catch(function(){alert('PIN non valido');});};
+  async function setStatus(id,status){
+    try{
+      await api('/api/orders/'+id+'/status',{method:'PUT',body:JSON.stringify({status:status})});
+      await load();
+    }catch(e){
+      try{
+        await api('/api/admin/orders/'+id+'/status',{method:'PUT',body:JSON.stringify({status:status})});
+        await load();
+      }catch(err){
+        if(String(err.message)==='auth'||String(err.message).includes('401')){
+          $('login').classList.add('show');
+        } else {
+          console.warn('Status update error:', err);
+        }
+      }
+    }
+  }
+  function renderCol(el,list,status){
+    if(!list.length){el.innerHTML='<div class="empty">'+dict.empty+'</div>';return}
+    el.innerHTML=list.map(function(o){
+      var itemsList=o.items||[];
+      if(currentFilterCats && currentFilterCats.length > 0){
+        itemsList=itemsList.filter(function(it){
+          var cid = String(it.category_id||it.product_category_id||'').trim();
+          if(!cid) return true;
+          return currentFilterCats.indexOf(cid)>=0;
+        });
+      }
+      var items=itemsList.map(function(it){
+        return '<div class="t-item">'+(it.quantity||1)+'× '+(it.product_name||'')+(it.removed_ingredients&&it.removed_ingredients.length?' <span class="t-note">senza '+it.removed_ingredients.join(', ')+'</span>':'')+(it.notes?' <span class="t-note">'+it.notes+'</span>':'')+'</div>';
+      }).join('');
+      var actions='';
+      if(status==='pending')actions='<button class="btn-start" data-id="'+o.id+'" data-s="preparing">Inizia</button>';
+      else if(status==='preparing')actions='<button class="btn-ready" data-id="'+o.id+'" data-s="ready">Pronto</button>';
+      else actions='<button class="btn-done" data-id="'+o.id+'" data-s="completed">Completa</button>';
+      var prefix = o.order_prefix ? '<span style="color:#94A3B8;font-size:1.1rem;margin-right:2px">'+o.order_prefix+'</span>' : '';
+      return '<div class="ticket '+status+'"><div class="t-num">'+prefix+'#'+pad(o.order_number||0)+'</div><div class="t-meta">'+(o.order_type||'')+' · '+age(o.created_at)+'</div>'+(items||'<div class="t-item" style="opacity:0.65">Nessun articolo per questo reparto</div>')+'<div class="t-actions">'+actions+'</div></div>';
+    }).join('');
+    el.querySelectorAll('button[data-id]').forEach(function(b){b.onclick=function(){setStatus(b.dataset.id,b.dataset.s);};});
+  }
+  async function load(){
+    try{
+      var arr=await Promise.all([
+        fetch('/api/settings').then(function(r){return r.json();}).catch(function(){return {};}),
+        fetch('/api/orders/current').then(function(r){return r.json();}).catch(function(){return [];}),
+      ]);
+      var settings=arr[0]||{};
+      var cur=arr[1]||[];
+      if(settings.restaurant_name)$('rest').textContent=settings.restaurant_name;
+
+      var depts=settings.department_kds||[];
+      var foundDept=depts.find(function(x){ return x.id===deptParam || x.name===deptParam || (nameParam && x.name.toLowerCase()===nameParam.toLowerCase()); });
+      var titleDisplay = nameParam || (foundDept ? foundDept.name : '');
+      if(!titleDisplay) {
+        if(deptParam && !/^dept_[0-9a-zA-Z_]+$/.test(deptParam)) {
+          titleDisplay = deptParam;
+        } else {
+          titleDisplay = localStorage.getItem('kds_station_name') || dict.all;
+        }
+      }
+      var activeFilterCats = [];
+      if(foundDept && Array.isArray(foundDept.assigned_category_ids) && foundDept.assigned_category_ids.length > 0){
+        activeFilterCats = foundDept.assigned_category_ids.map(String);
+      } else if (filterCats.length > 0) {
+        activeFilterCats = filterCats;
+      }
+      currentFilterCats = activeFilterCats;
+      $('dept-badge').textContent=titleDisplay.toUpperCase();
+      $('dept-badge').style.display='inline-block';
+      if(titleDisplay && titleDisplay !== dict.all) {
+        localStorage.setItem('kds_station_name', titleDisplay);
+      }
+
+      var rawOrders=Array.isArray(cur)?cur:[];
+      if(activeFilterCats.length > 0){
+        rawOrders=rawOrders.filter(function(o){
+          if(!o.items || !o.items.length) return true;
+          return (o.items||[]).some(function(it){
+            var cid = String(it.category_id||it.product_category_id||'').trim();
+            if(!cid) return true;
+            return activeFilterCats.indexOf(cid)>=0;
+          });
+        });
+      }
+      orders=rawOrders;
+
+      function normStatus(st) {
+        var s = String(st || 'pending').toLowerCase().trim();
+        if (s === 'preparing' || s === 'in_preparazione' || s === 'prep') return 'preparing';
+        if (s === 'ready' || s === 'pronto') return 'ready';
+        if (s === 'completed' || s === 'completato' || s === 'cancelled' || s === 'annullato') return 'completed';
+        return 'pending';
+      }
+
+      var p=orders.filter(function(o){return normStatus(o.status)==='pending';});
+      var pr=orders.filter(function(o){return normStatus(o.status)==='preparing';});
+      var rd=orders.filter(function(o){return normStatus(o.status)==='ready';});
+
+      var curPendingIds=new Set(p.map(function(o){return o.id;}));
+      var hasNew=false;
+      curPendingIds.forEach(function(id){
+        if(!prevPendingIds.has(id)) hasNew=true;
+      });
+      if(hasNew && prevPendingIds.size>0){
+        playChime();
+      }
+      prevPendingIds=curPendingIds;
+
+      renderCol($('c-pending'),p,'pending');
+      renderCol($('c-prep'),pr,'preparing');
+      renderCol($('c-ready'),rd,'ready');
+      $('count').textContent=String(p.length+pr.length+rd.length);
+    }catch(e){console.warn(e)}
+  }
+  setInterval(function(){$('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});},1000);
+  setInterval(load,3500);
+  load();
+  document.addEventListener('click', function(){if(!audioCtx) playChime();}, {once:true});
+  try{if(navigator.wakeLock)navigator.wakeLock.request('screen');}catch(_){}
+})();
+</script>
+</body>
+</html>

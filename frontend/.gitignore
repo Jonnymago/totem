@@ -1,0 +1,62 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+node_modules
+
+# Expo
+.expo/
+.metro-cache/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+android/
+# I moduli Expo Kiosk e Play Billing possiedono sorgenti Android da versionare.
+!modules/kiosk-mode/android/
+!modules/kiosk-mode/android/**
+!modules/play-billing/android/
+!modules/play-billing/android/**
+modules/kiosk-mode/android/.gradle/
+modules/kiosk-mode/android/.gradle/**
+modules/kiosk-mode/android/build/
+modules/kiosk-mode/android/build/**
+modules/play-billing/android/.gradle/
+modules/play-billing/android/.gradle/**
+modules/play-billing/android/build/
+modules/play-billing/android/build/**
+ios/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files & secrets
+.env
+.env.*
+!.env.example
+*.keystore
+keystore_base64.txt
+.keystore_b64.env
+
+# typescript
+*.tsbuildinfo
+
+app-example

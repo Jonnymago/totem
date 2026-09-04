@@ -1,0 +1,162 @@
+name: Build Totem Android Artifacts (APK + AAB)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      clean_build:
+        description: 'Esegui build pulita (ignora cache Gradle temporaneamente)'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-android:
+    name: 📱 Build Android APK & AAB (Release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    permissions:
+      contents: read
+
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+
+    steps:
+      - name: 📥 Scarica Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🟢 Setup Node.js 20 & Cache NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: ☕ Setup Java JDK 17 (Temurin)
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐘 Setup Gradle con Cache Attiva
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+          cache-cleanup: on-success
+
+      - name: 📱 Accetta Licenze Android SDK
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+
+      - name: 📦 Installa Dipendenze Frontend
+        working-directory: frontend
+        run: |
+          npm install --legacy-peer-deps
+          npm run bundle:remote
+
+      - name: ⚙️ Expo Prebuild (Generazione Progetto Nativo Android)
+        working-directory: frontend
+        run: |
+          npx expo prebuild --platform android --clean
+
+      - name: 🔧 Configura Debug Signing per APK & AAB Standalone
+        working-directory: frontend/android
+        run: |
+          python3 -c "
+          import os
+          gradle_file = 'app/build.gradle'
+          if os.path.exists(gradle_file):
+              with open(gradle_file, 'r', encoding='utf-8') as f:
+                  content = f.read()
+              if 'signingConfig signingConfigs.debug' not in content:
+                  content = content.replace(
+                      'buildTypes {',
+                      'buildTypes {\n        release {\n            signingConfig signingConfigs.debug\n        }'
+                  )
+                  with open(gradle_file, 'w', encoding='utf-8') as f:
+                      f.write(content)
+                  print('✅ Configurato signingConfigs.debug per release in build.gradle!')
+              else:
+                  print('ℹ️ signingConfig già configurato.')
+          "
+
+      - name: 🔨 Compilazione Gradle (assembleRelease + bundleRelease)
+        working-directory: frontend/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease bundleRelease \
+            -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64 \
+            --no-daemon \
+            --parallel \
+            --max-workers=2 \
+            -Dorg.gradle.caching=true \
+            -Dorg.gradle.vfs.watch=false \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC -XX:MaxMetaspaceSize=1g"
+
+      - name: 📦 Raccogli e Valida Artefatti (APK & AAB)
+        id: collect-artifacts
+        run: |
+          mkdir -p dist-artifacts
+          
+          # Cerca l'APK Release generato
+          FOUND_APK=$(find frontend/android/app/build/outputs/apk -type f -name "*.apk" ! -name "*unaligned*" | head -n 1)
+          if [ -n "$FOUND_APK" ] && [ -f "$FOUND_APK" ]; then
+            echo "✅ APK trovato: $FOUND_APK"
+            cp "$FOUND_APK" "dist-artifacts/Totem-QuickBite-Universal.apk"
+            cp "$FOUND_APK" "dist-artifacts/app-release.apk"
+          else
+            echo "❌ Errore: APK non trovato!"
+            exit 1
+          fi
+
+          # Cerca l'AAB Bundle Release generato (Play Store)
+          FOUND_AAB=$(find frontend/android/app/build/outputs/bundle -type f -name "*.aab" | head -n 1)
+          if [ -n "$FOUND_AAB" ] && [ -f "$FOUND_AAB" ]; then
+            echo "✅ AAB Bundle trovato: $FOUND_AAB"
+            cp "$FOUND_AAB" "dist-artifacts/Totem-QuickBite-Release.aab"
+            cp "$FOUND_AAB" "dist-artifacts/app-release.aab"
+          else
+            echo "❌ Errore: AAB Bundle non trovato!"
+            exit 1
+          fi
+          
+          # Generazione checksum SHA-256
+          cd dist-artifacts
+          sha256sum *.apk *.aab > checksums.sha256
+          cd ..
+          
+          echo "=================================================="
+          echo "🎉 Artefatti generati pronti per il download & Play Store:"
+          ls -lh dist-artifacts/
+          echo "=================================================="
+
+      - name: 📤 Carica Artefatti Android su GitHub Actions (APK + AAB)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Totem-QuickBite-Android-Release-Artifacts
+          path: dist-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 🧭 Conserva mapping R8 per deoffuscazione e Play Console
+        uses: actions/upload-artifact@v4
+        with:
+          name: Totem-QuickBite-R8-Mapping
+          path: |
+            frontend/android/app/build/outputs/mapping/release/mapping.txt
+            frontend/android/app/proguard-rules.pro
+          if-no-files-found: warn
+          retention-days: 90
+
