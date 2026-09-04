@@ -19,6 +19,9 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
 
 export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   it: {
+  'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.': 'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.',
+  'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.': 'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.',
+  'Nessuna comanda trovata': 'Nessuna comanda trovata',
     // Common / Global
     'common.confirm': 'Conferma',
     'common.cancel': 'Annulla',
@@ -251,6 +254,9 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   en: {
+  'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.': 'No orders found with the selected filter. Press "All" or generate a test order.',
+  'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.': 'No orders in memory. Send a new order from the kiosk or generate a quick test order.',
+  'Nessuna comanda trovata': 'No orders found',
     // Common / Global
     'common.confirm': 'Confirm',
     'common.cancel': 'Cancel',
@@ -483,6 +489,9 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   es: {
+  'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.': 'No se encontraron pedidos con el filtro seleccionado. Presione "Todos" o genere un pedido de prueba.',
+  'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.': 'No hay pedidos en memoria. Envíe un nuevo pedido desde el quiosco o genere un pedido de prueba rápido.',
+  'Nessuna comanda trovata': 'No se encontraron pedidos',
     // Common / Global
     'common.confirm': 'Confirmar',
     'common.cancel': 'Cancelar',
@@ -715,6 +724,9 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   fr: {
+  'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.': 'Aucune commande trouvée avec le filtre sélectionné. Appuyez sur "Tous" ou générez une commande de test.',
+  'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.': 'Aucune commande en mémoire. Envoyez une nouvelle commande depuis la borne ou générez une commande de test rapide.',
+  'Nessuna comanda trovata': 'Aucune commande trouvée',
     // Common / Global
     'common.confirm': 'Confirmer',
     'common.cancel': 'Annuler',
@@ -947,6 +959,9 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   },
 
   de: {
+  'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.': 'Keine Bestellungen mit dem ausgewählten Filter gefunden. Drücken Sie "Alle" oder erstellen Sie eine Testbestellung.',
+  'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.': 'Keine Bestellungen im Speicher. Senden Sie eine neue Bestellung vom Kiosk oder erstellen Sie eine schnelle Testbestellung.',
+  'Nessuna comanda trovata': 'Keine Bestellungen gefunden',
     // Common / Global
     'common.confirm': 'Bestätigen',
     'common.cancel': 'Abbrechen',

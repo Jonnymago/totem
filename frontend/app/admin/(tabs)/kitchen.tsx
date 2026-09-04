@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/src/utils/i18n';
 import * as Clipboard from 'expo-clipboard';
 import * as Network from 'expo-network';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -459,11 +460,11 @@ export default function KitchenOrdersScreen() {
           ) : filteredOrders.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Ionicons name="restaurant-outline" size={56} color="#CBD5E1" />
-              <Text style={styles.emptyTitle}>Nessuna comanda trovata</Text>
+              <Text style={styles.emptyTitle}>{t('Nessuna comanda trovata')}</Text>
               <Text style={styles.emptySubtitle}>
                 {activeTab === 'all'
-                  ? 'Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.'
-                  : 'Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.'}
+                  ? t('Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.')
+                  : t('Nessun ordine trovato con il filtro selezionato. Premi "Tutti" o genera una comanda di prova.')}
               </Text>
               <View style={styles.emptyActionsRow}>
                 <TouchableOpacity
