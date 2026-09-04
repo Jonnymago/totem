@@ -143,7 +143,7 @@ const DEFAULT_LICENSE_INFO: LicenseInfo = {
   plan_name: 'Professional Totem (Google Play)',
   hardware_id: 'TOTEM-HW-88F4-A92B',
   expiry_date: '2026-12-31',
-  trial_days_left: 30,
+  trial_days_left: 7,
   allowed_totems: 1,
 };
 
@@ -895,7 +895,7 @@ export const api = {
       const lic: LicenseInfo = {
         ...DEFAULT_LICENSE_INFO,
         status: 'trial',
-        trial_days_left: 30,
+        trial_days_left: 7,
       };
       saveLocal('totem_license', lic);
       return lic;

@@ -159,7 +159,7 @@ export const AdminView: React.FC = () => {
     plan_name: 'Piano Base Totem (Google Play)',
     hardware_id: 'TOTEM-HW-88F4-A92B',
     expiry_date: '2026-12-31',
-    trial_days_left: 30,
+    trial_days_left: 7,
     allowed_totems: 1,
   });
 
@@ -1197,7 +1197,7 @@ export const AdminView: React.FC = () => {
     try {
       const res = await api.resetTrialLicense();
       setLicenseData(res);
-      showNotification('Periodo di prova ripristinato (30 giorni)');
+      showNotification('Periodo di prova ripristinato (7 giorni)');
     } catch (err) {
       alert('Errore ripristino prova');
     }
@@ -1205,6 +1205,21 @@ export const AdminView: React.FC = () => {
 
   // Handle Save Topology
   const handleSaveTopology = async (patch: Partial<StationTopologyConfig>) => {
+    if (patch.role && patch.role !== 'mono') {
+      const isTrial = licenseData.status === 'trial';
+      const isActive = licenseData.status === 'active';
+      const isMulti = licenseData.allowed_totems > 1;
+      
+      if (licenseData.status === 'expired') {
+        alert('Licenza scaduta. Acquista un piano o ripristina la prova per usare la modalità Multi-Totem.');
+        return;
+      }
+      
+      if (!isTrial && (!isActive || !isMulti)) {
+        alert('Questa funzionalità richiede il piano Professional Multi-Totem o Multi-Licenza attiva.');
+        return;
+      }
+    }
     try {
       const updated = { ...stationTopology, ...patch };
       setStationTopology(updated);
@@ -3359,7 +3374,7 @@ export const AdminView: React.FC = () => {
                   onClick={handleResetTrial}
                   className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold transition-all"
                 >
-                  Ripristina prova (30 giorni)
+                  Ripristina prova (7 giorni)
                 </button>
               </div>
             </div>

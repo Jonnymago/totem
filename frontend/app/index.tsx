@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { getSettings, Settings, adminPinLogin, getAdminCredentialStatus, getGlobalGroups, getProducts, getCategories } from '@/src/api/api';
+import { getLicenseInfo, LicenseInfo } from '@/src/utils/license';
 import PinPad from '@/src/components/PinPad';
 import LanguageSelector from '@/src/components/LanguageSelector';
 import { useI18n, resetCustomerSessionLanguage } from '@/src/utils/i18n';
@@ -23,6 +24,7 @@ export default function WelcomeScreen() {
   const { t } = useI18n();
   const config = useKioskStore((s) => s.config);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [license, setLicense] = useState<LicenseInfo | null>(null);
   const [dotClickCount, setDotClickCount] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
@@ -54,6 +56,8 @@ export default function WelcomeScreen() {
   const loadSettings = useCallback(async () => {
     try {
       const data = await getSettings();
+      const lic = await getLicenseInfo();
+      setLicense(lic);
       getGlobalGroups().catch(() => {});
       getProducts().catch(() => {});
       getCategories().catch(() => {});
@@ -190,6 +194,42 @@ export default function WelcomeScreen() {
       </View>
     );
   }
+  if (license?.status === 'expired') {
+    return (
+      <View style={[styles.container, { backgroundColor: '#0B1220', alignItems: 'center', justifyContent: 'center', padding: 24 }]}>
+        <Ionicons name="warning-outline" size={64} color="#FF6B6B" style={{ marginBottom: 16 }} />
+        <Text style={{ color: '#F8FAFC', fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>Licenza Scaduta</Text>
+        <Text style={{ color: '#94A3B8', fontSize: 16, textAlign: 'center', marginBottom: 24 }}>Il periodo di prova o l'abbonamento è terminato. Accedi al pannello per riattivare il Totem.</Text>
+        <TouchableOpacity style={{ backgroundColor: '#1F2937', paddingHorizontal: 24, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#374151' }} onPress={() => setShowPinModal(true)}>
+          <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>Accedi al Pannello</Text>
+        </TouchableOpacity>
+        
+        <Modal visible={showPinModal} animationType="fade" transparent statusBarTranslucent>
+          <View style={styles.modalOverlay}>
+            <PinPad 
+              title={t('welcome.admin_access_title')}
+              subtitle={t('welcome.admin_access_desc')}
+              verifyPin={async (enteredPin) => {
+                try {
+                  await authenticateAdminSession(enteredPin);
+                  return true;
+                } catch {
+                  return false;
+                }
+              }}
+              onSuccess={handlePinSuccess}
+              onBack={() => setShowPinModal(false)}
+              onForgotPin={() => {
+                setShowPinModal(false);
+                router.push({ pathname: '/admin/login', params: { mode: 'recovery' } });
+              }}
+            />
+          </View>
+        </Modal>
+      </View>
+    );
+  }
+
 
   return (
     <View style={styles.container}>

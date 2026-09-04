@@ -191,6 +191,19 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideChapter[]> = {
       ],
       tip: 'Assegna un prefisso univoco alle comande per ciascun totem (es. T1- per il Master e T2- per il Satellite) per identificare istantaneamente la cassa di provenienza.',
     },
+    {
+      id: 'ch11_kds_routing',
+      icon: 'restaurant',
+      title: '11. Routing Multi-Stampante & Categorie KDS',
+      subtitle: 'Gestione avanzata delle comande divise per reparto e stampanti Bluetooth.',
+      badge: 'AVANZATO',
+      paragraphs: [
+        'La piattaforma supporta l\'assegnazione diretta di categorie (es. Pizze, Bevande) a specifici schermi KDS e Stampanti Bluetooth.',
+        'Vai nella scheda Impostazioni -> Stampa del Totem per rilevare e accoppiare più stampanti Bluetooth.',
+        'Per ogni stampante o monitor KDS, puoi selezionare le categorie di cui si occupa. Le comande verranno divise automaticamente e inviate ai reparti corretti.'
+      ],
+      tip: 'Suggerimento: se non selezioni nessuna categoria, la stampante o il KDS riceverà l\'intero ordine globale.'
+    },
   ],
 
   en: [
@@ -371,6 +384,19 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideChapter[]> = {
         { title: '🔍 LAN Auto-Discovery & 1-Click Sync', desc: 'Satellite kiosks discover the local Master node instantly with the built-in “Scan LAN for Master” tool.' },
       ],
       tip: 'Configure distinctive order prefixes for each totem (e.g., T1- for Master, T2- for Satellite) to easily trace order origin at checkout.',
+    },
+    {
+      id: 'ch11_kds_routing',
+      icon: 'restaurant',
+      title: '11. Multi-Printer Routing & KDS Categories',
+      subtitle: 'Advanced order management divided by department and Bluetooth printers.',
+      badge: 'ADVANCED',
+      paragraphs: [
+        'The platform supports assigning specific categories (e.g., Pizzas, Drinks) to dedicated KDS screens and Bluetooth Printers.',
+        'Go to Settings -> Printing on the Totem to detect and pair multiple Bluetooth printers.',
+        'For each printer or KDS monitor, select the categories it handles. Orders will be automatically split and sent to the correct departments.'
+      ],
+      tip: 'Pro Tip: If you do not select any category, the printer or KDS will receive the entire global order.'
     },
   ],
 
@@ -553,6 +579,19 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideChapter[]> = {
       ],
       tip: 'Defina un prefijo para cada tótem (ej. T1- y T2-) para identificar al instante el origen del pedido.',
     },
+    {
+      id: 'ch11_kds_routing',
+      icon: 'restaurant',
+      title: '11. Enrutamiento Multi-Impresora y Categorías KDS',
+      subtitle: 'Gestión avanzada de pedidos divididos por departamento e impresoras Bluetooth.',
+      badge: 'AVANZADO',
+      paragraphs: [
+        'La plataforma admite la asignación directa de categorías (ej. Pizzas, Bebidas) a pantallas KDS específicas e impresoras Bluetooth.',
+        'Ve a la pestaña Configuración -> Impresión del Tótem para detectar y vincular múltiples impresoras Bluetooth.',
+        'Para cada impresora o monitor KDS, selecciona las categorías de las que se encarga. Los pedidos se dividirán automáticamente y se enviarán a los departamentos correctos.'
+      ],
+      tip: 'Consejo: Si no seleccionas ninguna categoría, la impresora o KDS recibirá todo el pedido global.'
+    },
   ],
 
   fr: [
@@ -734,6 +773,19 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideChapter[]> = {
       ],
       tip: 'Attribuez un préfixe unique à chaque borne (ex. T1- et T2-) pour identifier immédiatement le point de commande.',
     },
+    {
+      id: 'ch11_kds_routing',
+      icon: 'restaurant',
+      title: '11. Routage Multi-Imprimante & Catégories KDS',
+      subtitle: 'Gestion avancée des commandes divisées par département et imprimantes Bluetooth.',
+      badge: 'AVANCÉ',
+      paragraphs: [
+        'La plateforme prend en charge l\'assignation directe de catégories (ex. Pizzas, Boissons) à des écrans KDS spécifiques et à des imprimantes Bluetooth.',
+        'Allez dans l\'onglet Paramètres -> Impression du Totem pour détecter et coupler plusieurs imprimantes Bluetooth.',
+        'Pour chaque imprimante ou moniteur KDS, sélectionnez les catégories dont il s\'occupe. Les commandes seront automatiquement divisées et envoyées aux bons départements.'
+      ],
+      tip: 'Astuce : Si vous ne sélectionnez aucune catégorie, l\'imprimante ou le KDS recevra l\'ensemble de la commande globale.'
+    },
   ],
 
   de: [
@@ -914,6 +966,19 @@ export const GUIDE_CHAPTERS: Record<SupportedLanguage, GuideChapter[]> = {
         { title: '🔍 Automatische LAN-Erkennung & 1-Klick-Sync', desc: 'Satelliten-Terminals finden den Master im lokalen WLAN automatisch über die Suchfunktion.' },
       ],
       tip: 'Vergeben Sie für jedes Terminal ein eindeutiges Präfix (z. B. T1- und T2-), um den Bestellort sofort zuzuordnen.',
+    },
+    {
+      id: 'ch11_kds_routing',
+      icon: 'restaurant',
+      title: '11. Multi-Drucker-Routing & KDS-Kategorien',
+      subtitle: 'Erweiterte Bestellverwaltung unterteilt nach Abteilungen und Bluetooth-Druckern.',
+      badge: 'FORTGESCHRITTEN',
+      paragraphs: [
+        'Die Plattform unterstützt die direkte Zuweisung von Kategorien (z.B. Pizzen, Getränke) an spezifische KDS-Bildschirme und Bluetooth-Drucker.',
+        'Gehen Sie auf die Registerkarte Einstellungen -> Drucken am Totem, um mehrere Bluetooth-Drucker zu erkennen und zu koppeln.',
+        'Wählen Sie für jeden Drucker oder KDS-Monitor die zuständigen Kategorien aus. Die Bestellungen werden automatisch aufgeteilt und an die richtigen Abteilungen gesendet.'
+      ],
+      tip: 'Tipp: Wenn Sie keine Kategorie auswählen, empfängt der Drucker oder KDS die gesamte globale Bestellung.'
     },
   ],
 };

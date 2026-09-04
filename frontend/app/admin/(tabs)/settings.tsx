@@ -587,7 +587,18 @@ export default function SettingsScreen() {
               <View style={styles.roleCardsCol}>
                 <TouchableOpacity
                   style={[styles.roleSelectCard, topology.role === 'master' && styles.roleSelectCardActive]}
-                  onPress={() => setTopology({ ...topology, role: 'master' })}
+                  onPress={() => {
+                    const isMulti = Boolean(license?.features?.multiTotem);
+                    if (license?.status === 'expired') {
+                      Alert.alert('Licenza Scaduta', 'Acquista un abbonamento per continuare ad usare i servizi.');
+                      return;
+                    }
+                    if (license?.status !== 'trial' && !isMulti) {
+                      Alert.alert('Non Supportato', 'La modalità Master/Satellite richiede un abbonamento Multi-Totem.');
+                      return;
+                    }
+                    setTopology({ ...topology, role: 'master' });
+                  }}
                 >
                   <View style={[styles.roleSelectIcon, { backgroundColor: '#FEF3C7' }]}>
                     <Text style={{ fontSize: 24 }}>👑</Text>
@@ -603,7 +614,18 @@ export default function SettingsScreen() {
 
                 <TouchableOpacity
                   style={[styles.roleSelectCard, topology.role === 'satellite' && styles.roleSelectCardActive]}
-                  onPress={() => setTopology({ ...topology, role: 'satellite' })}
+                  onPress={() => {
+                    const isMulti = Boolean(license?.features?.multiTotem);
+                    if (license?.status === 'expired') {
+                      Alert.alert('Licenza Scaduta', 'Acquista un abbonamento per continuare ad usare i servizi.');
+                      return;
+                    }
+                    if (license?.status !== 'trial' && !isMulti) {
+                      Alert.alert('Non Supportato', 'La modalità Master/Satellite richiede un abbonamento Multi-Totem.');
+                      return;
+                    }
+                    setTopology({ ...topology, role: 'satellite' });
+                  }}
                 >
                   <View style={[styles.roleSelectIcon, { backgroundColor: '#EFF6FF' }]}>
                     <Text style={{ fontSize: 24 }}>📱</Text>
