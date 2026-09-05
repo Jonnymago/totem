@@ -255,6 +255,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     id: 'prod-5',
     category_id: 'cat-3',
     name: 'Caesar Salad',
+    
     description: 'Lattuga romana, pollo grigliato, parmigiano e crostini',
     image: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&q=80&w=400',
     price: 9.0,
@@ -267,6 +268,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     id: 'prod-6',
     category_id: 'cat-4',
     name: 'Burger Combo',
+    
     description: 'Hamburger + patatine + bevanda',
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400',
     price: 13.5,
@@ -278,6 +280,7 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Hamburger Classico',
+    
     price_delta: 0.0 },
           { name: 'Cheeseburger', price_delta: 1.0 },
         ],
@@ -288,6 +291,7 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Coca Cola',
+    
     price_delta: 0.0 },
           { name: 'Fanta', price_delta: 0.0 },
           { name: 'Acqua', price_delta: 0.0 },
@@ -310,6 +314,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     id: 'prod-8',
     category_id: 'cat-5',
     name: 'Acqua Naturale',
+    
     description: '500ml',
     image: 'https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&q=80&w=400',
     price: 1.5,

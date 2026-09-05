@@ -222,7 +222,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'CONSUMAZIONE SUL POSTO',
     without: 'SENZA: ',
     notes: 'NOTE: ',
-    tax_id_label: 'P.IVA',
+    tax_id_label: t('P.IVA'),
   },
   en: {
     courtesy: 'COURTESY RECEIPT',
@@ -237,7 +237,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'DINE IN',
     without: 'NO: ',
     notes: 'NOTES: ',
-    tax_id_label: 'VAT ID',
+    tax_id_label: t('VAT ID'),
   },
   fr: {
     courtesy: 'TICKET DE COURTOISIE',
@@ -252,7 +252,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'SUR PLACE',
     without: 'SANS: ',
     notes: 'NOTES: ',
-    tax_id_label: 'TVA',
+    tax_id_label: t('TVA'),
   },
   de: {
     courtesy: 'KASSENBELEG',
@@ -267,7 +267,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'HIER ESSEN',
     without: 'OHNE: ',
     notes: 'HINWEIS: ',
-    tax_id_label: 'UST-ID',
+    tax_id_label: t('UST-ID'),
   },
   es: {
     courtesy: 'TICKET DE CORTESIA',
@@ -282,7 +282,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'EN LOCAL',
     without: 'SIN: ',
     notes: 'NOTAS: ',
-    tax_id_label: 'NIF/CIF',
+    tax_id_label: t('NIF/CIF'),
   },
 };
 
@@ -578,12 +578,12 @@ export default function PrintersScreen() {
         restaurant_name: receiptConfig.header_title,
         receipt_layout: {
           ...receiptConfig,
-          language: activeTranslationLang // FORZA LA LINGUA ATTIVA NELLA PREVIEW
+          language: editorTab === 'translations' ? activeTranslationLang : receiptConfig.language // FORZA LA LINGUA ATTIVA NELLA PREVIEW
         },
       } as any,
       (receiptConfig.paper_width_mm || 58) as PaperWidthMm
     );
-  }, [sampleOrder, receiptConfig, activeTranslationLang]);
+  }, [sampleOrder, receiptConfig, activeTranslationLang, editorTab]);
 
   if (loading) {
     return (
@@ -837,10 +837,10 @@ export default function PrintersScreen() {
             contentContainerStyle={styles.modalTabsBarContent}
           >
             {[
-              { id: 'blocks', label: 'Blocchi & Righe', icon: 'reorder-four-outline' },
-              { id: 'custom_lines', label: 'Righe Custom', icon: 'create-outline' },
-              { id: 'translations', label: 'Traduzioni', icon: 'language-outline' },
-              { id: 'style', label: 'Formato Carta', icon: 'options-outline' },
+              { id: 'blocks', label: t('Blocchi & Righe'), icon: 'reorder-four-outline' },
+              { id: 'custom_lines', label: t('Righe Custom'), icon: 'create-outline' },
+              { id: 'translations', label: t('Traduzioni'), icon: 'language-outline' },
+              { id: 'style', label: t('Formato Carta'), icon: 'options-outline' },
             ].map((tab) => {
               const active = editorTab === tab.id;
               return (
@@ -1234,11 +1234,11 @@ export default function PrintersScreen() {
                   {/* Language Selector Chips */}
                   <View style={styles.langPills}>
                     {[
-                      { code: 'it', label: '🇮🇹 Italiano' },
-                      { code: 'en', label: '🇬🇧 English' },
-                      { code: 'fr', label: '🇫🇷 Français' },
-                      { code: 'de', label: '🇩🇪 Deutsch' },
-                      { code: 'es', label: '🇪🇸 Español' },
+                      { code: 'it', label: t('🇮🇹 Italiano') },
+                      { code: 'en', label: t('🇬🇧 English') },
+                      { code: 'fr', label: t('🇫🇷 Français') },
+                      { code: 'de', label: t('🇩🇪 Deutsch') },
+                      { code: 'es', label: t('🇪🇸 Español') },
                     ].map((l) => {
                       const active = activeTranslationLang === l.code;
                       return (
@@ -1375,10 +1375,10 @@ export default function PrintersScreen() {
                     <Text style={styles.editorCardTitle}>{t(`➗ Stile Linee Separatori`)}</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                       {[
-                        { id: 'dashes', label: 'Trattini (- - -)' },
-                        { id: 'equals', label: 'Doppia linea (===)' },
-                        { id: 'stars', label: 'Stelline (***)' },
-                        { id: 'solid', label: 'Continua (___)' },
+                        { id: 'dashes', label: t('Trattini (- - -)') },
+                        { id: 'equals', label: t('Doppia linea (===)') },
+                        { id: 'stars', label: t('Stelline (***)') },
+                        { id: 'solid', label: t('Continua (___)') },
                       ].map((sep) => {
                         const active = (receiptConfig.separator_style || 'dashes') === sep.id;
                         return (

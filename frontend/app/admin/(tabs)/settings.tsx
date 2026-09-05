@@ -197,7 +197,7 @@ export default function SettingsScreen() {
       [
         { text: t('Annulla'), style: 'cancel' },
         {
-          text: 'Azzera Adesso',
+          text: t('Azzera Adesso'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -293,7 +293,7 @@ export default function SettingsScreen() {
       [
         { text: t('Annulla'), style: 'cancel' },
         {
-          text: 'Seleziona File ZIP',
+          text: t('Seleziona File ZIP'),
           onPress: async () => {
             try {
               setImporting(true);
@@ -354,13 +354,13 @@ export default function SettingsScreen() {
       <View style={styles.categoryBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryBarScroll}>
           {[
-            { id: 'locale', label: 'Attività & Logo', icon: 'storefront-outline' },
-            { id: 'devices', label: 'Stampe, TV & Coda', icon: 'tv-outline' },
-            { id: 'network', label: 'Rete & Multi-Totem', icon: 'wifi-outline' },
-            { id: 'kiosk', label: 'Kiosk & Sicurezza', icon: 'shield-checkmark-outline' },
-            { id: 'license', label: 'Licenza & Piani', icon: 'key-outline' },
-            { id: 'guide', label: 'Guida & Manuale', icon: 'book-outline' },
-            { id: 'backup', label: 'Backup Dati', icon: 'cloud-download-outline' },
+            { id: 'locale', label: t('Attività & Logo'), icon: 'storefront-outline' },
+            { id: 'devices', label: t('Stampe, TV & Coda'), icon: 'tv-outline' },
+            { id: 'network', label: t('Rete & Multi-Totem'), icon: 'wifi-outline' },
+            { id: 'kiosk', label: t('Kiosk & Sicurezza'), icon: 'shield-checkmark-outline' },
+            { id: 'license', label: t('Licenza & Piani'), icon: 'key-outline' },
+            { id: 'guide', label: t('Guida & Manuale'), icon: 'book-outline' },
+            { id: 'backup', label: t('Backup Dati'), icon: 'cloud-download-outline' },
           ].map((cat) => {
             const active = activeCategory === cat.id;
             return (
@@ -493,9 +493,9 @@ export default function SettingsScreen() {
               <Text style={styles.formLabel}>{t(`Modalità di reset automatico`)}</Text>
               <View style={styles.pillSelectorRow}>
                 {[
-                  { id: 'daily', label: '📅 Giornaliero' },
-                  { id: 'manual', label: '🖐️ Solo Manuale' },
-                  { id: 'never', label: '♾️ Mai' },
+                  { id: 'daily', label: t('📅 Giornaliero') },
+                  { id: 'manual', label: t('🖐️ Solo Manuale') },
+                  { id: 'never', label: t('♾️ Mai') },
                 ].map((item) => {
                   const active = orderResetMode === item.id;
                   return (
