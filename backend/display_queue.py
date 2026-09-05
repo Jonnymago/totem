@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional
@@ -12,9 +11,6 @@ from typing import Optional
 import base64
 import re
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
 from bson import ObjectId
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -100,7 +96,6 @@ def register_display_queue_api(api_router) -> None:
     """Public API: calling number sync + signage catalog + info for remote panel & app alignment."""
     from server import db, serialize_doc, verify_token
 
-    global _calling_number
 
     @api_router.get("/signage-catalog")
     async def get_signage_catalog():

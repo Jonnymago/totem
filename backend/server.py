@@ -1,3 +1,4 @@
+import httpx
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -11,7 +12,7 @@ import os
 
 from bson import ObjectId
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status, Request
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -710,7 +711,6 @@ async def get_all_orders_admin(username: str = Depends(verify_token)):
     return [Order(**serialize_doc(o)) for o in await db.orders.find().sort("created_at", -1).to_list(1000)]
 
 
-import httpx
 
 BT_BRIDGE_URL = os.environ.get("BT_BRIDGE_URL", "http://127.0.0.1:8765")
 
