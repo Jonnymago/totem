@@ -192,8 +192,8 @@ export default function SettingsScreen() {
 
   const handleResetOrdersNow = async () => {
     Alert.alert(
-      'Azzera Numerazione Ordini',
-      'Vuoi azzerare la numerazione degli ordini al numero #01 e ripulire il tabellone di chiamata della coda clienti?',
+      t('Azzera Numerazione Ordini'),
+      t('Vuoi azzerare la numerazione degli ordini al numero #01 e ripulire il tabellone di chiamata della coda clienti?'),
       [
         { text: t('Annulla'), style: 'cancel' },
         {

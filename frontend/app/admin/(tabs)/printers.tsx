@@ -619,9 +619,7 @@ export default function PrintersScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.btnOpenEditorTitle}>{t(`⚙️ Personalizza Layout Scontrino & Traduzioni`)}</Text>
-              <Text style={styles.btnOpenEditorSubtitle}>{t(`
-                Riordina le righe, modifica testi, aggiungi messaggi personalizzati e personalizza le traduzioni in 5 lingue.
-              `)}</Text>
+              <Text style={styles.btnOpenEditorSubtitle}>{t('Riordina le righe, modifica testi, aggiungi messaggi personalizzati e personalizza le traduzioni in 5 lingue.')}</Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={22} color="#99F6E4" />
@@ -865,7 +863,7 @@ export default function PrintersScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <View style={styles.livePulseDot} />
                   <Text style={styles.mobileLivePreviewTitle}>
-                    Anteprima Live ({receiptConfig.paper_width_mm || 58}mm)
+                    {t('Anteprima Live')} ({receiptConfig.paper_width_mm || 58}mm)
                   </Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -898,7 +896,7 @@ export default function PrintersScreen() {
                       color="#0F766E"
                     />
                     <Text style={styles.togglePreviewCollapseText}>
-                      {previewCollapsed ? 'Espandi' : 'Riduci'}
+                      {previewCollapsed ? t('Espandi') : t('Riduci')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -932,9 +930,7 @@ export default function PrintersScreen() {
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                       <Ionicons name="help-circle-outline" size={20} color="#0F766E" />
-                      <Text style={styles.guideCollapsibleTitle}>{t(`
-                        Come funzionano i blocchi e cosa puoi personalizzare?
-                      `)}</Text>
+                      <Text style={styles.guideCollapsibleTitle}>{t('Come funzionano i blocchi e cosa puoi personalizzare?')}</Text>
                     </View>
                     <Ionicons
                       name={showBlocksGuide ? 'chevron-up' : 'chevron-down'}
@@ -950,17 +946,13 @@ export default function PrintersScreen() {
                           <View style={[styles.legendBadge, styles.badgeCustomizable]}>
                             <Text style={styles.badgeCustomizableText}>{t(`🟢 Personalizzabile`)}</Text>
                           </View>
-                          <Text style={styles.legendDesc}>{t(`
-                            Testi modificabili da te (Nome ristorante, indirizzo, P.IVA, note, saluti, righe custom).
-                          `)}</Text>
+                          <Text style={styles.legendDesc}>{t('Testi modificabili da te (Nome ristorante, indirizzo, P.IVA, note, saluti, righe custom).')}</Text>
                         </View>
                         <View style={styles.legendRow}>
                           <View style={[styles.legendBadge, styles.badgeSystem]}>
                             <Text style={styles.badgeSystemText}>{t(`🔵 Generato dal sistema`)}</Text>
                           </View>
-                          <Text style={styles.legendDesc}>{t(`
-                            Dati dinamici calcolati dal Totem al checkout (data/ora, numero progressivo comanda, piatti scelti, totale euro, linee grafiche).
-                          `)}</Text>
+                          <Text style={styles.legendDesc}>{t('Dati dinamici calcolati dal Totem al checkout (data/ora, numero progressivo comanda, piatti scelti, totale euro, linee grafiche).')}</Text>
                         </View>
                         <Text style={styles.guideTipText}>
                           💡 <Text style={{ fontWeight: '700' }}>{t(`Suggerimento:`)}</Text> Usa le frecce ⬆️ e ⬇️ per riordinare la posizione nello scontrino. Usa lo switch per mostrare o nascondere un rigo. Tocca <Text style={{ fontWeight: '700' }}>{t(`ℹ️ Info`)}</Text> su ciascun rigo per conoscere la funzione e vederne l'esempio reale di stampa.
@@ -1053,9 +1045,7 @@ export default function PrintersScreen() {
                   {/* Reorderable Sequence List with Collapsible Info per Row */}
                   <View style={{ marginTop: 6 }}>
                     <Text style={styles.sectionHeaderTitle}>{t(`Sequenza, Ruoli e Visibilità Righe Scontrino`)}</Text>
-                    <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>{t(`
-                      Tocca "Info" per scoprire lo scopo del rigo e come personalizzarlo.
-                    `)}</Text>
+                    <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>{t(`Tocca "Info" per scoprire lo scopo del rigo e come personalizzarlo.`)}</Text>
                   </View>
 
                   {currentBlocksOrder.map((blockId, idx) => {
@@ -1079,7 +1069,7 @@ export default function PrintersScreen() {
                             <Text style={styles.blockOrderNumText}>{idx + 1}</Text>
                           </View>
                           <View style={{ flex: 1, gap: 2 }}>
-                            <Text style={styles.blockRowName}>{blockMeta.name}</Text>
+                            <Text style={styles.blockRowName}>{t(blockMeta.name)}</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                               <View
                                 style={[
@@ -1146,13 +1136,13 @@ export default function PrintersScreen() {
                           <View style={styles.blockInfoDrawer}>
                             <View style={styles.blockInfoSection}>
                               <Text style={styles.blockInfoLabel}>{t(`📌 A COSA SERVE QUESTO RIGO:`)}</Text>
-                              <Text style={styles.blockInfoText}>{blockMeta.desc}</Text>
+                              <Text style={styles.blockInfoText}>{t(blockMeta.desc)}</Text>
                             </View>
                             <View style={styles.blockInfoSection}>
                               <Text style={styles.blockInfoLabel}>
                                 {blockMeta.customizable ? '✏️ COME PERSONALIZZARLO:' : '⚙️ ORIGINE DEL DATO:'}
                               </Text>
-                              <Text style={styles.blockInfoText}>{blockMeta.hint}</Text>
+                              <Text style={styles.blockInfoText}>{t(blockMeta.hint)}</Text>
                             </View>
                             <View style={styles.blockInfoExampleBox}>
                               <Text style={styles.blockInfoExampleLabel}>{t(`📄 Esempio reale di stampa:`)}</Text>
@@ -1171,15 +1161,13 @@ export default function PrintersScreen() {
                 <View style={{ gap: 12 }}>
                   <View style={styles.editorHelpBox}>
                     <Ionicons name="create-outline" size={18} color="#0F766E" />
-                    <Text style={styles.editorHelpText}>{t(`
-                      Aggiungi righe di testo personalizzate allo scontrino (es. Wi-Fi, Social Network, Orari di apertura, Promozioni).
-                    `)}</Text>
+                    <Text style={styles.editorHelpText}>{t('Aggiungi righe di testo personalizzate allo scontrino (es. Wi-Fi, Social Network, Orari di apertura, Promozioni).')}</Text>
                   </View>
 
                   {(receiptConfig.custom_lines || []).map((line, idx) => (
                     <View key={line.id} style={styles.customLineCard}>
                       <View style={styles.customLineCardHeader}>
-                        <Text style={styles.customLineCardTitle}>Riga Personalizzata #{idx + 1}</Text>
+                        <Text style={styles.customLineCardTitle}>{t('Riga Personalizzata')} #{idx + 1}</Text>
                         <TouchableOpacity onPress={() => removeCustomLine(line.id)}>
                           <Ionicons name="trash-outline" size={16} color="#EF4444" />
                         </TouchableOpacity>
@@ -1226,9 +1214,7 @@ export default function PrintersScreen() {
                 <View style={{ gap: 12 }}>
                   <View style={styles.editorHelpBox}>
                     <Ionicons name="language-outline" size={18} color="#0F766E" />
-                    <Text style={styles.editorHelpText}>{t(`
-                      Modifica le diciture dello scontrino per ogni lingua supportata. Le traduzioni verranno stampate in base alla lingua dell'ordine o del cliente.
-                    `)}</Text>
+                    <Text style={styles.editorHelpText}>{t("Modifica le diciture dello scontrino per ogni lingua supportata. Le traduzioni verranno stampate in base alla lingua dell'ordine o del cliente.")}</Text>
                   </View>
 
                   {/* Language Selector Chips */}
@@ -1446,7 +1432,7 @@ export default function PrintersScreen() {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                     <View style={styles.livePulseDot} />
                     <Text style={styles.previewReceiptHeaderTitle}>
-                      Live Scontrino ({receiptConfig.paper_width_mm || 58}mm)
+                      {t('Anteprima Scontrino')} ({receiptConfig.paper_width_mm || 58}mm)
                     </Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 4 }}>
