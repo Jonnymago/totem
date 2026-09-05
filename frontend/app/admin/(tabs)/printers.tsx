@@ -222,7 +222,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'CONSUMAZIONE SUL POSTO',
     without: 'SENZA: ',
     notes: 'NOTE: ',
-    tax_id_label: t('P.IVA'),
+    tax_id_label: 'P.IVA',
   },
   en: {
     courtesy: 'COURTESY RECEIPT',
@@ -237,7 +237,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'DINE IN',
     without: 'NO: ',
     notes: 'NOTES: ',
-    tax_id_label: t('VAT ID'),
+    tax_id_label: 'VAT ID',
   },
   fr: {
     courtesy: 'TICKET DE COURTOISIE',
@@ -252,7 +252,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'SUR PLACE',
     without: 'SANS: ',
     notes: 'NOTES: ',
-    tax_id_label: t('TVA'),
+    tax_id_label: 'TVA',
   },
   de: {
     courtesy: 'KASSENBELEG',
@@ -267,7 +267,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'HIER ESSEN',
     without: 'OHNE: ',
     notes: 'HINWEIS: ',
-    tax_id_label: t('UST-ID'),
+    tax_id_label: 'UST-ID',
   },
   es: {
     courtesy: 'TICKET DE CORTESIA',
@@ -282,7 +282,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
     dine_in: 'EN LOCAL',
     without: 'SIN: ',
     notes: 'NOTAS: ',
-    tax_id_label: t('NIF/CIF'),
+    tax_id_label: 'NIF/CIF',
   },
 };
 

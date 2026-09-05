@@ -1176,6 +1176,17 @@ export function translateSourceText(value: string): string {
 // Mantenerle in un glossario esplicito evita che il selettore mostri una lingua
 // diversa da quella effettivamente visualizzata.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1221,7 +1232,6 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   'Azzeramento manuale': 'Manual reset', 'Azzera Ora (#1)': 'Reset now (#1)',
   'Aggiorna Credenziali': 'Update Credentials', 'Backup & Ripristino Dati': 'Backup & Restore Data',
   'Esporta Backup ZIP': 'Export ZIP Backup', 'Importa Backup ZIP': 'Import ZIP Backup',
-  'Traduzioni': 'Translations',
   'Aggiorna traduzioni': 'Update translations',
   'Nuovo': 'New',
   'Tutti': 'All',
@@ -1261,6 +1271,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1302,6 +1323,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 // Le apostrofi ASCII e le frasi con valori dinamici non possono dipendere dal
 // glossario letterale generato automaticamente.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1338,6 +1370,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 // Etichette ricorrenti delle schermate amministrative: dichiarate qui per
 // prevalere sulle varianti legacy e mantenere coerente la barra di navigazione.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1365,6 +1408,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1381,7 +1435,6 @@ Object.assign(LITERAL_TRANSLATIONS.en, {
   "Rete & Multi-Totem": "Network & Multi-Totem",
   "Stampe, TV & Coda": "Printers, TV & Queue",
   "Attività & Logo": "Business & Logo",
-  'Gestione catalogo e personalizzazioni': 'Catalog and customization management', 'Traduzioni': 'Translations', 'Nuovo': 'New',
   'Gruppi Globali': 'Global Groups', 'Libreria ingredienti riutilizzabili su più prodotti': 'Reusable ingredient library across products',
   'Nuovo Gruppo': 'New Group', 'Nessun gruppo globale configurato': 'No global group configured',
   'Crea gruppi di salse, ingredienti o extra per collegarli facilmente a tutti i panini e piatti.': 'Create sauce, ingredient, or extra groups to link them easily to sandwiches and dishes.',
@@ -1396,6 +1449,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // Schermata Kiosk: stringhe operative verificate nella resa amministrativa.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1465,6 +1529,17 @@ Object.assign(TRANSLATIONS.fr, {
 Object.assign(TRANSLATIONS.de, {
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1494,6 +1569,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // BEGIN GENERATED_LITERAL_I18N_COVERAGE
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1643,6 +1729,17 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1833,6 +1930,17 @@ export const useTranslation = useI18n;
 
 // Security and recovery UI — incremental literal translations.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1894,6 +2002,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1923,6 +2042,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 // Primo accesso amministratore — istruzioni, requisiti e messaggi di errore.
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -1975,6 +2105,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2003,6 +2144,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2032,6 +2184,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2243,6 +2406,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2300,6 +2474,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2376,6 +2561,17 @@ Object.assign(LITERAL_TRANSLATIONS.fr, {
 Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2476,6 +2672,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2520,6 +2727,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
@@ -2567,6 +2785,17 @@ Object.assign(LITERAL_TRANSLATIONS.de, {
 });
 
 Object.assign(LITERAL_TRANSLATIONS.en, {
+  'Gestione catalogo e personalizzazioni': 'Catalog and customization management',
+  'Nuovo': 'New',
+  "Ingredienti & Varianti": "Ingredients & Variants",
+  "Impostazioni Totem": "Totem Settings",
+  "Libreria di ingredienti, salse, extra e scelte riutilizzabili": "Library of ingredients, sauces, extras and reusable choices",
+  "Nessun ordine trovato con il filtro selezionato. Premi \"Tutti\" o genera una comanda di prova.": "No orders found with the selected filter. Press \"All\" or generate a test order.",
+  "Nessun ordine presente in memoria. Invia una nuova ordinazione dal totem o genera una comanda di test rapida.": "No orders in memory. Send a new order from the kiosk or generate a quick test ticket.",
+  "pronti": "ready",
+  "in prep": "in prep",
+  "in attesa": "waiting",
+  "Configurazione generale, dispositivi, licenza e manuale operativo": "General setup, devices, license and operating manual",
   "Formato Carta": "Paper Format",
   "Traduzioni": "Translations",
   "Righe Custom": "Custom Lines",
