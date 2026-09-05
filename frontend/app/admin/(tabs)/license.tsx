@@ -487,7 +487,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
                   `)}</Text>
                   <Text style={styles.legalSectionTitle}>{t(`Aggiornamenti e assistenza`)}</Text>
                   <Text style={styles.legalText}>{t(`
-                    Installa gli aggiornamenti dopo un controllo operativo e conserva un backup prima di modifiche importanti. Il gestore resta responsabile dell&apos;uso conforme alle procedure interne e ai requisiti applicabili.
+                    Installa gli aggiornamenti dopo un controllo operativo e conserva un backup prima di modifiche importanti. Il gestore resta responsabile dell&apos;uso conforme alle procedure interne e ai requisiti applicabili.\n\nContatta l'assistenza tecnica all'indirizzo email:\nsupportquickbite@gmail.com
                   `)}</Text>
                 </>
               )}

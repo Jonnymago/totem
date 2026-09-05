@@ -25,5 +25,42 @@ p{color:#94A3B8;font-size:.9rem;margin:0 0 1.25rem}
   <a class="card" href="/kitchen/"><strong>🍳 KDS Cucina</strong><span>/kitchen/ — comande in tempo reale</span></a>
   <a class="card" href="/api/display-queue/info"><strong>ℹ️ API Display Queue</strong><span>JSON URL e parametri</span></a>
 </div>
+
+<script>
+  window.onload = function() {
+    var lang = (navigator.language || navigator.userLanguage || 'it').substring(0, 2).toLowerCase();
+
+  var dict = {
+    'Totem QuickBite — Hub': { en: 'Totem QuickBite — Hub', es: 'Totem QuickBite — Hub', fr: 'Totem QuickBite — Hub', de: 'Totem QuickBite — Hub' },
+    'Apri queste schermate da browser, TV o tablet sulla stessa rete Wi‑Fi.': { en: 'Open these screens from a browser, TV, or tablet on the same Wi-Fi network.', es: 'Abre estas pantallas desde un navegador, TV o tablet en la misma red Wi-Fi.', fr: 'Ouvrez ces écrans depuis un navigateur, une télévision ou une tablette sur le même réseau Wi-Fi.', de: 'Öffnen Sie diese Bildschirme in einem Browser, auf einem Fernseher oder Tablet im selben WLAN-Netzwerk.' },
+    '🌐 Pannello Remoto': { en: '🌐 Remote Panel', es: '🌐 Panel Remoto', fr: '🌐 Panneau à Distance', de: '🌐 Remote-Panel' },
+    '/remote/ — menu, prezzi, impostazioni': { en: '/remote/ — menu, prices, settings', es: '/remote/ — menú, precios, ajustes', fr: '/remote/ — menu, prix, paramètres', de: '/remote/ — Menü, Preise, Einstellungen' },
+    '📺 Display Queue': { en: '📺 Display Queue', es: '📺 Display Queue', fr: '📺 Display Queue', de: '📺 Display Queue' },
+    '/display-queue/ — numeri coda + digital signage': { en: '/display-queue/ — queue numbers + digital signage', es: '/display-queue/ — números de cola + digital signage', fr: '/display-queue/ — numéros de file + affichage numérique', de: '/display-queue/ — Warteschlangennummern + Digital Signage' },
+    '🍽️ Solo prodotti': { en: '🍽️ Products only', es: '🍽️ Solo productos', fr: '🍽️ Produits uniquement', de: '🍽️ Nur Produkte' },
+    'schermo secondario senza numeri': { en: 'secondary screen without numbers', es: 'pantalla secundaria sin números', fr: 'écran secondaire sans numéros', de: 'Zweitbildschirm ohne Nummern' },
+    '🍳 KDS Cucina': { en: '🍳 Kitchen KDS', es: '🍳 KDS de Cocina', fr: '🍳 KDS Cuisine', de: '🍳 Küchen-KDS' },
+    '/kitchen/ — comande in tempo reale': { en: '/kitchen/ — real-time orders', es: '/kitchen/ — pedidos en tiempo real', fr: '/kitchen/ — commandes en temps réel', de: '/kitchen/ — Echtzeit-Bestellungen' },
+    'ℹ️ API Display Queue': { en: 'ℹ️ Display Queue API', es: 'ℹ️ API de Display Queue', fr: 'ℹ️ API Display Queue', de: 'ℹ️ Display-Queue-API' },
+    'JSON URL e parametri': { en: 'JSON URL and parameters', es: 'URL JSON y parámetros', fr: 'URL JSON et paramètres', de: 'JSON-URL und Parameter' }
+  };
+
+    if (lang !== 'it') {
+      var walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      var n;
+      while (n = walk.nextNode()) {
+        var t = n.nodeValue.trim();
+        if (t && dict[t] && dict[t][lang]) {
+          n.nodeValue = n.nodeValue.replace(t, dict[t][lang]);
+        }
+      }
+      var h1s = document.querySelectorAll('h1');
+      h1s.forEach(function(h1) {
+        if(dict[h1.innerText] && dict[h1.innerText][lang]) h1.innerText = dict[h1.innerText][lang];
+      });
+    }
+  };
+</script>
 </body>
+
 </html>

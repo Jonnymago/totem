@@ -54,11 +54,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 <script>
 (function(){
   var I18N = {
-    it: { pending:'DA PREPARARE', prep:'IN PREPARAZIONE', ready:'PRONTO', active:'attive', pin_title:'PIN operatore', pin_hint:'Necessario per cambiare stato comanda', login:'Accedi', empty:'Nessuna comanda', all:'TUTTE LE COMANDE' },
-    en: { pending:'TO PREPARE', prep:'IN PROGRESS', ready:'READY', active:'active', pin_title:'Operator PIN', pin_hint:'Required to change order status', login:'Sign in', empty:'No orders', all:'ALL ORDERS' },
-    es: { pending:'POR PREPARAR', prep:'EN PREPARACIÓN', ready:'LISTO', active:'activas', pin_title:'PIN operador', pin_hint:'Necesario para cambiar el estado', login:'Entrar', empty:'Sin comandas', all:'TODOS LOS PEDIDOS' },
-    fr: { pending:'À PRÉPARER', prep:'EN PRÉPARATION', ready:'PRÊT', active:'actives', pin_title:'PIN opérateur', pin_hint:'Requis pour changer le statut', login:'Connexion', empty:'Aucune commande', all:'TOUTES LES COMMANDES' },
-    de: { pending:'VORBEREITEN', prep:'IN ZUBEREITUNG', ready:'FERTIG', active:'aktiv', pin_title:'Operator-PIN', pin_hint:'Erforderlich zum Ändern des Status', login:'Anmelden', empty:'Keine Bestellungen', all:'ALLE BESTELLUNGEN' }
+    it: { pending:'DA PREPARARE', prep:'IN PREPARAZIONE', ready:'PRONTO', active:'attive', pin_title:'PIN operatore', pin_hint:'Necessario per cambiare stato comanda', login:'Accedi', empty:'Nessuna comanda', all:'TUTTE LE COMANDE', pin_err:'PIN non valido' },
+    en: { pending:'TO PREPARE', prep:'IN PROGRESS', ready:'READY', active:'active', pin_title:'Operator PIN', pin_hint:'Required to change order status', login:'Sign in', empty:'No orders', all:'ALL ORDERS', pin_err:'Invalid PIN' },
+    es: { pending:'POR PREPARAR', prep:'EN PREPARACIÓN', ready:'LISTO', active:'activas', pin_title:'PIN operador', pin_hint:'Necesario para cambiar el estado', login:'Entrar', empty:'Sin comandas', all:'TODOS LOS PEDIDOS', pin_err:'PIN no válido' },
+    fr: { pending:'À PRÉPARER', prep:'EN PRÉPARATION', ready:'PRÊT', active:'actives', pin_title:'PIN opérateur', pin_hint:'Requis pour changer le statut', login:'Connexion', empty:'Aucune commande', all:'TOUTES LES COMMANDES', pin_err:'PIN invalide' },
+    de: { pending:'VORBEREITEN', prep:'IN ZUBEREITUNG', ready:'FERTIG', active:'aktiv', pin_title:'Operator-PIN', pin_hint:'Erforderlich zum Ändern des Status', login:'Anmelden', empty:'Keine Bestellungen', all:'ALLE BESTELLUNGEN', pin_err:'Ungültige PIN' }
   };
   var lang = (new URLSearchParams(location.search).get('lang') || navigator.language || 'it').slice(0,2).toLowerCase();
   var dict = I18N[lang] || I18N.it;
@@ -108,7 +108,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     var data=await fetch('/api/admin/pin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:pin})}).then(function(r){return r.json();});
     if(data.access_token){token=data.access_token;localStorage.setItem('kds_token',token);$('login').classList.remove('show');load()}
   }
-  $('pin-ok').onclick=function(){login().catch(function(){alert('PIN non valido');});};
+  $('pin-ok').onclick=function(){login().catch(function(){alert(dict.pin_err);});};
   async function setStatus(id,status){
     try{
       await api('/api/orders/'+id+'/status',{method:'PUT',body:JSON.stringify({status:status})});
@@ -156,6 +156,21 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
         fetch('/api/orders/current').then(function(r){return r.json();}).catch(function(){return [];}),
       ]);
       var settings=arr[0]||{};
+      if(settings.language) {
+         lang = (settings.language || 'it').slice(0,2).toLowerCase();
+         dict = I18N[lang] || I18N.it;
+         document.querySelectorAll('[data-i18n]').forEach(function(el){
+             var k = el.getAttribute('data-i18n');
+             if(dict[k]) el.textContent = dict[k];
+         });
+         document.querySelectorAll('.empty').forEach(function(el){ el.textContent=dict.empty; });
+      });
+         var dict_empty = t('Nessun ordine...');
+         document.querySelectorAll('.empty').forEach(function(el){ el.textContent=dict_empty; });
+         dict.empty = dict_empty;
+         dict.all = t('TUTTE');
+      }
+
       var cur=arr[1]||[];
       if(settings.restaurant_name)$('rest').textContent=settings.restaurant_name;
 

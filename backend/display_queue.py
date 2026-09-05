@@ -149,6 +149,7 @@ def register_display_queue_api(api_router) -> None:
                 "products": products,
                 "screens": screens,
                 "signage_config": signage_config,
+                "language": settings_doc.get("language", "it"),
                 "calling_number": calling_num,
                 "timestamp": datetime.now(UTC).isoformat(),
             }

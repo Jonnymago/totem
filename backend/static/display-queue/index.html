@@ -550,6 +550,21 @@
 (function () {
   var params = new URLSearchParams(location.search);
   var path = (location.pathname || '').replace(/\/+$/, '');
+  
+  var currentLang = 'it';
+  var I18N = {
+    it: { menu: 'MENÙ', best_seller: i18nText('best_seller'), specialty: i18nText('specialty'), offers_specialties: i18nText('offers_specialties') },
+    en: { menu: 'MENU', best_seller: '🔥 BEST SELLER', specialty: '⭐ SPECIALTY', offers_specialties: 'OFFERS & SPECIALTIES', no_products: 'No products available in this category' },
+    es: { menu: 'MENÚ', best_seller: '🔥 MÁS VENDIDO', specialty: '⭐ ESPECIALIDAD', offers_specialties: 'OFERTAS Y ESPECIALIDADES', no_products: 'No hay productos disponibles en esta categoría' },
+    fr: { menu: 'MENU', best_seller: '🔥 MEILLEURE VENTE', specialty: '⭐ SPÉCIALITÉ', offers_specialties: 'OFFRES & SPÉCIALITÉS', no_products: 'Aucun produit disponible dans cette catégorie' },
+    de: { menu: 'MENÜ', best_seller: '🔥 BESTSELLER', specialty: '⭐ SPEZIALITÄT', offers_specialties: 'ANGEBOTE & SPEZIALITÄTEN', no_products: 'Keine Produkte in dieser Kategorie verfügbar' }
+  };
+  function i18nText(key) {
+    var lang = (signageConfig && signageConfig.language) || currentLang || 'it';
+    var dict = I18N[lang] || I18N.it;
+    return dict[key] || I18N.it[key] || '';
+  }
+
   var MODE = (params.get('mode') || '').toLowerCase();
   if (path.slice(-6) === '/queue' || MODE === 'queue') MODE = 'queue';
   else if (MODE !== 'products') MODE = 'full';
@@ -683,7 +698,7 @@
       for (var i = 0; i < Math.max(list.length, 1); i += pageSize) {
         pages.push({
           id: cat.id,
-          name: cat.name || 'Menù',
+          name: cat.name || i18nText('menu'),
           products: list.slice(i, i + pageSize),
           config: catConfig,
           duration: (catConfig.duration_seconds || signageConfig.rotate_seconds || 8) * 1000
@@ -732,7 +747,7 @@
       var anim = pCfg.animation || 'ken-burns';
       var animClass = anim !== 'none' ? ' anim-' + anim : '';
 
-      var tagText = pCfg.custom_tag || (p.is_featured ? '🔥 PIÙ VENDUTO' : (isHero ? '⭐ SPECIALITÀ' : ''));
+      var tagText = pCfg.custom_tag || (p.is_featured ? i18nText('best_seller') : (isHero ? i18nText('specialty') : ''));
       var isGoldTag = tagText.indexOf('CHEF') >= 0 || tagText.indexOf('SPECIALITÀ') >= 0;
       var tag = tagText ? '<div class="card-tag' + (isGoldTag ? ' gold' : '') + '">' + escapeHtml(tagText) + '</div>' : '';
 
@@ -758,10 +773,13 @@
     var bgVideoLayer = document.getElementById('bg-video-layer');
     var bgVideoEl = document.getElementById('bg-video-el');
 
+
     if (!pages.length) {
       grid.style.display = 'none';
       empty.style.display = 'flex';
-      catName.textContent = 'Menù';
+      empty.textContent = i18nText('no_products');
+
+      catName.textContent = i18nText('menu');
       pageInd.textContent = '';
       return;
     }
@@ -840,8 +858,19 @@
     }, currentDuration);
   }
 
+
   function applyCatalog(catalog, isRefresh) {
     if (!catalog) return;
+    if (catalog.settings && catalog.settings.language) {
+      currentLang = catalog.settings.language;
+    } else if (catalog.language) {
+      currentLang = catalog.language;
+    }
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('lang')) {
+      currentLang = urlParams.get('lang');
+    }
+
     if (catalog.restaurant_name) {
       document.getElementById('restaurant-name').textContent = String(catalog.restaurant_name).toUpperCase();
     }

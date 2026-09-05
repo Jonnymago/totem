@@ -563,11 +563,11 @@ export default function PrintersScreen() {
       created_at: new Date().toISOString(),
       total_price: 14.5,
       items: [
-        { product_id: 'p1', product_name: 'Classic Burger BBQ', quantity: 2, price: 6.0, removed_ingredients: ['Cipolla'] },
-        { product_id: 'p2', product_name: 'Patatine Fritte Maxi', quantity: 1, price: 2.5 },
+        { product_id: 'p1', product_name: t('Es: Double Bacon Burger'), quantity: 2, price: 6.0, removed_ingredients: [t('Es. Cipolla') || 'Cipolla'] },
+        { product_id: 'p2', product_name: t('Es. Patatine Grandi'), quantity: 1, price: 2.5 },
       ],
     }),
-    []
+    [t]
   );
 
   const previewTicketText = useMemo(() => {

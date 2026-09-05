@@ -274,7 +274,7 @@ export default function GuideHelper() {
         </View>
         <TouchableOpacity
           style={styles.supportBtn}
-          onPress={() => Linking.openURL('mailto:support@totemquickbite.com?subject=Supporto%20Totem%20QuickBite')}
+          onPress={() => Linking.openURL('mailto:supportquickbite@gmail.com?subject=Supporto%20Totem%20QuickBite')}
         >
           <Ionicons name="mail" size={16} color="white" />
           <Text style={styles.supportBtnText}>{t('guide.support_btn')}</Text>
