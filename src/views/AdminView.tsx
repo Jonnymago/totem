@@ -3370,12 +3370,7 @@ export const AdminView: React.FC = () => {
                 >
                   🔄 Verifica & Ripristina Abbonamento
                 </button>
-                <button
-                  onClick={handleResetTrial}
-                  className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold transition-all"
-                >
-                  Ripristina prova (7 giorni)
-                </button>
+
               </div>
             </div>
 
@@ -3900,74 +3895,7 @@ export const AdminView: React.FC = () => {
               </div>
             </div>
 
-            {/* Card 4: Numerazione Ordini & Reset Scontrini */}
-            <div className="p-6 sm:p-8 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-base font-black text-white flex items-center gap-2">
-                    <RotateCcw className="w-5 h-5 text-rose-400" />
-                    <span>Numerazione Ordini & Reset Scontrini</span>
-                  </h4>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Configura la frequenza di azzeramento del numero scontrino emesso dal Totem e reimposta la numerazione da #1.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleResetOrderCounter}
-                  disabled={orderResetting}
-                  className="px-4 py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 font-bold rounded-xl text-xs flex items-center gap-2 transition-all shrink-0 disabled:opacity-50"
-                >
-                  <RotateCcw className={`w-3.5 h-3.5 ${orderResetting ? 'animate-spin' : ''}`} />
-                  <span>{orderResetting ? 'Azzeramento in corso...' : 'Azzera Numerazione Ora'}</span>
-                </button>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-400 block">Modalità di Azzeramento</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: 'daily', label: 'Giornaliero' },
-                      { id: 'manual', label: 'Manuale' },
-                      { id: 'never', label: 'Mai' },
-                    ].map((m) => {
-                      const isSel = (settingsForm.order_reset_mode || 'daily') === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => {
-                            setSettingsForm({ ...settingsForm, order_reset_mode: m.id as any });
-                            api.updateSettings({ order_reset_mode: m.id as any });
-                          }}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                            isSel
-                              ? 'bg-rose-600 border-rose-500 text-white'
-                              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                          }`}
-                        >
-                          {m.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-400 block">Orario di Azzeramento Automatico</label>
-                  <input
-                    type="time"
-                    value={settingsForm.order_reset_time || '00:00'}
-                    onChange={(e) => {
-                      setSettingsForm({ ...settingsForm, order_reset_time: e.target.value });
-                      api.updateSettings({ order_reset_time: e.target.value });
-                    }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-rose-500"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         );
       })()}

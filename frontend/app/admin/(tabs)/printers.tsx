@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   View,
@@ -286,6 +287,7 @@ const DEFAULT_TRANSLATIONS: Record<string, ReceiptTranslationsMap> = {
 };
 
 export default function PrintersScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { width: winW } = useWindowDimensions();
   const isTablet = winW >= 768;
@@ -385,7 +387,7 @@ export default function PrintersScreen() {
         'Limite Totem Mono',
         'Il piano Totem Mono include fino a 2 stampanti. Passa a Totem Multi (19,99 €/mese) per stampanti illimitate.',
         [
-          { text: 'Annulla', style: 'cancel' },
+          { text: t('Annulla'), style: 'cancel' },
           { text: 'Vedi licenza', onPress: () => router.push('/admin/license') },
         ]
       );
@@ -400,13 +402,10 @@ export default function PrintersScreen() {
       const devices = await getPairedPrinters();
       setFound(devices || []);
       if (!devices?.length) {
-        Alert.alert(
-          'Nessuna stampante rilevata',
-          'Assicurati che la stampante sia accesa e associata al tablet nelle Impostazioni Bluetooth di Android prima di avviare la ricerca.'
-        );
+        Alert.alert(t('Nessuna stampante rilevata'), t('Assicurati che la stampante sia accesa e associata al tablet nelle Impostazioni Bluetooth di Android prima di avviare la ricerca.'));
       }
     } catch (e: any) {
-      Alert.alert('Ricerca non riuscita', e?.message || 'Impossibile cercare i dispositivi Bluetooth.');
+      Alert.alert(t('Ricerca non riuscita'), e?.message || t('Impossibile cercare i dispositivi Bluetooth.'));
     } finally {
       setScanning(false);
     }
@@ -417,7 +416,7 @@ export default function PrintersScreen() {
     const addr = device.address || device.id;
     const already = printers.some((p) => p.address === addr);
     if (already) {
-      Alert.alert('Già presente', 'Questa stampante è già stata aggiunta. Puoi rinominarla nell\'elenco sotto.');
+      Alert.alert(t('Già presente'), t('Questa stampante è già stata aggiunta. Puoi rinominarla nell\'elenco sotto.'));
       return;
     }
     const saved = await upsertPrinterDevice({
@@ -435,7 +434,7 @@ export default function PrintersScreen() {
 
   const addManual = async () => {
     if (!newName.trim()) {
-      Alert.alert('Nome obbligatorio', 'Inserisci un nome per la stampante.');
+      Alert.alert(t('Nome obbligatorio'), t('Inserisci un nome per la stampante.'));
       return;
     }
     if (!ensureCapacity()) return;
@@ -486,10 +485,10 @@ export default function PrintersScreen() {
     try {
       setSavingLayout(true);
       await updateReceiptLayout(receiptConfig);
-      Alert.alert('✅ Salvato', 'Layout scontrino, traduzioni e righe personalizzate salvati con successo!');
+      Alert.alert(t('✅ Salvato'), t('Layout scontrino, traduzioni e righe personalizzate salvati con successo!'));
       setEditorOpen(false);
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile salvare il layout scontrino');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile salvare il layout scontrino'));
     } finally {
       setSavingLayout(false);
     }
@@ -577,11 +576,14 @@ export default function PrintersScreen() {
       {
         ...receiptConfig,
         restaurant_name: receiptConfig.header_title,
-        receipt_layout: receiptConfig,
+        receipt_layout: {
+          ...receiptConfig,
+          language: activeTranslationLang // FORZA LA LINGUA ATTIVA NELLA PREVIEW
+        },
       } as any,
       (receiptConfig.paper_width_mm || 58) as PaperWidthMm
     );
-  }, [sampleOrder, receiptConfig]);
+  }, [sampleOrder, receiptConfig, activeTranslationLang]);
 
   if (loading) {
     return (
@@ -596,10 +598,11 @@ export default function PrintersScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Stampanti & Scontrino"
-        subtitle="Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino"
+        title={t(`Stampanti & Scontrino`)}
+        subtitle={t(`Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino`)}
         emoji="🖨️"
         showBack={true}
+        onBack={() => router.back()}
         showTotemButton={true}
         badge={{
           text: unlimited ? 'Totem Multi (Illimitate)' : `Mono (${printers.length}/2)`,
@@ -615,10 +618,10 @@ export default function PrintersScreen() {
               <Ionicons name="receipt-outline" size={24} color="#FFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.btnOpenEditorTitle}>⚙️ Personalizza Layout Scontrino & Traduzioni</Text>
-              <Text style={styles.btnOpenEditorSubtitle}>
+              <Text style={styles.btnOpenEditorTitle}>{t(`⚙️ Personalizza Layout Scontrino & Traduzioni`)}</Text>
+              <Text style={styles.btnOpenEditorSubtitle}>{t(`
                 Riordina le righe, modifica testi, aggiungi messaggi personalizzati e personalizza le traduzioni in 5 lingue.
-              </Text>
+              `)}</Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={22} color="#99F6E4" />
@@ -626,9 +629,9 @@ export default function PrintersScreen() {
 
         {/* Global Printing Toggles */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>⚙️ Automatismi di Stampa Ordini</Text>
+          <Text style={styles.cardTitle}>{t(`⚙️ Automatismi di Stampa Ordini`)}</Text>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Stampa automatica Scontrino di Cortesia (Cassa/Cliente)</Text>
+            <Text style={styles.rowLabel}>{t(`Stampa automatica Scontrino di Cortesia (Cassa/Cliente)`)}</Text>
             <Switch
               value={autoPrintCourtesy}
               onValueChange={async (v) => {
@@ -639,7 +642,7 @@ export default function PrintersScreen() {
             />
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Stampa automatica Comanda Cucina / Reparto</Text>
+            <Text style={styles.rowLabel}>{t(`Stampa automatica Comanda Cucina / Reparto`)}</Text>
             <Switch
               value={autoPrintKitchen}
               onValueChange={async (v) => {
@@ -666,7 +669,7 @@ export default function PrintersScreen() {
           </View>
 
           {printers.length === 0 ? (
-            <Text style={styles.hint}>Nessuna stampante associata. Cerca un dispositivo Bluetooth o aggiungine uno manuale.</Text>
+            <Text style={styles.hint}>{t(`Nessuna stampante associata. Cerca un dispositivo Bluetooth o aggiungine uno manuale.`)}</Text>
           ) : (
             printers.map((p) => (
               <View key={p.id} style={styles.item}>
@@ -676,15 +679,15 @@ export default function PrintersScreen() {
                     value={renameDraft[p.id] ?? p.name}
                     onChangeText={(t) => setRenameDraft((d) => ({ ...d, [p.id]: t }))}
                     onBlur={() => saveRename(p)}
-                    placeholder="Nome stampante"
+                    placeholder={t(`Nome stampante`)}
                   />
                   <TouchableOpacity
                     style={styles.deleteBtn}
                     onPress={() => {
-                      Alert.alert('Rimuovere stampante?', `Eliminare "${p.name}"?`, [
-                        { text: 'Annulla', style: 'cancel' },
+                      Alert.alert(t(t('Rimuovere stampante?')), `${t('Eliminare')} \"${p.name}\"?`, [
+                        { text: t('Annulla'), style: 'cancel' },
                         {
-                          text: 'Elimina',
+                          text: t('Elimina'),
                           style: 'destructive',
                           onPress: async () => {
                             await deletePrinterDevice(p.id);
@@ -701,7 +704,7 @@ export default function PrintersScreen() {
                   {p.interface_type || 'bluetooth'} • {p.address || 'Interna / Sunmi'}
                 </Text>
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Abilitata</Text>
+                  <Text style={styles.rowLabel}>{t(`Abilitata`)}</Text>
                   <Switch
                     value={p.enabled !== false}
                     onValueChange={() => toggleRole(p, 'enabled')}
@@ -709,7 +712,7 @@ export default function PrintersScreen() {
                   />
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Scontrino Cortesia</Text>
+                  <Text style={styles.rowLabel}>{t(`Scontrino Cortesia`)}</Text>
                   <Switch
                     value={Boolean(p.print_courtesy)}
                     onValueChange={() => toggleRole(p, 'courtesy')}
@@ -717,7 +720,7 @@ export default function PrintersScreen() {
                   />
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Comanda Cucina</Text>
+                  <Text style={styles.rowLabel}>{t(`Comanda Cucina`)}</Text>
                   <Switch
                     value={Boolean(p.print_kitchen)}
                     onValueChange={() => toggleRole(p, 'kitchen')}
@@ -727,7 +730,7 @@ export default function PrintersScreen() {
                 
                 {Boolean(p.print_kitchen) && categories.length > 0 && (
                   <View style={{ marginTop: 8 }}>
-                    <Text style={styles.label}>Categorie KDS (Lascia vuoto per stamparle tutte)</Text>
+                    <Text style={styles.label}>{t(`Categorie KDS (Lascia vuoto per stamparle tutte)`)}</Text>
                     <View style={styles.pills}>
                       {categories.map((cat) => {
                         const on = (p.assigned_category_ids || []).includes(cat.id);
@@ -766,7 +769,7 @@ export default function PrintersScreen() {
                   <Text style={styles.meta}>{d.address || d.id}</Text>
                 </View>
                 <TouchableOpacity style={styles.addBtn} onPress={() => addFromScan(d)}>
-                  <Text style={styles.addBtnText}>+ Associa</Text>
+                  <Text style={styles.addBtnText}>{t(`+ Associa`)}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -775,22 +778,22 @@ export default function PrintersScreen() {
 
         {/* Manual Add Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>➕ Aggiungi Stampante Manuale</Text>
+          <Text style={styles.cardTitle}>{t(`➕ Aggiungi Stampante Manuale`)}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nome (es. Cassa Banco, Bar, Forno)"
+            placeholder={t(`Nome (es. Cassa Banco, Bar, Forno)`)}
             value={newName}
             onChangeText={setNewName}
           />
           <TextInput
             style={styles.input}
-            placeholder="Indirizzo (MAC Bluetooth o IP LAN es. 192.168.1.100:9100)"
+            placeholder={t(`Indirizzo (MAC Bluetooth o IP LAN es. 192.168.1.100:9100)`)}
             value={newAddr}
             onChangeText={setNewAddr}
           />
           <TouchableOpacity style={styles.primary} onPress={addManual}>
             <Ionicons name="add" size={18} color="#FFF" />
-            <Text style={styles.primaryText}>Aggiungi Stampante</Text>
+            <Text style={styles.primaryText}>{t(`Aggiungi Stampante`)}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -810,7 +813,7 @@ export default function PrintersScreen() {
                 {!isTablet ? 'Editor Scontrino' : 'Editor Layout Scontrino & Traduzioni'}
               </Text>
               {isTablet && (
-                <Text style={styles.modalHeaderSub}>Personalizzazione termica completa</Text>
+                <Text style={styles.modalHeaderSub}>{t(`Personalizzazione termica completa`)}</Text>
               )}
             </View>
             <TouchableOpacity
@@ -821,7 +824,7 @@ export default function PrintersScreen() {
               {savingLayout ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.modalSaveBtnText}>Salva</Text>
+                <Text style={styles.modalSaveBtnText}>{t(`Salva`)}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -929,9 +932,9 @@ export default function PrintersScreen() {
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                       <Ionicons name="help-circle-outline" size={20} color="#0F766E" />
-                      <Text style={styles.guideCollapsibleTitle}>
+                      <Text style={styles.guideCollapsibleTitle}>{t(`
                         Come funzionano i blocchi e cosa puoi personalizzare?
-                      </Text>
+                      `)}</Text>
                     </View>
                     <Ionicons
                       name={showBlocksGuide ? 'chevron-up' : 'chevron-down'}
@@ -945,22 +948,22 @@ export default function PrintersScreen() {
                       <View style={{ gap: 8 }}>
                         <View style={styles.legendRow}>
                           <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                            <Text style={styles.badgeCustomizableText}>🟢 Personalizzabile</Text>
+                            <Text style={styles.badgeCustomizableText}>{t(`🟢 Personalizzabile`)}</Text>
                           </View>
-                          <Text style={styles.legendDesc}>
+                          <Text style={styles.legendDesc}>{t(`
                             Testi modificabili da te (Nome ristorante, indirizzo, P.IVA, note, saluti, righe custom).
-                          </Text>
+                          `)}</Text>
                         </View>
                         <View style={styles.legendRow}>
                           <View style={[styles.legendBadge, styles.badgeSystem]}>
-                            <Text style={styles.badgeSystemText}>🔵 Generato dal sistema</Text>
+                            <Text style={styles.badgeSystemText}>{t(`🔵 Generato dal sistema`)}</Text>
                           </View>
-                          <Text style={styles.legendDesc}>
+                          <Text style={styles.legendDesc}>{t(`
                             Dati dinamici calcolati dal Totem al checkout (data/ora, numero progressivo comanda, piatti scelti, totale euro, linee grafiche).
-                          </Text>
+                          `)}</Text>
                         </View>
                         <Text style={styles.guideTipText}>
-                          💡 <Text style={{ fontWeight: '700' }}>Suggerimento:</Text> Usa le frecce ⬆️ e ⬇️ per riordinare la posizione nello scontrino. Usa lo switch per mostrare o nascondere un rigo. Tocca <Text style={{ fontWeight: '700' }}>ℹ️ Info</Text> su ciascun rigo per conoscere la funzione e vederne l'esempio reale di stampa.
+                          💡 <Text style={{ fontWeight: '700' }}>{t(`Suggerimento:`)}</Text> Usa le frecce ⬆️ e ⬇️ per riordinare la posizione nello scontrino. Usa lo switch per mostrare o nascondere un rigo. Tocca <Text style={{ fontWeight: '700' }}>{t(`ℹ️ Info`)}</Text> su ciascun rigo per conoscere la funzione e vederne l'esempio reale di stampa.
                         </Text>
                       </View>
                     </View>
@@ -969,57 +972,57 @@ export default function PrintersScreen() {
                   {/* Header Title Editor */}
                   <View style={styles.blockItemCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.blockItemTitle}>🏪 Nome Attività (Intestazione)</Text>
+                      <Text style={styles.blockItemTitle}>{t(`🏪 Nome Attività (Intestazione)`)}</Text>
                       <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                        <Text style={styles.badgeCustomizableText}>Personalizzabile</Text>
+                        <Text style={styles.badgeCustomizableText}>{t(`Personalizzabile`)}</Text>
                       </View>
                     </View>
                     <TextInput
                       style={styles.input}
                       value={receiptConfig.header_title}
                       onChangeText={(t) => setReceiptConfig({ ...receiptConfig, header_title: t })}
-                      placeholder="Nome Ristorante..."
+                      placeholder={t(`Nome Ristorante...`)}
                     />
                   </View>
 
                   {/* Header Subtitle Editor */}
                   <View style={styles.blockItemCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.blockItemTitle}>📍 Sottotitolo / Indirizzo</Text>
+                      <Text style={styles.blockItemTitle}>{t(`📍 Sottotitolo / Indirizzo`)}</Text>
                       <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                        <Text style={styles.badgeCustomizableText}>Personalizzabile</Text>
+                        <Text style={styles.badgeCustomizableText}>{t(`Personalizzabile`)}</Text>
                       </View>
                     </View>
                     <TextInput
                       style={styles.input}
                       value={receiptConfig.header_subtitle}
                       onChangeText={(t) => setReceiptConfig({ ...receiptConfig, header_subtitle: t })}
-                      placeholder="Via Roma 12, Milano"
+                      placeholder={t(`Via Roma 12, Milano`)}
                     />
                   </View>
 
                   {/* Tax ID Editor */}
                   <View style={styles.blockItemCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.blockItemTitle}>🏛️ Partita IVA / Dati Fiscali</Text>
+                      <Text style={styles.blockItemTitle}>{t(`🏛️ Partita IVA / Dati Fiscali`)}</Text>
                       <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                        <Text style={styles.badgeCustomizableText}>Personalizzabile</Text>
+                        <Text style={styles.badgeCustomizableText}>{t(`Personalizzabile`)}</Text>
                       </View>
                     </View>
                     <TextInput
                       style={styles.input}
                       value={receiptConfig.header_tax_id}
                       onChangeText={(t) => setReceiptConfig({ ...receiptConfig, header_tax_id: t })}
-                      placeholder="P.IVA 12345678901"
+                      placeholder={t(`P.IVA 12345678901`)}
                     />
                   </View>
 
                   {/* Footer Message Editor */}
                   <View style={styles.blockItemCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.blockItemTitle}>💬 Messaggio di Saluto a Piè di Pagina</Text>
+                      <Text style={styles.blockItemTitle}>{t(`💬 Messaggio di Saluto a Piè di Pagina`)}</Text>
                       <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                        <Text style={styles.badgeCustomizableText}>Personalizzabile</Text>
+                        <Text style={styles.badgeCustomizableText}>{t(`Personalizzabile`)}</Text>
                       </View>
                     </View>
                     <TextInput
@@ -1027,32 +1030,32 @@ export default function PrintersScreen() {
                       multiline
                       value={receiptConfig.footer_message}
                       onChangeText={(t) => setReceiptConfig({ ...receiptConfig, footer_message: t })}
-                      placeholder="Grazie per la visita! Arrivederci!"
+                      placeholder={t(`Grazie per la visita! Arrivederci!`)}
                     />
                   </View>
 
                   {/* Non-Fiscal Note Editor */}
                   <View style={styles.blockItemCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.blockItemTitle}>📜 Dicitura Non Fiscale</Text>
+                      <Text style={styles.blockItemTitle}>{t(`📜 Dicitura Non Fiscale`)}</Text>
                       <View style={[styles.legendBadge, styles.badgeCustomizable]}>
-                        <Text style={styles.badgeCustomizableText}>Personalizzabile</Text>
+                        <Text style={styles.badgeCustomizableText}>{t(`Personalizzabile`)}</Text>
                       </View>
                     </View>
                     <TextInput
                       style={styles.input}
                       value={receiptConfig.footer_non_fiscal_note}
                       onChangeText={(t) => setReceiptConfig({ ...receiptConfig, footer_non_fiscal_note: t })}
-                      placeholder="DOCUMENTO NON FISCALE"
+                      placeholder={t(`DOCUMENTO NON FISCALE`)}
                     />
                   </View>
 
                   {/* Reorderable Sequence List with Collapsible Info per Row */}
                   <View style={{ marginTop: 6 }}>
-                    <Text style={styles.sectionHeaderTitle}>Sequenza, Ruoli e Visibilità Righe Scontrino</Text>
-                    <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
+                    <Text style={styles.sectionHeaderTitle}>{t(`Sequenza, Ruoli e Visibilità Righe Scontrino`)}</Text>
+                    <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>{t(`
                       Tocca "Info" per scoprire lo scopo del rigo e come personalizzarlo.
-                    </Text>
+                    `)}</Text>
                   </View>
 
                   {currentBlocksOrder.map((blockId, idx) => {
@@ -1142,7 +1145,7 @@ export default function PrintersScreen() {
                         {isExpanded && (
                           <View style={styles.blockInfoDrawer}>
                             <View style={styles.blockInfoSection}>
-                              <Text style={styles.blockInfoLabel}>📌 A COSA SERVE QUESTO RIGO:</Text>
+                              <Text style={styles.blockInfoLabel}>{t(`📌 A COSA SERVE QUESTO RIGO:`)}</Text>
                               <Text style={styles.blockInfoText}>{blockMeta.desc}</Text>
                             </View>
                             <View style={styles.blockInfoSection}>
@@ -1152,7 +1155,7 @@ export default function PrintersScreen() {
                               <Text style={styles.blockInfoText}>{blockMeta.hint}</Text>
                             </View>
                             <View style={styles.blockInfoExampleBox}>
-                              <Text style={styles.blockInfoExampleLabel}>📄 Esempio reale di stampa:</Text>
+                              <Text style={styles.blockInfoExampleLabel}>{t(`📄 Esempio reale di stampa:`)}</Text>
                               <Text style={styles.blockInfoExampleCode}>{blockMeta.example}</Text>
                             </View>
                           </View>
@@ -1168,9 +1171,9 @@ export default function PrintersScreen() {
                 <View style={{ gap: 12 }}>
                   <View style={styles.editorHelpBox}>
                     <Ionicons name="create-outline" size={18} color="#0F766E" />
-                    <Text style={styles.editorHelpText}>
+                    <Text style={styles.editorHelpText}>{t(`
                       Aggiungi righe di testo personalizzate allo scontrino (es. Wi-Fi, Social Network, Orari di apertura, Promozioni).
-                    </Text>
+                    `)}</Text>
                   </View>
 
                   {(receiptConfig.custom_lines || []).map((line, idx) => (
@@ -1186,11 +1189,11 @@ export default function PrintersScreen() {
                         style={styles.input}
                         value={line.text}
                         onChangeText={(t) => updateCustomLine(line.id, { text: t })}
-                        placeholder="Testo riga..."
+                        placeholder={t(`Testo riga...`)}
                       />
 
                       <View style={styles.customLineOptionsRow}>
-                        <Text style={styles.rowLabel}>Allineamento:</Text>
+                        <Text style={styles.rowLabel}>{t(`Allineamento:`)}</Text>
                         <View style={{ flexDirection: 'row', gap: 6 }}>
                           {(['left', 'center', 'right'] as const).map((aln) => {
                             const isSelected = (line.align || 'center') === aln;
@@ -1213,7 +1216,7 @@ export default function PrintersScreen() {
 
                   <TouchableOpacity style={styles.primary} onPress={addCustomLine}>
                     <Ionicons name="add" size={18} color="#FFF" />
-                    <Text style={styles.primaryText}>+ Aggiungi Nuova Riga</Text>
+                    <Text style={styles.primaryText}>{t(`+ Aggiungi Nuova Riga`)}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -1223,9 +1226,9 @@ export default function PrintersScreen() {
                 <View style={{ gap: 12 }}>
                   <View style={styles.editorHelpBox}>
                     <Ionicons name="language-outline" size={18} color="#0F766E" />
-                    <Text style={styles.editorHelpText}>
+                    <Text style={styles.editorHelpText}>{t(`
                       Modifica le diciture dello scontrino per ogni lingua supportata. Le traduzioni verranno stampate in base alla lingua dell'ordine o del cliente.
-                    </Text>
+                    `)}</Text>
                   </View>
 
                   {/* Language Selector Chips */}
@@ -1258,7 +1261,7 @@ export default function PrintersScreen() {
                     return (
                       <View style={{ gap: 10 }}>
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Titolo Scontrino di Cortesia</Text>
+                          <Text style={styles.label}>{t(`Titolo Scontrino di Cortesia`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.courtesy || ''}
@@ -1267,7 +1270,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Etichetta Numero Ordine</Text>
+                          <Text style={styles.label}>{t(`Etichetta Numero Ordine`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.order_num || ''}
@@ -1276,7 +1279,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Dicitura Totale</Text>
+                          <Text style={styles.label}>{t(`Dicitura Totale`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.total || ''}
@@ -1285,7 +1288,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Dicitura Subtotale</Text>
+                          <Text style={styles.label}>{t(`Dicitura Subtotale`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.subtotal || ''}
@@ -1294,7 +1297,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Istruzione Pagamento Cassa</Text>
+                          <Text style={styles.label}>{t(`Istruzione Pagamento Cassa`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.pay_at_cash || ''}
@@ -1303,7 +1306,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Dicitura Asporto</Text>
+                          <Text style={styles.label}>{t(`Dicitura Asporto`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.takeaway || ''}
@@ -1312,7 +1315,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Dicitura Tavolo / Sul Posto</Text>
+                          <Text style={styles.label}>{t(`Dicitura Tavolo / Sul Posto`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.dine_in || ''}
@@ -1321,7 +1324,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Prefisso Senza Ingrediente</Text>
+                          <Text style={styles.label}>{t(`Prefisso Senza Ingrediente`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.without || ''}
@@ -1330,7 +1333,7 @@ export default function PrintersScreen() {
                         </View>
 
                         <View style={styles.formGroup}>
-                          <Text style={styles.label}>Prefisso Note</Text>
+                          <Text style={styles.label}>{t(`Prefisso Note`)}</Text>
                           <TextInput
                             style={styles.input}
                             value={dict.notes || ''}
@@ -1348,7 +1351,7 @@ export default function PrintersScreen() {
                 <View style={{ gap: 12 }}>
                   {/* Paper Width */}
                   <View style={styles.editorCard}>
-                    <Text style={styles.editorCardTitle}>📏 Larghezza Rotolo Carta Termica</Text>
+                    <Text style={styles.editorCardTitle}>{t(`📏 Larghezza Rotolo Carta Termica`)}</Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                       {[58, 80].map((mm) => {
                         const active = (receiptConfig.paper_width_mm || 58) === mm;
@@ -1369,7 +1372,7 @@ export default function PrintersScreen() {
 
                   {/* Separator Style */}
                   <View style={styles.editorCard}>
-                    <Text style={styles.editorCardTitle}>➗ Stile Linee Separatori</Text>
+                    <Text style={styles.editorCardTitle}>{t(`➗ Stile Linee Separatori`)}</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                       {[
                         { id: 'dashes', label: 'Trattini (- - -)' },
@@ -1397,8 +1400,8 @@ export default function PrintersScreen() {
                   <TouchableOpacity
                     style={styles.btnResetDefaults}
                     onPress={() => {
-                      Alert.alert('Ripristino', 'Vuoi ripristinare il layout scontrino e tutte le traduzioni ai valori di fabbrica?', [
-                        { text: 'Annulla', style: 'cancel' },
+                      Alert.alert(t(t('Ripristino')), t('Vuoi ripristinare il layout scontrino e tutte le traduzioni ai valori di fabbrica?'), [
+                        { text: t('Annulla'), style: 'cancel' },
                         {
                           text: 'Ripristina',
                           style: 'destructive',
@@ -1430,7 +1433,7 @@ export default function PrintersScreen() {
                     }}
                   >
                     <Ionicons name="refresh-outline" size={16} color="#EF4444" />
-                    <Text style={styles.btnResetDefaultsText}>Ripristina Valori di Fabbrica</Text>
+                    <Text style={styles.btnResetDefaultsText}>{t(`Ripristina Valori di Fabbrica`)}</Text>
                   </TouchableOpacity>
                 </View>
               )}

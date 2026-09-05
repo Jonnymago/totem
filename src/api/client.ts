@@ -187,7 +187,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Panini', description: 'I nostri panini gourmet', order_position: 1, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=400' },
   { id: 'cat-2', name: 'Pizze', description: 'Pizze fresche e croccanti', order_position: 2, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=400' },
   { id: 'cat-3', name: 'Insalate', description: 'Insalate fresche e salutari', order_position: 3, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-4', name: 'Combo', description: 'I nostri menù combo', order_position: 4, image: 'https://images.unsplash.com/photo-1594212691516-ac8397a6e118?auto=format&fit=crop&q=80&w=400' },
+  { id: 'cat-4', name: 'Combo', description: 'I nostri menù combo', order_position: 4, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400' },
   { id: 'cat-5', name: 'Bevande', description: 'Bevande fresche', order_position: 5, image: 'https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&q=80&w=400' },
   { id: 'cat-6', name: 'Dolci', description: 'Dolci e dessert', order_position: 6, image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400' },
 ];
@@ -256,6 +256,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     category_id: 'cat-3',
     name: 'Caesar Salad',
     description: 'Lattuga romana, pollo grigliato, parmigiano e crostini',
+    image: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&q=80&w=400',
     price: 9.0,
     product_type: 'simple',
     base_ingredients: ['Lattuga romana', 'Pollo grigliato', 'Parmigiano', 'Crostini'],
@@ -267,6 +268,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     category_id: 'cat-4',
     name: 'Burger Combo',
     description: 'Hamburger + patatine + bevanda',
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400',
     price: 13.5,
     product_type: 'combo',
     combo_groups: [
@@ -276,7 +278,7 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Hamburger Classico',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400', price_delta: 0.0 },
+    price_delta: 0.0 },
           { name: 'Cheeseburger', price_delta: 1.0 },
         ],
       },
@@ -286,7 +288,7 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Coca Cola',
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=400', price_delta: 0.0 },
+    price_delta: 0.0 },
           { name: 'Fanta', price_delta: 0.0 },
           { name: 'Acqua', price_delta: 0.0 },
         ],
@@ -309,6 +311,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     category_id: 'cat-5',
     name: 'Acqua Naturale',
     description: '500ml',
+    image: 'https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&q=80&w=400',
     price: 1.5,
     product_type: 'simple',
     order_position: 2,
@@ -381,7 +384,7 @@ export const api = {
       let cats = loadLocal<Category[]>('totem_categories', DEFAULT_CATEGORIES);
       let changed = false;
       cats = cats.map(c => {
-        if (!c.image) {
+        if (!c.image || c.image.trim() === '' || c.image.includes('placeholder')) {
           const def = DEFAULT_CATEGORIES.find(d => d.id === c.id);
           if (def && def.image) {
             changed = true;
@@ -404,7 +407,7 @@ export const api = {
       let prods = loadLocal<Product[]>('totem_products', DEFAULT_PRODUCTS);
       let changed = false;
       prods = prods.map(p => {
-        if (!p.image) {
+        if (!p.image || p.image.trim() === '' || p.image.includes('placeholder')) {
           const def = DEFAULT_PRODUCTS.find(d => d.id === p.id);
           if (def && def.image) {
             changed = true;

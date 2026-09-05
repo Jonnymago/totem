@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -38,6 +39,7 @@ function moveAtIndex<T>(items: T[], index: number, direction: 'up' | 'down'): T[
 }
 
 export default function GlobalGroupsScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { height: viewportHeight, width: viewportWidth } = useWindowDimensions();
   const modalHeight = Math.max(420, Math.min(820, viewportHeight - 32));
@@ -77,7 +79,7 @@ export default function GlobalGroupsScreen() {
       setGroups(data);
     } catch (error) {
       console.error('Error loading global groups:', error);
-      Alert.alert('Errore', 'Impossibile caricare gli ingredienti');
+      Alert.alert(t('Errore'), t('Impossibile caricare gli ingredienti'));
     } finally {
       setLoading(false);
     }
@@ -126,7 +128,7 @@ export default function GlobalGroupsScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Campi Mancanti', 'Inserisci il nome della raccolta ingredienti');
+      Alert.alert(t('Campi Mancanti'), t('Inserisci il nome della raccolta ingredienti'));
       return;
     }
 
@@ -173,10 +175,10 @@ export default function GlobalGroupsScreen() {
 
       setModalVisible(false);
       loadGroups();
-      Alert.alert('Successo', editingGroup ? 'Ingredienti aggiornati' : 'Ingredienti creati');
+      Alert.alert(t('Successo'), editingGroup ? t('Ingredienti aggiornati') : t('Ingredienti creati'));
     } catch (error) {
       console.error('Error saving global group:', error);
-      Alert.alert('Errore', 'Impossibile salvare gli ingredienti');
+      Alert.alert(t('Errore'), t('Impossibile salvare gli ingredienti'));
     }
   };
 
@@ -186,24 +188,24 @@ export default function GlobalGroupsScreen() {
       await loadGroups();
     } catch (error) {
       console.error('Error moving global group:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare la posizione degli ingredienti');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare la posizione degli ingredienti'));
     }
   };
 
   const handleDelete = (group: GlobalOptionGroup) => {
-    Alert.alert('Conferma Eliminazione', `Vuoi eliminare gli ingredienti "${group.name}"?`, [
-      { text: 'Annulla', style: 'cancel' },
+    Alert.alert(t(t('Conferma Eliminazione')), `${t('Vuoi eliminare gli ingredienti')} \"${group.name}\"?`, [
+      { text: t('Annulla'), style: 'cancel' },
       {
-        text: 'Elimina',
+        text: t('Elimina'),
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteGlobalGroup(group.id);
             loadGroups();
-            Alert.alert('Successo', 'Ingredienti eliminati');
+            Alert.alert(t('Successo'), t('Ingredienti eliminati'));
           } catch (error) {
             console.error('Error deleting group:', error);
-            Alert.alert('Errore', 'Impossibile eliminare gli ingredienti');
+            Alert.alert(t('Errore'), t('Impossibile eliminare gli ingredienti'));
           }
         },
       },
@@ -239,7 +241,7 @@ export default function GlobalGroupsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento ingredienti...</Text>
+        <Text style={styles.loadingText}>{t(`Caricamento ingredienti...`)}</Text>
       </View>
     );
   }
@@ -247,8 +249,8 @@ export default function GlobalGroupsScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Ingredienti & Varianti"
-        subtitle="Libreria di ingredienti, salse, extra e scelte riutilizzabili"
+        title={t(`Ingredienti & Varianti`)}
+        subtitle={t(`Libreria di ingredienti, salse, extra e scelte riutilizzabili`)}
         emoji="📚"
         counter={filteredGroups.length}
         showBack={false}
@@ -259,7 +261,7 @@ export default function GlobalGroupsScreen() {
             onPress={openCreateModal}
           >
             <Ionicons name="add" size={16} color="white" />
-            <Text style={styles.headerPrimaryBtnText}>Nuovi Ingredienti</Text>
+            <Text style={styles.headerPrimaryBtnText}>{t(`Nuovi Ingredienti`)}</Text>
           </TouchableOpacity>
         }
       />
@@ -270,7 +272,7 @@ export default function GlobalGroupsScreen() {
           <Ionicons name="search" size={18} color="#94A3B8" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Cerca ingredienti, salse o extra..."
+            placeholder={t(`Cerca ingredienti, salse o extra...`)}
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -291,11 +293,11 @@ export default function GlobalGroupsScreen() {
       >
         {filteredGroups.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 40, marginBottom: 8 }}>📚</Text>
-            <Text style={styles.emptyTitle}>Nessun ingrediente configurato</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={{ fontSize: 40, marginBottom: 8 }}>{t(`📚`)}</Text>
+            <Text style={styles.emptyTitle}>{t(`Nessun ingrediente configurato`)}</Text>
+            <Text style={styles.emptySubtitle}>{t(`
               Crea raccolte di salse, ingredienti o extra per collegarle facilmente a tutti i panini e piatti.
-            </Text>
+            `)}</Text>
           </View>
         ) : (
           filteredGroups.map((group, visibleIndex) => {
@@ -368,7 +370,7 @@ export default function GlobalGroupsScreen() {
                     onPress={() => openEditModal(group)}
                   >
                     <Ionicons name="pencil" size={16} color="#2563EB" />
-                    <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>Modifica</Text>
+                    <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>{t(`Modifica`)}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -376,7 +378,7 @@ export default function GlobalGroupsScreen() {
                     onPress={() => handleDelete(group)}
                   >
                     <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                    <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Elimina</Text>
+                    <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>{t(`Elimina`)}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -414,23 +416,23 @@ export default function GlobalGroupsScreen() {
               keyboardShouldPersistTaps="handled"
             >
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nome raccolta ingredienti *</Text>
+                <Text style={styles.formLabel}>{t(`Nome raccolta ingredienti *`)}</Text>
                 <TextInput
                   style={styles.input}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Es: Ingredienti Standard Burger, Salse Speciali..."
+                  placeholder={t(`Es: Ingredienti Standard Burger, Salse Speciali...`)}
                   placeholderTextColor="#94A3B8"
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Descrizione</Text>
+                <Text style={styles.formLabel}>{t(`Descrizione`)}</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Note interne o descrizione..."
+                  placeholder={t(`Note interne o descrizione...`)}
                   placeholderTextColor="#94A3B8"
                   multiline
                   numberOfLines={2}
@@ -439,7 +441,7 @@ export default function GlobalGroupsScreen() {
 
               {/* Group Type Selector */}
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Tipo di ingredienti</Text>
+                <Text style={styles.formLabel}>{t(`Tipo di ingredienti`)}</Text>
                 <View style={styles.typeSelectorRow}>
                   {[
                     { id: 'base_remove', label: 'Ingredienti Base' },
@@ -471,20 +473,20 @@ export default function GlobalGroupsScreen() {
               {/* Dynamic Type Inputs */}
               {type === 'base_remove' && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>
+                  <Text style={styles.formLabel}>{t(`
                     Lista Ingredienti Base (separati da virgola):
-                  </Text>
+                  `)}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={itemsText}
                     onChangeText={setItemsText}
-                    placeholder="Pomodoro, Lattuga, Cheddar, Bacon, Cipolla"
+                    placeholder={t(`Pomodoro, Lattuga, Cheddar, Bacon, Cipolla`)}
                     placeholderTextColor="#94A3B8"
                     multiline
                   />
                   {splitCsv(itemsText).length > 0 ? (
                     <View style={styles.inlineOrderList}>
-                      <Text style={styles.orderHint}>Ordine visualizzato al cliente</Text>
+                      <Text style={styles.orderHint}>{t(`Ordine visualizzato al cliente`)}</Text>
                       {splitCsv(itemsText).map((item, idx, allItems) => (
                         <View key={`${item}-${idx}`} style={styles.inlineOrderRow}>
                           <Text style={styles.inlineOrderLabel}>{idx + 1}. {item}</Text>
@@ -515,20 +517,20 @@ export default function GlobalGroupsScreen() {
 
               {type === 'free_chips' && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>
+                  <Text style={styles.formLabel}>{t(`
                     Lista Opzioni / Salse Gratuite (separate da virgola):
-                  </Text>
+                  `)}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={chipsText}
                     onChangeText={setChipsText}
-                    placeholder="Maionese, Ketchup, Barbecue, Senape, Salsa Piccante"
+                    placeholder={t(`Maionese, Ketchup, Barbecue, Senape, Salsa Piccante`)}
                     placeholderTextColor="#94A3B8"
                     multiline
                   />
                   {splitCsv(chipsText).length > 0 ? (
                     <View style={styles.inlineOrderList}>
-                      <Text style={styles.orderHint}>Ordine visualizzato al cliente</Text>
+                      <Text style={styles.orderHint}>{t(`Ordine visualizzato al cliente`)}</Text>
                       {splitCsv(chipsText).map((chip, idx, allChips) => (
                         <View key={`${chip}-${idx}`} style={styles.inlineOrderRow}>
                           <Text style={styles.inlineOrderLabel}>{idx + 1}. {chip}</Text>
@@ -559,7 +561,7 @@ export default function GlobalGroupsScreen() {
 
               {type === 'paid_extras' && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Lista Extra a Pagamento:</Text>
+                  <Text style={styles.formLabel}>{t(`Lista Extra a Pagamento:`)}</Text>
                   {extras.map((ext, idx) => (
                     <View key={idx} style={styles.extraItemRow}>
                       <TextInput
@@ -570,7 +572,7 @@ export default function GlobalGroupsScreen() {
                           list[idx] = { ...list[idx], name: v };
                           setExtras(list);
                         }}
-                        placeholder="Nome (es. Formaggio Extra)"
+                        placeholder={t(`Nome (es. Formaggio Extra)`)}
                         placeholderTextColor="#94A3B8"
                       />
                       <TextInput
@@ -584,7 +586,7 @@ export default function GlobalGroupsScreen() {
                           };
                           setExtras(list);
                         }}
-                        placeholder="€ 1.50"
+                        placeholder={t(`€ 1.50`)}
                         placeholderTextColor="#94A3B8"
                         keyboardType="numeric"
                       />
@@ -619,7 +621,7 @@ export default function GlobalGroupsScreen() {
                     style={styles.addMiniBtn}
                     onPress={() => setExtras([...extras, { name: '', price: 1.0 }])}
                   >
-                    <Text style={styles.addMiniBtnText}>+ Aggiungi Voce Extra</Text>
+                    <Text style={styles.addMiniBtnText}>{t(`+ Aggiungi Voce Extra`)}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -628,7 +630,7 @@ export default function GlobalGroupsScreen() {
                 <View style={styles.formGroup}>
                   <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.formLabel}>Min Scelte:</Text>
+                      <Text style={styles.formLabel}>{t(`Min Scelte:`)}</Text>
                       <TextInput
                         style={styles.input}
                         value={minSelection}
@@ -637,7 +639,7 @@ export default function GlobalGroupsScreen() {
                       />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.formLabel}>Max Scelte:</Text>
+                      <Text style={styles.formLabel}>{t(`Max Scelte:`)}</Text>
                       <TextInput
                         style={styles.input}
                         value={maxSelection}
@@ -646,7 +648,7 @@ export default function GlobalGroupsScreen() {
                       />
                     </View>
                   </View>
-                  <Text style={styles.formLabel}>Opzioni a Scelta:</Text>
+                  <Text style={styles.formLabel}>{t(`Opzioni a Scelta:`)}</Text>
                   {options.map((opt, idx) => (
                     <View key={idx} style={styles.extraItemRow}>
                       <TextInput
@@ -657,7 +659,7 @@ export default function GlobalGroupsScreen() {
                           list[idx] = { ...list[idx], name: v };
                           setOptions(list);
                         }}
-                        placeholder="Es. Patatine Grandi"
+                        placeholder={t(`Es. Patatine Grandi`)}
                         placeholderTextColor="#94A3B8"
                       />
                       <TextInput
@@ -671,7 +673,7 @@ export default function GlobalGroupsScreen() {
                           };
                           setOptions(list);
                         }}
-                        placeholder="+ € 0.00"
+                        placeholder={t(`+ € 0.00`)}
                         placeholderTextColor="#94A3B8"
                         keyboardType="numeric"
                       />
@@ -706,7 +708,7 @@ export default function GlobalGroupsScreen() {
                     style={styles.addMiniBtn}
                     onPress={() => setOptions([...options, { name: '', price_delta: 0 }])}
                   >
-                    <Text style={styles.addMiniBtnText}>+ Aggiungi Opzione</Text>
+                    <Text style={styles.addMiniBtnText}>{t(`+ Aggiungi Opzione`)}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -718,7 +720,7 @@ export default function GlobalGroupsScreen() {
                 style={styles.modalCancelBtn}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalCancelBtnText}>Annulla</Text>
+                <Text style={styles.modalCancelBtnText}>{t(`Annulla`)}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

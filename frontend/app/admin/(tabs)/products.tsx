@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -57,6 +58,7 @@ const STANDARD_ALLERGENS = [
 ];
 
 export default function ProductsManagementScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { height: viewportHeight, width: viewportWidth } = useWindowDimensions();
   const modalHeight = Math.max(420, Math.min(820, viewportHeight - 32));
@@ -110,7 +112,7 @@ export default function ProductsManagementScreen() {
       setGlobalGroups(globalGroupsData);
     } catch (error) {
       console.error('Error loading data:', error);
-      Alert.alert('Errore', 'Impossibile caricare i dati dei prodotti');
+      Alert.alert(t('Errore'), t('Impossibile caricare i dati dei prodotti'));
     } finally {
       setLoading(false);
     }
@@ -190,7 +192,7 @@ export default function ProductsManagementScreen() {
       await updateProduct(product.id, { is_featured: nextFeatured });
     } catch (e) {
       console.error('handleToggleFeatured error:', e);
-      Alert.alert('Errore', 'Impossibile aggiornare la preferenza per la promo screensaver.');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare la preferenza per la promo screensaver.'));
       loadData();
     }
   };
@@ -332,13 +334,13 @@ export default function ProductsManagementScreen() {
       setImage(sanitizeImageUri(cleanUri) || cleanUri);
     } catch (e) {
       console.error('pickImage error', e);
-      Alert.alert('Errore', 'Impossibile aprire la galleria.');
+      Alert.alert(t('Errore'), t('Impossibile aprire la galleria.'));
     }
   };
 
   const handleSave = async () => {
     if (!name.trim() || !price.trim() || !categoryId) {
-      Alert.alert('Campi Mancanti', 'Inserisci nome, prezzo e seleziona una categoria.');
+      Alert.alert(t('Campi Mancanti'), t('Inserisci nome, prezzo e seleziona una categoria.'));
       return;
     }
 
@@ -391,7 +393,7 @@ export default function ProductsManagementScreen() {
       Alert.alert('Successo', editingProduct ? 'Prodotto aggiornato' : 'Prodotto creato');
     } catch (error) {
       console.error('Error saving product:', error);
-      Alert.alert('Errore', 'Impossibile salvare il prodotto');
+      Alert.alert(t('Errore'), t('Impossibile salvare il prodotto'));
     }
   };
 
@@ -401,24 +403,24 @@ export default function ProductsManagementScreen() {
       await loadData();
     } catch (error) {
       console.error('Errore riordino prodotto:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare la posizione del prodotto.');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare la posizione del prodotto.'));
     }
   };
 
   const handleDelete = (product: Product) => {
-    Alert.alert('Conferma Eliminazione', `Vuoi eliminare "${product.name}"?`, [
-      { text: 'Annulla', style: 'cancel' },
+    Alert.alert(t('Conferma Eliminazione'), `Vuoi eliminare "${product.name}"?`, [
+      { text: t('Annulla'), style: 'cancel' },
       {
-        text: 'Elimina',
+        text: t('Elimina'),
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteProduct(product.id!);
             loadData();
-            Alert.alert('Successo', 'Prodotto eliminato');
+            Alert.alert(t('Successo'), t('Prodotto eliminato'));
           } catch (error) {
             console.error('Error deleting product:', error);
-            Alert.alert('Errore', 'Impossibile eliminare il prodotto');
+            Alert.alert(t('Errore'), t('Impossibile eliminare il prodotto'));
           }
         },
       },
@@ -448,7 +450,7 @@ export default function ProductsManagementScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento prodotti...</Text>
+        <Text style={styles.loadingText}>{t(`Caricamento prodotti...`)}</Text>
       </View>
     );
   }
@@ -456,8 +458,8 @@ export default function ProductsManagementScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Prodotti"
-        subtitle="Gestione catalogo e personalizzazioni"
+        title={t(`Prodotti`)}
+        subtitle={t(`Gestione catalogo e personalizzazioni`)}
         emoji="🍔"
         counter={filteredProducts.length}
         showBack={false}
@@ -474,7 +476,7 @@ export default function ProductsManagementScreen() {
               ) : (
                 <Ionicons name="globe-outline" size={15} color="#1E293B" />
               )}
-              <Text style={styles.headerSecondaryBtnText}>Traduzioni</Text>
+              <Text style={styles.headerSecondaryBtnText}>{t(`Traduzioni`)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -482,7 +484,7 @@ export default function ProductsManagementScreen() {
               onPress={openCreateModal}
             >
               <Ionicons name="add" size={16} color="white" />
-              <Text style={styles.headerPrimaryBtnText}>Nuovo</Text>
+              <Text style={styles.headerPrimaryBtnText}>{t(`Nuovo`)}</Text>
             </TouchableOpacity>
           </>
         }
@@ -514,7 +516,7 @@ export default function ProductsManagementScreen() {
           <Ionicons name="search" size={18} color="#94A3B8" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Cerca prodotto, ingrediente o allergene..."
+            placeholder={t(`Cerca prodotto, ingrediente o allergene...`)}
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -578,7 +580,7 @@ export default function ProductsManagementScreen() {
         {filteredProducts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={{ fontSize: 40, marginBottom: 8 }}>🔍</Text>
-            <Text style={styles.emptyTitle}>Nessun prodotto trovato</Text>
+            <Text style={styles.emptyTitle}>{t(`Nessun prodotto trovato`)}</Text>
             <Text style={styles.emptySubtitle}>
               {searchQuery
                 ? 'Prova a cercare con altri termini o rimuovi i filtri.'
@@ -660,7 +662,7 @@ export default function ProductsManagementScreen() {
                           await updateProduct(product.id!, { available: !isAvail });
                           loadData();
                         } catch (e) {
-                          Alert.alert('Errore', 'Impossibile aggiornare la disponibilità');
+                          Alert.alert(t('Errore'), t('Impossibile aggiornare la disponibilità'));
                         }
                       }}
                     >
@@ -738,7 +740,7 @@ export default function ProductsManagementScreen() {
                       onPress={() => handleDuplicate(product)}
                     >
                       <Ionicons name="copy-outline" size={16} color="#475569" />
-                      <Text style={styles.actionBtnText}>Duplica</Text>
+                      <Text style={styles.actionBtnText}>{t(`Duplica`)}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -746,7 +748,7 @@ export default function ProductsManagementScreen() {
                       onPress={() => openEditModal(product)}
                     >
                       <Ionicons name="pencil" size={16} color="#2563EB" />
-                      <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>Modifica</Text>
+                      <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>{t(`Modifica`)}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -793,24 +795,24 @@ export default function ProductsManagementScreen() {
             >
               {/* Nome */}
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nome Prodotto *</Text>
+                <Text style={styles.formLabel}>{t(`Nome Prodotto *`)}</Text>
                 <TextInput
                   style={styles.input}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Es: Double Bacon Burger"
+                  placeholder={t(`Es: Double Bacon Burger`)}
                   placeholderTextColor="#94A3B8"
                 />
               </View>
 
               {/* Descrizione */}
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Descrizione</Text>
+                <Text style={styles.formLabel}>{t(`Descrizione`)}</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Descrizione dettagliata del piatto o ingredienti..."
+                  placeholder={t(`Descrizione dettagliata del piatto o ingredienti...`)}
                   placeholderTextColor="#94A3B8"
                   multiline
                   numberOfLines={3}
@@ -820,19 +822,19 @@ export default function ProductsManagementScreen() {
               {/* Prezzo e Categoria */}
               <View style={styles.formRow}>
                 <View style={[styles.formGroup, { flex: 1 }]}>
-                  <Text style={styles.formLabel}>Prezzo (€) *</Text>
+                  <Text style={styles.formLabel}>{t(`Prezzo (€) *`)}</Text>
                   <TextInput
                     style={styles.input}
                     value={price}
                     onChangeText={setPrice}
-                    placeholder="9.50"
+                    placeholder={t(`9.50`)}
                     placeholderTextColor="#94A3B8"
                     keyboardType="numeric"
                   />
                 </View>
 
                 <View style={[styles.formGroup, { flex: 1.5 }]}>
-                  <Text style={styles.formLabel}>Categoria *</Text>
+                  <Text style={styles.formLabel}>{t(`Categoria *`)}</Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -863,7 +865,7 @@ export default function ProductsManagementScreen() {
 
               {/* Immagine */}
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Foto Prodotto</Text>
+                <Text style={styles.formLabel}>{t(`Foto Prodotto`)}</Text>
                 <View style={styles.imagePickerRow}>
                   <View style={styles.imagePreviewBox}>
                     {sanitizeImageUri(image) ? (
@@ -884,14 +886,14 @@ export default function ProductsManagementScreen() {
                       onPress={pickImage}
                     >
                       <Ionicons name="image-outline" size={16} color="#1E293B" />
-                      <Text style={styles.imagePickerBtnText}>Scegli Immagine</Text>
+                      <Text style={styles.imagePickerBtnText}>{t(`Scegli Immagine`)}</Text>
                     </TouchableOpacity>
                     {image ? (
                       <TouchableOpacity
                         style={styles.imageRemoveBtn}
                         onPress={() => setImage('')}
                       >
-                        <Text style={styles.imageRemoveBtnText}>Rimuovi</Text>
+                        <Text style={styles.imageRemoveBtnText}>{t(`Rimuovi`)}</Text>
                       </TouchableOpacity>
                     ) : null}
                   </View>
@@ -910,10 +912,10 @@ export default function ProductsManagementScreen() {
                       />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.featuredFormTitle}>Mostra in Promo Salvaschermo ⭐</Text>
-                      <Text style={styles.featuredFormDesc}>
+                      <Text style={styles.featuredFormTitle}>{t(`Mostra in Promo Salvaschermo ⭐`)}</Text>
+                      <Text style={styles.featuredFormDesc}>{t(`
                         Quando il totem è inattivo, questo panino/prodotto ruoterà tra le promozioni animate.
-                      </Text>
+                      `)}</Text>
                     </View>
                   </View>
                   <Switch
@@ -927,7 +929,7 @@ export default function ProductsManagementScreen() {
 
               {/* Allergeni Chips */}
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Allergeni Presenti</Text>
+                <Text style={styles.formLabel}>{t(`Allergeni Presenti`)}</Text>
                 <View style={styles.allergensGrid}>
                   {STANDARD_ALLERGENS.map((alg) => {
                     const selected = selectedAllergens.includes(alg);
@@ -954,10 +956,10 @@ export default function ProductsManagementScreen() {
               {/* Gruppi di Opzioni Globali Collegati */}
               {globalGroups.length > 0 ? (
                 <View style={styles.sectionCard}>
-                  <Text style={styles.sectionCardTitle}>📚 Gruppi Globali Collegati</Text>
-                  <Text style={styles.sectionCardSub}>
+                  <Text style={styles.sectionCardTitle}>{t(`📚 Gruppi Globali Collegati`)}</Text>
+                  <Text style={styles.sectionCardSub}>{t(`
                     Collega librerie di ingredienti o extra globali a questo prodotto.
-                  </Text>
+                  `)}</Text>
                   <View style={styles.globalGroupsList}>
                     {globalGroups.map((g) => {
                       const linked = selectedGlobalGroupIds.includes(g.id);
@@ -997,11 +999,11 @@ export default function ProductsManagementScreen() {
               {/* Sezioni di Personalizzazione Dinamiche */}
               <View style={styles.sectionCard}>
                 <View style={styles.sectionCardHeader}>
-                  <Text style={styles.sectionCardTitle}>⚙️ Sezioni Personalizzate Prodotto</Text>
+                  <Text style={styles.sectionCardTitle}>{t(`⚙️ Sezioni Personalizzate Prodotto`)}</Text>
                 </View>
-                <Text style={styles.sectionCardSub}>
+                <Text style={styles.sectionCardSub}>{t(`
                   Aggiungi personalizzazioni specifiche esclusive per questo singolo prodotto.
-                </Text>
+                `)}</Text>
 
                 {/* Add section buttons */}
                 <View style={styles.addSectionButtonsRow}>
@@ -1009,25 +1011,25 @@ export default function ProductsManagementScreen() {
                     style={styles.addSectionPill}
                     onPress={() => addSection('base_remove')}
                   >
-                    <Text style={styles.addSectionPillText}>+ Ingredienti Base</Text>
+                    <Text style={styles.addSectionPillText}>{t(`+ Ingredienti Base`)}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.addSectionPill}
                     onPress={() => addSection('paid_extras')}
                   >
-                    <Text style={styles.addSectionPillText}>+ Extra a Pagamento</Text>
+                    <Text style={styles.addSectionPillText}>{t(`+ Extra a Pagamento`)}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.addSectionPill}
                     onPress={() => addSection('free_chips')}
                   >
-                    <Text style={styles.addSectionPillText}>+ Salse / Chips</Text>
+                    <Text style={styles.addSectionPillText}>{t(`+ Salse / Chips`)}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.addSectionPill}
                     onPress={() => addSection('choice_group')}
                   >
-                    <Text style={styles.addSectionPillText}>+ Gruppo a Scelta</Text>
+                    <Text style={styles.addSectionPillText}>{t(`+ Gruppo a Scelta`)}</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -1039,7 +1041,7 @@ export default function ProductsManagementScreen() {
                         style={styles.uiSectionTitleInput}
                         value={sec.title}
                         onChangeText={(t) => updateSection(sec.id, { title: t })}
-                        placeholder="Titolo Sezione"
+                        placeholder={t(`Titolo Sezione`)}
                       />
                       <TouchableOpacity
                         accessibilityLabel="Sposta sezione in alto"
@@ -1066,9 +1068,9 @@ export default function ProductsManagementScreen() {
                     {/* Section Type Editors */}
                     {sec.type === 'base_remove' && (
                       <View>
-                        <Text style={styles.subLabel}>
+                        <Text style={styles.subLabel}>{t(`
                           Ingredienti da poter rimuovere (separati da virgola):
-                        </Text>
+                        `)}</Text>
                         <TextInput
                           style={styles.input}
                           value={sec.items?.join(', ') || ''}
@@ -1077,7 +1079,7 @@ export default function ProductsManagementScreen() {
                               items: t.split(',').map((x) => x.trim()).filter(Boolean),
                             })
                           }
-                          placeholder="Pomodoro, Lattuga, Cipolla, Maionese"
+                          placeholder={t(`Pomodoro, Lattuga, Cipolla, Maionese`)}
                         />
                         {(sec.items || []).map((item, idx) => (
                           <View key={`${sec.id}-item-${idx}`} style={styles.itemOrderRow}>
@@ -1103,9 +1105,9 @@ export default function ProductsManagementScreen() {
 
                     {sec.type === 'free_chips' && (
                       <View>
-                        <Text style={styles.subLabel}>
+                        <Text style={styles.subLabel}>{t(`
                           Opzioni selezionabili gratuite (separate da virgola):
-                        </Text>
+                        `)}</Text>
                         <TextInput
                           style={styles.input}
                           value={sec.chips?.join(', ') || ''}
@@ -1114,7 +1116,7 @@ export default function ProductsManagementScreen() {
                               chips: t.split(',').map((x) => x.trim()).filter(Boolean),
                             })
                           }
-                          placeholder="Maionese, Ketchup, Barbecue, Senape"
+                          placeholder={t(`Maionese, Ketchup, Barbecue, Senape`)}
                         />
                         {(sec.chips || []).map((chip, idx) => (
                           <View key={`${sec.id}-chip-${idx}`} style={styles.itemOrderRow}>
@@ -1140,7 +1142,7 @@ export default function ProductsManagementScreen() {
 
                     {sec.type === 'paid_extras' && (
                       <View>
-                        <Text style={styles.subLabel}>Lista Extra a Pagamento:</Text>
+                        <Text style={styles.subLabel}>{t(`Lista Extra a Pagamento:`)}</Text>
                         {(sec.extras || []).map((ext, idx) => (
                           <View key={idx} style={styles.extraItemRow}>
                             <TextInput
@@ -1151,7 +1153,7 @@ export default function ProductsManagementScreen() {
                                 list[idx] = { ...list[idx], name: v };
                                 updateSection(sec.id, { extras: list });
                               }}
-                              placeholder="Nome extra (es. Bacon)"
+                              placeholder={t(`Nome extra (es. Bacon)`)}
                             />
                             <TextInput
                               style={[styles.input, { flex: 1 }]}
@@ -1165,7 +1167,7 @@ export default function ProductsManagementScreen() {
                                 };
                                 updateSection(sec.id, { extras: list });
                               }}
-                              placeholder="€ 1.50"
+                              placeholder={t(`€ 1.50`)}
                               keyboardType="numeric"
                             />
                             <TouchableOpacity
@@ -1201,7 +1203,7 @@ export default function ProductsManagementScreen() {
                             })
                           }
                         >
-                          <Text style={styles.addMiniBtnText}>+ Aggiungi Voce Extra</Text>
+                          <Text style={styles.addMiniBtnText}>{t(`+ Aggiungi Voce Extra`)}</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -1210,7 +1212,7 @@ export default function ProductsManagementScreen() {
                       <View>
                         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.subLabel}>Min Scelte:</Text>
+                            <Text style={styles.subLabel}>{t(`Min Scelte:`)}</Text>
                             <TextInput
                               style={styles.input}
                               value={String(sec.min_selection ?? 0)}
@@ -1221,7 +1223,7 @@ export default function ProductsManagementScreen() {
                             />
                           </View>
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.subLabel}>Max Scelte:</Text>
+                            <Text style={styles.subLabel}>{t(`Max Scelte:`)}</Text>
                             <TextInput
                               style={styles.input}
                               value={String(sec.max_selection ?? 1)}
@@ -1232,7 +1234,7 @@ export default function ProductsManagementScreen() {
                             />
                           </View>
                         </View>
-                        <Text style={styles.subLabel}>Opzioni a Scelta (con delta prezzo):</Text>
+                        <Text style={styles.subLabel}>{t(`Opzioni a Scelta (con delta prezzo):`)}</Text>
                         {(sec.options || []).map((opt, idx) => (
                           <View key={idx} style={styles.extraItemRow}>
                             <TextInput
@@ -1243,7 +1245,7 @@ export default function ProductsManagementScreen() {
                                 list[idx] = { ...list[idx], name: v };
                                 updateSection(sec.id, { options: list });
                               }}
-                              placeholder="Es. Pane Senza Glutine"
+                              placeholder={t(`Es. Pane Senza Glutine`)}
                             />
                             <TextInput
                               style={[styles.input, { flex: 1 }]}
@@ -1257,7 +1259,7 @@ export default function ProductsManagementScreen() {
                                 };
                                 updateSection(sec.id, { options: list });
                               }}
-                              placeholder="+ € 0.00"
+                              placeholder={t(`+ € 0.00`)}
                               keyboardType="numeric"
                             />
                             <TouchableOpacity
@@ -1293,7 +1295,7 @@ export default function ProductsManagementScreen() {
                             })
                           }
                         >
-                          <Text style={styles.addMiniBtnText}>+ Aggiungi Opzione</Text>
+                          <Text style={styles.addMiniBtnText}>{t(`+ Aggiungi Opzione`)}</Text>
                         </TouchableOpacity>
                       </View>
                     )}
@@ -1308,7 +1310,7 @@ export default function ProductsManagementScreen() {
                 style={styles.modalCancelBtn}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalCancelBtnText}>Annulla</Text>
+                <Text style={styles.modalCancelBtnText}>{t(`Annulla`)}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

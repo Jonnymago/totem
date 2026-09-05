@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -42,6 +43,7 @@ function offerSummary(offer: PlayBillingOffer): string {
 }
 
 export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean }) {
+  const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
@@ -93,11 +95,9 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
   };
 
   const handlePurchaseSubscription = async (product: PlayBillingProduct, offer: PlayBillingOffer) => {
-    Alert.alert(
-      'Conferma abbonamento Google Play',
-      `${product.title}\n\nPrezzo e frequenza: ${offerSummary(offer)}.\n\nL’abbonamento si rinnova automaticamente secondo le condizioni Google Play finché non viene annullato. Puoi gestirlo o disdirlo dal Centro abbonamenti Google Play.`,
+    Alert.alert(t('Conferma abbonamento Google Play'), `${product.title}\n\nPrezzo e frequenza: ${offerSummary(offer)}.\n\nL’abbonamento si rinnova automaticamente secondo le condizioni Google Play finché non viene annullato. Puoi gestirlo o disdirlo dal Centro abbonamenti Google Play.`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('Annulla'), style: 'cancel' },
         {
           text: 'Continua su Google Play',
           onPress: async () => {
@@ -106,12 +106,12 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
               const res = await purchasePlaySubscription(product.productId, offer);
               if (res.success && res.license) {
                 setLicense(res.license);
-                Alert.alert('Abbonamento attivato', res.message);
+                Alert.alert(t('Abbonamento attivato'), res.message);
               } else {
-                Alert.alert('Acquisto non completato', res.message);
+                Alert.alert(t('Acquisto non completato'), res.message);
               }
             } catch (err: any) {
-              Alert.alert('Errore acquisto', err?.message || 'Operazione annullata.');
+              Alert.alert(t('Errore acquisto'), err?.message || t('Operazione annullata.'));
             } finally {
               setProcessingPlan(null);
             }
@@ -125,7 +125,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
     try {
       await Linking.openURL('https://play.google.com/store/account/subscriptions');
     } catch {
-      Alert.alert('Google Play', 'Apri il Centro abbonamenti Google Play dal tuo account per gestire o annullare il rinnovo.');
+      Alert.alert(t('Google Play'), t('Apri il Centro abbonamenti Google Play dal tuo account per gestire o annullare il rinnovo.'));
     }
   };
 
@@ -135,12 +135,12 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
       const res = await restoreGooglePlayPurchases();
       if (res.success && res.license) {
         setLicense(res.license);
-        Alert.alert('Ripristino Completato', res.message);
+        Alert.alert(t('Ripristino Completato'), res.message);
       } else {
-        Alert.alert('Nessun Abbonamento', res.message);
+        Alert.alert(t('Nessun Abbonamento'), res.message);
       }
     } catch (e: any) {
-      Alert.alert('Errore', 'Impossibile completare il ripristino: ' + (e?.message || ''));
+      Alert.alert(t('Errore'), t('Impossibile completare il ripristino: ') + (e?.message || ''));
     } finally {
       setRestoring(false);
     }
@@ -150,7 +150,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento stato licenza...</Text>
+        <Text style={styles.loadingText}>{t(`Caricamento stato licenza...`)}</Text>
       </View>
     );
   }
@@ -173,14 +173,15 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
   return (
     <View style={styles.container}>
       {!embedded && <AdminHeader
-        title="Licenza Totem"
-        subtitle="Stato attivazione, abbonamenti Google Play e conformità"
+        title={t(`Licenza Totem`)}
+        subtitle={t(`Stato attivazione, abbonamenti Google Play e conformità`)}
         emoji="📜"
         showBack={true}
+        onBack={() => router.back()}
         showTotemButton={true}
         badge={{
           text: isProActive ? 'PRO ATTIVO' : isTrial ? 'PROVA ATTIVA' : 'PIANO FREE',
-          variant: isProActive ? 'success' : isTrial ? 'warning' : 'neutral',
+          variant: isProActive ? 'success' : isTrial ? 'warning' : 'default',
         }}
       />}
 
@@ -193,7 +194,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="shield-checkmark-outline" size={18} color="#2563EB" />
-            <Text style={styles.cardTitle}>Stato Licenza Totem</Text>
+            <Text style={styles.cardTitle}>{t(`Stato Licenza Totem`)}</Text>
           </View>
 
           <View style={styles.statusRow}>
@@ -251,13 +252,13 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="sparkles-outline" size={18} color="#D97706" />
-            <Text style={styles.cardTitle}>Dettagli Prova Gratuita (7 Giorni)</Text>
+            <Text style={styles.cardTitle}>{t(`Dettagli Prova Gratuita (7 Giorni)`)}</Text>
           </View>
 
           <View style={{ backgroundColor: '#FEF3C7', borderRadius: 12, padding: 12, gap: 6 }}>
-            <Text style={{ fontSize: 13, fontWeight: '800', color: '#92400E' }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: '#92400E' }}>{t(`
               ✨ Accesso Completo Totem Multi Incluso
-            </Text>
+            `)}</Text>
             <Text style={{ fontSize: 12, color: '#78350F', lineHeight: 18 }}>
               Durante i 7 giorni di prova hai a disposizione tutte le funzioni senza alcuna limitazione:{'\n'}
               • Ordini e comande illimitati{'\n'}
@@ -274,9 +275,9 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
               <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>
                 {isTrial ? `Giorni di prova rimanenti: ${daysRemaining}` : 'Prova gratuita terminata'}
               </Text>
-              <Text style={{ fontSize: 11, color: '#64748B' }}>
+              <Text style={{ fontSize: 11, color: '#64748B' }}>{t(`
                 Nessun addebito automatico. Al termine puoi attivare Totem Mono o Multi.
-              </Text>
+              `)}</Text>
             </View>
             <TouchableOpacity
               style={{
@@ -292,16 +293,16 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
                   'Ripristina Prova 7 Giorni',
                   'Vuoi riavviare il periodo di prova di 7 giorni per eseguire test e collaudi?',
                   [
-                    { text: 'Annulla', style: 'cancel' },
+                    { text: t('Annulla'), style: 'cancel' },
                     {
                       text: 'Riavvia Prova',
                       onPress: async () => {
                         try {
                           const refreshed = await resetTrialForTesting();
                           setLicense(refreshed);
-                          Alert.alert('✅ Prova Ripristinata', 'Hai a disposizione altri 7 giorni di prova completa Totem Multi!');
+                          Alert.alert(t('✅ Prova Ripristinata'), t('Hai a disposizione altri 7 giorni di prova completa Totem Multi!'));
                         } catch (err: any) {
-                          Alert.alert('Errore', err?.message || 'Impossibile ripristinare la prova.');
+                          Alert.alert(t('Errore'), err?.message || t('Impossibile ripristinare la prova.'));
                         }
                       },
                     },
@@ -309,7 +310,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
                 );
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#334155' }}>Riavvia Prova</Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: '#334155' }}>{t(`Riavvia Prova`)}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -318,9 +319,9 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="ribbon-outline" size={18} color="#FF6B6B" />
-            <Text style={styles.cardTitle}>Piani mensili Totem</Text>
+            <Text style={styles.cardTitle}>{t(`Piani mensili Totem`)}</Text>
           </View>
-          <Text style={styles.infoMetaText}>Solo abbonamento mensile. Nessun piano annuale. Totem Mono 9,99 € funzioni base, Totem Multi 19,99 € funzioni avanzate.</Text>
+          <Text style={styles.infoMetaText}>{t(`Solo abbonamento mensile. Nessun piano annuale. Totem Mono 9,99 € funzioni base, Totem Multi 19,99 € funzioni avanzate.`)}</Text>
 
           <View style={[styles.billingNotice, billingConfigured ? styles.billingNoticeReady : styles.billingNoticePending]}>
             <Ionicons name={billingConfigured ? 'shield-checkmark-outline' : 'information-circle-outline'} size={18} color={billingConfigured ? '#15803D' : '#92400E'} />
@@ -330,7 +331,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
           {loadingProducts ? (
             <View style={styles.billingLoadingRow}>
               <ActivityIndicator size="small" color="#E11D48" />
-              <Text style={styles.infoMetaText}>Aggiornamento offerte Google Play…</Text>
+              <Text style={styles.infoMetaText}>{t(`Aggiornamento offerte Google Play…`)}</Text>
             </View>
           ) : null}
 
@@ -346,16 +347,16 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
                 <View key={plan.productId} style={[styles.planCard, { flexDirection: 'column', alignItems: 'stretch' }]}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text style={styles.planName}>{plan.name}</Text>
-                    {isCurrent ? <Text style={styles.planPeriod}>Attivo</Text> : null}
+                    {isCurrent ? <Text style={styles.planPeriod}>{t(`Attivo`)}</Text> : null}
                   </View>
                   <Text style={styles.planPrice}>{plan.priceLabel}</Text>
                   <Text style={styles.planPeriod}>{plan.periodLabel} · {plan.tagline}</Text>
                   {plan.features.map((item) => (
                     <Text key={item} style={styles.planFeatures}>• {item}</Text>
                   ))}
-                  <Text style={styles.subscriptionDisclosure}>
+                  <Text style={styles.subscriptionDisclosure}>{t(`
                     Rinnovo automatico mensile. Gestisci o annulla dal Centro abbonamenti Google Play.
-                  </Text>
+                  `)}</Text>
                   <TouchableOpacity
                     style={[styles.planActivateBtn, { alignSelf: 'flex-start', marginTop: 8 }]}
                     onPress={() => {
@@ -392,15 +393,15 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
               ) : (
                 <Ionicons name="refresh-circle-outline" size={18} color="#1E293B" />
               )}
-              <Text style={styles.restoreBtnText}>Ripristina acquisti</Text>
+              <Text style={styles.restoreBtnText}>{t(`Ripristina acquisti`)}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.restoreBtn} onPress={handleManageSubscriptions}>
               <Ionicons name="open-outline" size={18} color="#1E293B" />
-              <Text style={styles.restoreBtnText}>Gestisci abbonamento</Text>
+              <Text style={styles.restoreBtnText}>{t(`Gestisci abbonamento`)}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.refreshBillingBtn} onPress={() => { void refreshPlayProducts(); }} disabled={loadingProducts}>
               <Ionicons name="refresh-outline" size={16} color="#475569" />
-              <Text style={styles.refreshBillingBtnText}>Aggiorna offerte</Text>
+              <Text style={styles.refreshBillingBtnText}>{t(`Aggiorna offerte`)}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -409,12 +410,12 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="document-text-outline" size={18} color="#64748B" />
-            <Text style={styles.cardTitle}>Conformità & Privacy</Text>
+            <Text style={styles.cardTitle}>{t(`Conformità & Privacy`)}</Text>
           </View>
 
-          <Text style={styles.legalText}>
+          <Text style={styles.legalText}>{t(`
             Consulta le informazioni operative su dati locali, accesso amministratore, conservazione delle comande e condizioni d&apos;uso del software.
-          </Text>
+          `)}</Text>
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
             <TouchableOpacity
               style={styles.legalBtn}
@@ -424,7 +425,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
               }}
             >
               <Ionicons name="shield-outline" size={16} color="#1E293B" />
-              <Text style={styles.legalBtnText}>Informativa Privacy</Text>
+              <Text style={styles.legalBtnText}>{t(`Informativa Privacy`)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -435,7 +436,7 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
               }}
             >
               <Ionicons name="reader-outline" size={16} color="#1E293B" />
-              <Text style={styles.legalBtnText}>Termini di Servizio</Text>
+              <Text style={styles.legalBtnText}>{t(`Termini di Servizio`)}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -461,33 +462,33 @@ export default function LicenseCreditsScreen({ embedded }: { embedded?: boolean 
             <ScrollView style={styles.modalBody} contentContainerStyle={styles.legalModalContent}>
               {legalModalType === 'privacy' ? (
                 <>
-                  <Text style={styles.legalSectionTitle}>Dati trattati e finalità</Text>
-                  <Text style={styles.legalText}>
+                  <Text style={styles.legalSectionTitle}>{t(`Dati trattati e finalità`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     Totem QuickBite conserva sul tablet le configurazioni del locale, il catalogo, le preferenze operative e le comande necessarie al servizio. Questi dati sono usati esclusivamente per erogare le funzioni di ordinazione, cucina, stampa e amministrazione del totem.
-                  </Text>
-                  <Text style={styles.legalSectionTitle}>Conservazione e accesso</Text>
-                  <Text style={styles.legalText}>
+                  `)}</Text>
+                  <Text style={styles.legalSectionTitle}>{t(`Conservazione e accesso`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     I dati restano localmente sul dispositivo finché l&apos;operatore non li modifica, esporta o cancella. Il pannello remoto è progettato per la rete locale: proteggi la rete Wi-Fi, le credenziali amministrative e il PIN di accesso.
-                  </Text>
-                  <Text style={styles.legalSectionTitle}>Responsabilità del gestore</Text>
-                  <Text style={styles.legalText}>
+                  `)}</Text>
+                  <Text style={styles.legalSectionTitle}>{t(`Responsabilità del gestore`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     Il titolare dell&apos;attività definisce le procedure di conservazione, informa il personale e gli utenti quando necessario e verifica l&apos;applicazione degli obblighi privacy pertinenti al proprio esercizio.
-                  </Text>
+                  `)}</Text>
                 </>
               ) : (
                 <>
-                  <Text style={styles.legalSectionTitle}>Licenza d&apos;uso</Text>
-                  <Text style={styles.legalText}>
+                  <Text style={styles.legalSectionTitle}>{t(`Licenza d&apos;uso`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     Totem QuickBite è destinato alla gestione di ordinazioni self-service, comande e stampe in un esercizio commerciale. L&apos;uso è consentito al personale autorizzato sul dispositivo associato alla licenza attiva.
-                  </Text>
-                  <Text style={styles.legalSectionTitle}>Uso operativo sicuro</Text>
-                  <Text style={styles.legalText}>
+                  `)}</Text>
+                  <Text style={styles.legalSectionTitle}>{t(`Uso operativo sicuro`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     Configura e verifica kiosk, stampanti, KDS, rete e pannello remoto prima dell&apos;uso in servizio. Mantieni il PIN riservato e non lasciare il pannello di amministrazione incustodito.
-                  </Text>
-                  <Text style={styles.legalSectionTitle}>Aggiornamenti e assistenza</Text>
-                  <Text style={styles.legalText}>
+                  `)}</Text>
+                  <Text style={styles.legalSectionTitle}>{t(`Aggiornamenti e assistenza`)}</Text>
+                  <Text style={styles.legalText}>{t(`
                     Installa gli aggiornamenti dopo un controllo operativo e conserva un backup prima di modifiche importanti. Il gestore resta responsabile dell&apos;uso conforme alle procedure interne e ai requisiti applicabili.
-                  </Text>
+                  `)}</Text>
                 </>
               )}
             </ScrollView>

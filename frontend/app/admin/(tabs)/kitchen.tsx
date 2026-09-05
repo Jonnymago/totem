@@ -155,25 +155,25 @@ export default function KitchenOrdersScreen() {
       loadOrders();
     } catch (error) {
       console.error('Error updating order:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare lo stato dell\'ordine');
+      Alert.alert(t('Errore'), 'Impossibile aggiornare lo stato dell\'ordine');
     }
   };
 
   const handlePrintKitchen = async (order: Order) => {
     try {
       await printKitchenTicket(order, undefined, kitchenSettings || await getSettings());
-      Alert.alert('Stampa', 'Stampa comanda inviata con successo');
+      Alert.alert(t('Stampa'), t('Stampa comanda inviata con successo'));
     } catch (error: any) {
-      Alert.alert('Errore di stampa', error?.message || 'Verifica la connessione con la stampante');
+      Alert.alert(t('Errore di stampa'), error?.message || t('Verifica la connessione con la stampante'));
     }
   };
 
   const handlePrintCourtesy = async (order: Order) => {
     try {
       await printCourtesyTicket(order, kitchenSettings || await getSettings());
-      Alert.alert('Stampa', 'Ricevuta di cortesia stampata con successo');
+      Alert.alert(t('Stampa'), t('Ricevuta di cortesia stampata con successo'));
     } catch (error: any) {
-      Alert.alert('Errore di stampa', error?.message || 'Verifica la connessione con la stampante');
+      Alert.alert(t('Errore di stampa'), error?.message || t('Verifica la connessione con la stampante'));
     }
   };
 
@@ -190,6 +190,7 @@ export default function KitchenOrdersScreen() {
           price: 8.5,
           notes: 'Cottura media',
           removed_ingredients: ['Cipolla'],
+          customizations: [], added_extras: [], combo_selections: {},
         },
         {
           product_id: 'test_prod_fries',
@@ -199,14 +200,15 @@ export default function KitchenOrdersScreen() {
           quantity: 1,
           price: 3.5,
           notes: '',
+          removed_ingredients: [], customizations: [], added_extras: [], combo_selections: {},
         },
       ];
       await createOrder(testItems, 12.0, 'totem');
       await loadOrders(false);
       setActiveTab('pending');
-      Alert.alert('🍔 Comanda Creata', 'Comanda di test generata con successo! È ora visibile sia in questo pannello che sul KDS LAN.');
+      Alert.alert('🍔 ' + t('Comanda Creata'), t('Comanda di test generata con successo! È ora visibile sia in questo pannello che sul KDS LAN.'));
     } catch (err: any) {
-      Alert.alert('Errore', err?.message || 'Impossibile creare la comanda di test');
+      Alert.alert(t('Errore'), err?.message || t('Impossibile creare la comanda di test'));
     } finally {
       setLoading(false);
     }
@@ -219,7 +221,7 @@ export default function KitchenOrdersScreen() {
         'Limite Licenza',
         'Il piano corrente consente 1 monitor cucina. Per KDS illimitati passa a Totem Multi.',
         [
-          { text: 'Annulla', style: 'cancel' },
+          { text: t('Annulla'), style: 'cancel' },
           { text: 'Info Licenza', onPress: () => router.push('/admin/license') },
         ]
       );
@@ -230,7 +232,7 @@ export default function KitchenOrdersScreen() {
       setNewName('');
       await loadSettings();
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile aggiungere il reparto');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile aggiungere il reparto'));
     }
   };
 
@@ -241,7 +243,7 @@ export default function KitchenOrdersScreen() {
       await upsertDepartmentKds({ ...dept, name });
       await loadSettings();
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile rinominare il reparto');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile rinominare il reparto'));
     }
   };
 
@@ -252,22 +254,22 @@ export default function KitchenOrdersScreen() {
       await upsertDepartmentKds({ ...dept, assigned_category_ids: next });
       await loadSettings();
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile aggiornare le categorie');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile aggiornare le categorie'));
     }
   };
 
   const removeDept = (dept: DepartmentKDS) => {
-    Alert.alert('Elimina Reparto KDS', `Vuoi eliminare il reparto "${dept.name}"?`, [
-      { text: 'Annulla', style: 'cancel' },
+    Alert.alert(t('Elimina Reparto KDS'), `${t('Vuoi eliminare il reparto')} "${dept.name}"?`, [
+      { text: t('Annulla'), style: 'cancel' },
       {
-        text: 'Elimina',
+        text: t('Elimina'),
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteDepartmentKds(dept.id);
             await loadSettings();
           } catch (e: any) {
-            Alert.alert('Errore', e?.message || 'Impossibile eliminare');
+            Alert.alert(t('Errore'), e?.message || t('Impossibile eliminare'));
           }
         },
       },
@@ -276,7 +278,7 @@ export default function KitchenOrdersScreen() {
 
   const copyUrl = async (url: string) => {
     await Clipboard.setStringAsync(url);
-    Alert.alert('Link Copiato', `Indirizzo copiato negli appunti:\n${url}`);
+    Alert.alert(t('Link Copiato'), `${t('Indirizzo copiato negli appunti:')}\n${url}`);
   };
 
   const kdsUrl = (dept: DepartmentKDS) => {
@@ -312,8 +314,8 @@ export default function KitchenOrdersScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Comande & KDS"
-        subtitle={`${pendingCount} in attesa · ${preparingCount} in prep · ${readyCount} pronti`}
+        title={t(`Comande & KDS`)}
+        subtitle={`${pendingCount} ${t('in attesa')} · ${preparingCount} ${t('in prep')} · ${readyCount} ${t('pronti')}`}
         emoji="🍳"
         showBack={false}
         showTotemButton={true}
@@ -359,9 +361,9 @@ export default function KitchenOrdersScreen() {
             size={18}
             color={subSection === 'orders' ? '#FF6B6B' : '#64748B'}
           />
-          <Text style={[styles.subMenuText, subSection === 'orders' && styles.subMenuTextActive]}>
+          <Text style={[styles.subMenuText, subSection === 'orders' && styles.subMenuTextActive]}>{t(`
             📋 Comande & Cucina
-          </Text>
+          `)}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -373,9 +375,9 @@ export default function KitchenOrdersScreen() {
             size={18}
             color={subSection === 'kds_depts' ? '#FF6B6B' : '#64748B'}
           />
-          <Text style={[styles.subMenuText, subSection === 'kds_depts' && styles.subMenuTextActive]}>
+          <Text style={[styles.subMenuText, subSection === 'kds_depts' && styles.subMenuTextActive]}>{t(`
             🏷️ Reparti KDS LAN
-          </Text>
+          `)}</Text>
         </TouchableOpacity>
       </View>
 
@@ -390,9 +392,9 @@ export default function KitchenOrdersScreen() {
                   style={[styles.deptChip, selectedDept === 'all' && styles.deptChipActive]}
                   onPress={() => setSelectedDept('all')}
                 >
-                  <Text style={[styles.deptChipText, selectedDept === 'all' && styles.deptChipTextActive]}>
+                  <Text style={[styles.deptChipText, selectedDept === 'all' && styles.deptChipTextActive]}>{t(`
                     Tutti i reparti
-                  </Text>
+                  `)}</Text>
                 </TouchableOpacity>
                 {departments.map((d) => (
                   <TouchableOpacity
@@ -447,9 +449,9 @@ export default function KitchenOrdersScreen() {
               style={[styles.tab, activeTab === 'completed' && styles.tabActiveCompleted]}
               onPress={() => setActiveTab('completed')}
             >
-              <Text style={[styles.tabText, activeTab === 'completed' && styles.tabTextActiveCompleted]}>
+              <Text style={[styles.tabText, activeTab === 'completed' && styles.tabTextActiveCompleted]}>{t(`
                 Finiti
-              </Text>
+              `)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -473,7 +475,7 @@ export default function KitchenOrdersScreen() {
                   onPress={handleCreateTestOrder}
                 >
                   <Ionicons name="add-circle" size={18} color="#FFFFFF" />
-                  <Text style={styles.emptyActionBtnText}>Crea Comanda di Prova</Text>
+                  <Text style={styles.emptyActionBtnText}>{t(`Crea Comanda di Prova`)}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.emptyActionBtnSecondary}
@@ -483,7 +485,7 @@ export default function KitchenOrdersScreen() {
                   }}
                 >
                   <Ionicons name="refresh" size={18} color="#334155" />
-                  <Text style={styles.emptyActionBtnSecondaryText}>Mostra Tutti / Aggiorna</Text>
+                  <Text style={styles.emptyActionBtnSecondaryText}>{t(`Mostra Tutti / Aggiorna`)}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -498,7 +500,7 @@ export default function KitchenOrdersScreen() {
                       </Text>
                       <View style={styles.typeBadge}>
                         <Text style={styles.typeBadgeText}>
-                          {order.order_type === 'takeaway' ? '🥡 Asporto' : '🍽️ Al Tavolo'}
+                          {order.order_type === 'takeaway' ? '🥡 ' + t('Asporto') : '🍽️ ' + t('Al Tavolo')}
                         </Text>
                       </View>
                     </View>
@@ -557,7 +559,7 @@ export default function KitchenOrdersScreen() {
                         onPress={() => handleStatusUpdate(order.id, 'preparing')}
                       >
                         <Ionicons name="play" size={16} color="#fff" />
-                        <Text style={styles.btnStatusText}>Inizia Preparazione</Text>
+                        <Text style={styles.btnStatusText}>{t(`Inizia Preparazione`)}</Text>
                       </TouchableOpacity>
                     )}
                     {order.status === 'preparing' && (
@@ -566,7 +568,7 @@ export default function KitchenOrdersScreen() {
                         onPress={() => handleStatusUpdate(order.id, 'ready')}
                       >
                         <Ionicons name="checkmark-circle" size={16} color="#fff" />
-                        <Text style={styles.btnStatusText}>Segna Pronto</Text>
+                        <Text style={styles.btnStatusText}>{t(`Segna Pronto`)}</Text>
                       </TouchableOpacity>
                     )}
                     {order.status === 'ready' && (
@@ -575,7 +577,7 @@ export default function KitchenOrdersScreen() {
                         onPress={() => handleStatusUpdate(order.id, 'completed')}
                       >
                         <Ionicons name="checkbox" size={16} color="#fff" />
-                        <Text style={styles.btnStatusText}>Completa & Consegna</Text>
+                        <Text style={styles.btnStatusText}>{t(`Completa & Consegna`)}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -596,8 +598,8 @@ export default function KitchenOrdersScreen() {
                 <Ionicons name="restaurant" size={22} color="#fff" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.deptCardTitle}>KDS Master Principale (Tutte le comande)</Text>
-                <Text style={styles.deptCardSubtitle}>Schermo completo per capocuoco o pass centrale</Text>
+                <Text style={styles.deptCardTitle}>{t(`KDS Master Principale (Tutte le comande)`)}</Text>
+                <Text style={styles.deptCardSubtitle}>{t(`Schermo completo per capocuoco o pass centrale`)}</Text>
               </View>
             </View>
             <View style={styles.urlBox}>
@@ -607,27 +609,27 @@ export default function KitchenOrdersScreen() {
                 onPress={() => copyUrl(`http://${host}:3000/kitchen/`)}
               >
                 <Ionicons name="copy-outline" size={16} color="#FF6B6B" />
-                <Text style={styles.urlCopyText}>Copia</Text>
+                <Text style={styles.urlCopyText}>{t(`Copia`)}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Add New Department Station */}
           <View style={styles.addDeptBox}>
-            <Text style={styles.sectionHeading}>Aggiungi Stazione / Reparto KDS</Text>
-            <Text style={styles.sectionSubtitle}>
+            <Text style={styles.sectionHeading}>{t(`Aggiungi Stazione / Reparto KDS`)}</Text>
+            <Text style={styles.sectionSubtitle}>{t(`
               Es. "Friggitoria", "Griglia", "Pizzeria", "Bar / Bevande"
-            </Text>
+            `)}</Text>
             <View style={styles.addDeptRow}>
               <TextInput
                 style={styles.deptInput}
-                placeholder="Nome reparto (es. Pizzeria)..."
+                placeholder={t(`Nome reparto (es. Pizzeria)...`)}
                 value={newName}
                 onChangeText={setNewName}
               />
               <TouchableOpacity style={styles.btnAddDept} onPress={addDepartment}>
                 <Ionicons name="add" size={20} color="#fff" />
-                <Text style={styles.btnAddDeptText}>Aggiungi</Text>
+                <Text style={styles.btnAddDeptText}>{t(`Aggiungi`)}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -656,7 +658,7 @@ export default function KitchenOrdersScreen() {
                 </View>
 
                 {/* Categories Assignment */}
-                <Text style={styles.catsLabel}>Categorie instradate su questo KDS:</Text>
+                <Text style={styles.catsLabel}>{t(`Categorie instradate su questo KDS:`)}</Text>
                 <View style={styles.catsRow}>
                   {categories.map((cat) => {
                     const active = (dept.assigned_category_ids || []).includes(cat.id);
@@ -682,7 +684,7 @@ export default function KitchenOrdersScreen() {
                   </Text>
                   <TouchableOpacity style={styles.urlCopyBtn} onPress={() => copyUrl(url)}>
                     <Ionicons name="copy-outline" size={16} color="#FF6B6B" />
-                    <Text style={styles.urlCopyText}>Copia</Text>
+                    <Text style={styles.urlCopyText}>{t(`Copia`)}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

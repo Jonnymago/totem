@@ -164,9 +164,9 @@ export default function SettingsScreen() {
         setAutoScanLogs((prev) => [...prev, log]);
       });
       await loadSettingsData();
-      Alert.alert(result.role === 'master' ? '👑 Totem Master Configurato' : '📱 Totem Satellite Agganciato', result.message);
+      Alert.alert(result.role === 'master'  ? t('👑 Totem Master Configurato') : t('📱 Totem Satellite Agganciato'), result.message);
     } catch (e: any) {
-      Alert.alert('Errore Scansione', e?.message || 'Impossibile completare la scansione automatica');
+      Alert.alert(t('Errore Scansione'), e?.message || t('Impossibile completare la scansione automatica'));
     } finally {
       setAutoScanning(false);
     }
@@ -182,9 +182,9 @@ export default function SettingsScreen() {
         reset_time: resetTime,
         station_topology: topology,
       });
-      Alert.alert('Successo', 'Impostazioni salvate con successo.');
+      Alert.alert(t('Successo'), t('Impostazioni salvate con successo.'));
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile salvare le impostazioni.');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile salvare le impostazioni.'));
     } finally {
       setSaving(false);
     }
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
       'Azzera Numerazione Ordini',
       'Vuoi azzerare la numerazione degli ordini al numero #01 e ripulire il tabellone di chiamata della coda clienti?',
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('Annulla'), style: 'cancel' },
         {
           text: 'Azzera Adesso',
           style: 'destructive',
@@ -205,9 +205,9 @@ export default function SettingsScreen() {
               await resetOrderNumber();
               const s = await getSettings();
               setLastResetAt(s.last_reset_at || new Date().toISOString());
-              Alert.alert('Completato', 'Numerazione scontrini e tabellone coda azzerati con successo.');
+              Alert.alert(t('Completato'), t('Numerazione scontrini e tabellone coda azzerati con successo.'));
             } catch (e: any) {
-              Alert.alert('Errore', e?.message || 'Impossibile azzerare la numerazione.');
+              Alert.alert(t('Errore'), e?.message || t('Impossibile azzerare la numerazione.'));
             } finally {
               setResettingOrders(false);
             }
@@ -223,32 +223,32 @@ export default function SettingsScreen() {
     const cleanConfirm = confirmNewPin.trim();
 
     if (!cleanCurrent) {
-      Alert.alert('Sicurezza', 'Inserisci il PIN corrente per autorizzare la modifica.');
+      Alert.alert(t('Sicurezza'), t('Inserisci il PIN corrente per autorizzare la modifica.'));
       return;
     }
     if (!cleanNew) {
-      Alert.alert('Info', 'Inserisci il nuovo PIN a 6 cifre.');
+      Alert.alert(t('Info'), t('Inserisci il nuovo PIN a 6 cifre.'));
       return;
     }
     if (cleanNew.length !== 6 || !/^\d{6}$/.test(cleanNew)) {
-      Alert.alert('Errore PIN', 'Il nuovo PIN deve essere composto esattamente da 6 cifre numeriche.');
+      Alert.alert(t('Errore PIN'), t('Il nuovo PIN deve essere composto esattamente da 6 cifre numeriche.'));
       return;
     }
     if (cleanNew !== cleanConfirm) {
-      Alert.alert('Errore PIN', 'I due nuovi PIN inseriti non coincidono.');
+      Alert.alert(t('Errore PIN'), t('I due nuovi PIN inseriti non coincidono.'));
       return;
     }
 
     try {
       setCredentialSaving(true);
       await updateAdminCredentialsSafely(cleanCurrent, { pin: cleanNew });
-      Alert.alert('Successo', 'PIN a 6 cifre aggiornato con successo.');
+      Alert.alert(t('Successo'), t('PIN a 6 cifre aggiornato con successo.'));
       setCurrentPin('');
       setNewPin('');
       setConfirmNewPin('');
       loadSettingsData();
     } catch (e: any) {
-      Alert.alert('Errore', e?.message || 'Impossibile aggiornare il PIN.');
+      Alert.alert(t('Errore'), e?.message || t('Impossibile aggiornare il PIN.'));
     } finally {
       setCredentialSaving(false);
     }
@@ -271,39 +271,39 @@ export default function SettingsScreen() {
         }
       }
     } catch (e) {
-      Alert.alert('Errore', 'Impossibile selezionare il logo');
+      Alert.alert(t('Errore'), t('Impossibile selezionare il logo'));
     }
   };
 
   const handleExportBackup = async () => {
     try {
       const res = await exportBackupZip();
-      if (res.success) {
-        Alert.alert('Backup Esportato', 'Archivio ZIP del ristorante esportato con successo.');
+      if (res) {
+        Alert.alert(t('Backup Esportato'), t('Archivio ZIP del ristorante esportato con successo.'));
       }
     } catch (e: any) {
-      Alert.alert('Errore Backup', e?.message || 'Impossibile creare il backup');
+      Alert.alert(t('Errore Backup'), e?.message || t('Impossibile creare il backup'));
     }
   };
 
   const handleImportBackup = async () => {
     Alert.alert(
-      'Importa Backup ZIP',
-      'Il ripristino sostituirà categorie, prodotti e immagini correnti. Vuoi continuare?',
+      t('Importa Backup ZIP'),
+      t('Il ripristino sostituirà categorie, prodotti e immagini correnti. Vuoi continuare?'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('Annulla'), style: 'cancel' },
         {
           text: 'Seleziona File ZIP',
           onPress: async () => {
             try {
               setImporting(true);
               const res = await importBackupZip();
-              if (res.success) {
-                Alert.alert('Ripristino Completato', 'Il catalogo e le impostazioni sono stati ripristinati.');
+              if (res) {
+                Alert.alert(t('Ripristino Completato'), t('Il catalogo e le impostazioni sono stati ripristinati.'));
                 loadSettingsData();
               }
             } catch (e: any) {
-              Alert.alert('Errore Importazione', e?.message || 'File ZIP non valido.');
+              Alert.alert(t('Errore Importazione'), e?.message || t('File ZIP non valido.'));
             } finally {
               setImporting(false);
             }
@@ -315,7 +315,7 @@ export default function SettingsScreen() {
 
   const handleCopyUrl = async () => {
     await Clipboard.setStringAsync(remoteUrl);
-    Alert.alert('Link Copiato', 'Indirizzo pannello remoto copiato negli appunti.');
+    Alert.alert(t('Link Copiato'), t('Indirizzo pannello remoto copiato negli appunti.'));
   };
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(remoteUrl || 'http://127.0.0.1:3000')}`;
@@ -325,7 +325,7 @@ export default function SettingsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento impostazioni...</Text>
+        <Text style={styles.loadingText}>{t(`Caricamento impostazioni...`)}</Text>
       </View>
     );
   }
@@ -333,8 +333,8 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Impostazioni Totem"
-        subtitle="Configurazione generale, dispositivi, licenza e manuale operativo"
+        title={t(`Impostazioni Totem`)}
+        subtitle={t(`Configurazione generale, dispositivi, licenza e manuale operativo`)}
         emoji="⚙️"
         showBack={false}
         showTotemButton={true}
@@ -385,21 +385,21 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="storefront" size={18} color="#FF6B6B" />
-              <Text style={styles.cardTitle}>Attività & Lingua Totem</Text>
+              <Text style={styles.cardTitle}>{t(`Attività & Lingua Totem`)}</Text>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Nome Ristorante / Attività</Text>
+              <Text style={styles.formLabel}>{t(`Nome Ristorante / Attività`)}</Text>
               <TextInput
                 style={styles.input}
                 value={restaurantName}
                 onChangeText={setRestaurantName}
-                placeholder="Es. Burger Fast Gourmet"
+                placeholder={t(`Es. Burger Fast Gourmet`)}
               />
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Logo Attività</Text>
+              <Text style={styles.formLabel}>{t(`Logo Attività`)}</Text>
               <View style={styles.logoRow}>
                 <View style={styles.logoPreviewBox}>
                   {sanitizeImageUri(logo) ? (
@@ -409,17 +409,17 @@ export default function SettingsScreen() {
                       contentFit="contain"
                     />
                   ) : (
-                    <Text style={{ fontSize: 24 }}>🏪</Text>
+                    <Text style={{ fontSize: 24 }}>{t(`🏪`)}</Text>
                   )}
                 </View>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <TouchableOpacity style={styles.actionBtn} onPress={handlePickLogo}>
                     <Ionicons name="image-outline" size={16} color="#1E293B" />
-                    <Text style={styles.actionBtnText}>Scegli Logo</Text>
+                    <Text style={styles.actionBtnText}>{t(`Scegli Logo`)}</Text>
                   </TouchableOpacity>
                   {logo ? (
                     <TouchableOpacity style={[styles.actionBtn, { borderColor: '#FECACA' }]} onPress={() => setLogo('')}>
-                      <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Rimuovi</Text>
+                      <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>{t(`Rimuovi`)}</Text>
                     </TouchableOpacity>
                   ) : null}
                 </View>
@@ -427,7 +427,7 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Lingua Principale Interfaccia</Text>
+              <Text style={styles.formLabel}>{t(`Lingua Principale Interfaccia`)}</Text>
               <LanguageSelector />
             </View>
           </View>
@@ -441,10 +441,10 @@ export default function SettingsScreen() {
                 <Ionicons name="print" size={24} color="#FFF" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.hubTitle}>🖨️ Stampanti Termiche & Editor Scontrino</Text>
-                <Text style={styles.hubSubtitle}>
+                <Text style={styles.hubTitle}>{t(`🖨️ Stampanti Termiche & Editor Scontrino`)}</Text>
+                <Text style={styles.hubSubtitle}>{t(`
                   Associa stampanti Bluetooth/LAN (58/80mm), personalizza intestazioni, loghi, testi e traduzioni scontrino.
-                </Text>
+                `)}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
             </TouchableOpacity>
@@ -455,14 +455,14 @@ export default function SettingsScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <Text style={styles.hubTitle}>📺 Digital Signage (Vetrina TV)</Text>
+                  <Text style={styles.hubTitle}>{t(`📺 Digital Signage (Vetrina TV)`)}</Text>
                   <View style={{ backgroundColor: '#EDE9FE', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
-                    <Text style={{ fontSize: 10, fontWeight: '800', color: '#6D28D9' }}>COMING SOON</Text>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: '#6D28D9' }}>{t(`COMING SOON`)}</Text>
                   </View>
                 </View>
-                <Text style={styles.hubSubtitle}>
+                <Text style={styles.hubSubtitle}>{t(`
                   Vetrina multimediale e video in loop (modulo temporaneamente in refactoring).
-                </Text>
+                `)}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
             </TouchableOpacity>
@@ -472,10 +472,10 @@ export default function SettingsScreen() {
                 <Ionicons name="megaphone" size={24} color="#FFF" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.hubTitle}>📢 Tabellone Coda Clienti (Monitor Ritiro)</Text>
-                <Text style={styles.hubSubtitle}>
+                <Text style={styles.hubTitle}>{t(`📢 Tabellone Coda Clienti (Monitor Ritiro)`)}</Text>
+                <Text style={styles.hubSubtitle}>{t(`
                   Chiamata vocale/sonora ordini pronti, tabellone da sala per monitor TV, impostazioni numerazione e reset.
-                </Text>
+                `)}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
             </TouchableOpacity>
@@ -484,13 +484,13 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="receipt-outline" size={18} color="#D97706" />
-                <Text style={styles.cardTitle}>🔢 Numerazione Ricevute & Sincronizzazione Coda</Text>
+                <Text style={styles.cardTitle}>{t(`🔢 Numerazione Ricevute & Sincronizzazione Coda`)}</Text>
               </View>
-              <Text style={styles.cardDesc}>
+              <Text style={styles.cardDesc}>{t(`
                 La numerazione progressiva degli ordini viene stampata sugli scontrini cliente e comande cucina. L'azzeramento sincronizza automaticamente anche il tabellone di chiamata della coda.
-              </Text>
+              `)}</Text>
 
-              <Text style={styles.formLabel}>Modalità di reset automatico</Text>
+              <Text style={styles.formLabel}>{t(`Modalità di reset automatico`)}</Text>
               <View style={styles.pillSelectorRow}>
                 {[
                   { id: 'daily', label: '📅 Giornaliero' },
@@ -512,12 +512,12 @@ export default function SettingsScreen() {
 
               {orderResetMode === 'daily' && (
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Orario reset giornaliero (HH:MM)</Text>
+                  <Text style={styles.formLabel}>{t(`Orario reset giornaliero (HH:MM)`)}</Text>
                   <TextInput
                     style={styles.input}
                     value={resetTime}
                     onChangeText={setResetTime}
-                    placeholder="06:00"
+                    placeholder={t(`06:00`)}
                   />
                 </View>
               )}
@@ -538,7 +538,7 @@ export default function SettingsScreen() {
                 ) : (
                   <>
                     <Ionicons name="refresh-circle" size={20} color="#EF4444" />
-                    <Text style={styles.btnResetOrdersText}>Azzera Adesso Numerazione Ordini & Tabellone Coda</Text>
+                    <Text style={styles.btnResetOrdersText}>{t(`Azzera Adesso Numerazione Ordini & Tabellone Coda`)}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -552,12 +552,12 @@ export default function SettingsScreen() {
             <View style={styles.networkStatusCard}>
               <View style={styles.networkStatusHead}>
                 <View style={styles.networkPulseDot} />
-                <Text style={styles.networkStatusHeadTitle}>Rete Wi-Fi Locale Attiva</Text>
+                <Text style={styles.networkStatusHeadTitle}>{t(`Rete Wi-Fi Locale Attiva`)}</Text>
               </View>
               <Text style={styles.networkStatusIp}>IP Totem: {localIp || 'Non rilevato'}</Text>
-              <Text style={styles.networkStatusHint}>
+              <Text style={styles.networkStatusHint}>{t(`
                 Tutti i dispositivi (smartphone, TV, KDS e altri totem) devono essere connessi alla stessa rete Wi-Fi del locale.
-              </Text>
+              `)}</Text>
 
               <TouchableOpacity
                 style={[styles.btnAutoDiscover, autoScanning && { opacity: 0.8 }]}
@@ -578,7 +578,7 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="git-network" size={18} color="#7C3AED" />
-                <Text style={styles.cardTitle}>Configurazione Totem & Ruolo LAN</Text>
+                <Text style={styles.cardTitle}>{t(`Configurazione Totem & Ruolo LAN`)}</Text>
               </View>
 
               <View style={styles.roleCardsCol}>
@@ -587,11 +587,11 @@ export default function SettingsScreen() {
                   onPress={() => {
                     const isMulti = Boolean(license?.features?.multiTotem);
                     if (license?.status === 'expired') {
-                      Alert.alert('Licenza Scaduta', 'Acquista un abbonamento per continuare ad usare i servizi.');
+                      Alert.alert(t('Licenza Scaduta'), t('Acquista un abbonamento per continuare ad usare i servizi.'));
                       return;
                     }
                     if (license?.status !== 'trial' && !isMulti) {
-                      Alert.alert('Non Supportato', 'La modalità Master/Satellite richiede un abbonamento Multi-Totem.');
+                      Alert.alert(t('Non Supportato'), t('La modalità Master/Satellite richiede un abbonamento Multi-Totem.'));
                       return;
                     }
                     setTopology({ ...topology, role: 'master' });
@@ -601,10 +601,10 @@ export default function SettingsScreen() {
                     <Text style={{ fontSize: 24 }}>👑</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.roleSelectTitle}>Totem Principale (Master)</Text>
-                    <Text style={styles.roleSelectDesc}>
+                    <Text style={styles.roleSelectTitle}>{t(`Totem Principale (Master)`)}</Text>
+                    <Text style={styles.roleSelectDesc}>{t(`
                       Questo tablet è il "Cervello": gestisce la cassa, il database e distribuisce gli ordini a tutti gli altri totem.
-                    </Text>
+                    `)}</Text>
                   </View>
                   {topology.role === 'master' && <Ionicons name="checkmark-circle" size={22} color="#10B981" />}
                 </TouchableOpacity>
@@ -614,11 +614,11 @@ export default function SettingsScreen() {
                   onPress={() => {
                     const isMulti = Boolean(license?.features?.multiTotem);
                     if (license?.status === 'expired') {
-                      Alert.alert('Licenza Scaduta', 'Acquista un abbonamento per continuare ad usare i servizi.');
+                      Alert.alert(t('Licenza Scaduta'), t('Acquista un abbonamento per continuare ad usare i servizi.'));
                       return;
                     }
                     if (license?.status !== 'trial' && !isMulti) {
-                      Alert.alert('Non Supportato', 'La modalità Master/Satellite richiede un abbonamento Multi-Totem.');
+                      Alert.alert(t('Non Supportato'), t('La modalità Master/Satellite richiede un abbonamento Multi-Totem.'));
                       return;
                     }
                     setTopology({ ...topology, role: 'satellite' });
@@ -628,10 +628,10 @@ export default function SettingsScreen() {
                     <Text style={{ fontSize: 24 }}>📱</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.roleSelectTitle}>Totem Secondario (Satellite)</Text>
-                    <Text style={styles.roleSelectDesc}>
+                    <Text style={styles.roleSelectTitle}>{t(`Totem Secondario (Satellite)`)}</Text>
+                    <Text style={styles.roleSelectDesc}>{t(`
                       Totem cliente aggiuntivo. Si collega automaticamente al Totem Principale per sincronizzare menu e comande.
-                    </Text>
+                    `)}</Text>
                   </View>
                   {topology.role === 'satellite' && <Ionicons name="checkmark-circle" size={22} color="#10B981" />}
                 </TouchableOpacity>
@@ -641,13 +641,13 @@ export default function SettingsScreen() {
                   onPress={() => setTopology({ ...topology, role: 'mono' })}
                 >
                   <View style={[styles.roleSelectIcon, { backgroundColor: '#F1F5F9' }]}>
-                    <Text style={{ fontSize: 24 }}>🎯</Text>
+                    <Text style={{ fontSize: 24 }}>{t(`🎯`)}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.roleSelectTitle}>Totem Singolo (Stand-Alone)</Text>
-                    <Text style={styles.roleSelectDesc}>
+                    <Text style={styles.roleSelectTitle}>{t(`Totem Singolo (Stand-Alone)`)}</Text>
+                    <Text style={styles.roleSelectDesc}>{t(`
                       Hai un solo totem nel locale. Tutto funziona autonomamente senza bisogno di configurazioni di rete.
-                    </Text>
+                    `)}</Text>
                   </View>
                   {topology.role === 'mono' && <Ionicons name="checkmark-circle" size={22} color="#10B981" />}
                 </TouchableOpacity>
@@ -658,7 +658,7 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="phone-portrait-outline" size={18} color="#2563EB" />
-                <Text style={styles.cardTitle}>Accesso da Smartphone & PC</Text>
+                <Text style={styles.cardTitle}>{t(`Accesso da Smartphone & PC`)}</Text>
               </View>
 
               <View style={styles.qrSection}>
@@ -666,10 +666,10 @@ export default function SettingsScreen() {
                   <ExpoImage source={{ uri: qrImageUrl }} style={styles.qrImage} contentFit="contain" />
                 </View>
                 <View style={styles.qrInfoCol}>
-                  <Text style={styles.qrInstructionTitle}>Come accedere da smartphone:</Text>
-                  <Text style={styles.qrInstructionText}>1. Connetti lo smartphone al Wi-Fi del locale.</Text>
-                  <Text style={styles.qrInstructionText}>2. Inquadra il codice QR con la fotocamera.</Text>
-                  <Text style={styles.qrInstructionText}>3. Accedi all'amministrazione in mobilità.</Text>
+                  <Text style={styles.qrInstructionTitle}>{t(`Come accedere da smartphone:`)}</Text>
+                  <Text style={styles.qrInstructionText}>{t(`1. Connetti lo smartphone al Wi-Fi del locale.`)}</Text>
+                  <Text style={styles.qrInstructionText}>{t(`2. Inquadra il codice QR con la fotocamera.`)}</Text>
+                  <Text style={styles.qrInstructionText}>{t(`3. Accedi all'amministrazione in mobilità.`)}</Text>
                 </View>
               </View>
 
@@ -677,7 +677,7 @@ export default function SettingsScreen() {
                 <Text style={styles.urlText} numberOfLines={1}>{remoteUrl}</Text>
                 <TouchableOpacity style={styles.urlCopyBtn} onPress={handleCopyUrl}>
                   <Ionicons name="copy-outline" size={14} color="#2563EB" />
-                  <Text style={styles.urlCopyText}>Copia</Text>
+                  <Text style={styles.urlCopyText}>{t(`Copia`)}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -690,13 +690,13 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="lock-closed" size={18} color="#FF6B6B" />
-                <Text style={styles.cardTitle}>Modalità Kiosk & Blocco Schermo</Text>
+                <Text style={styles.cardTitle}>{t(`Modalità Kiosk & Blocco Schermo`)}</Text>
               </View>
 
               <View style={styles.settingRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.settingLabel}>Blocco Schermo Kiosk Totem</Text>
-                  <Text style={styles.settingSub}>Impedisce ai clienti di uscire dall'applicazione</Text>
+                  <Text style={styles.settingLabel}>{t(`Blocco Schermo Kiosk Totem`)}</Text>
+                  <Text style={styles.settingSub}>{t(`Impedisce ai clienti di uscire dall'applicazione`)}</Text>
                 </View>
                 <Switch
                   value={Boolean(kioskStore.config?.kioskEnabled)}
@@ -707,8 +707,8 @@ export default function SettingsScreen() {
 
               <View style={styles.settingRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.settingLabel}>Schermo Sempre Acceso</Text>
-                  <Text style={styles.settingSub}>Evita che il tablet entri in standby durante il servizio</Text>
+                  <Text style={styles.settingLabel}>{t(`Schermo Sempre Acceso`)}</Text>
+                  <Text style={styles.settingSub}>{t(`Evita che il tablet entri in standby durante il servizio`)}</Text>
                 </View>
                 <Switch
                   value={Boolean(kioskStore.config?.keepScreenAwake)}
@@ -722,48 +722,48 @@ export default function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="shield-checkmark" size={18} color="#EF4444" />
-                <Text style={styles.cardTitle}>Modifica PIN Amministratore (6 Cifre)</Text>
+                <Text style={styles.cardTitle}>{t(`Modifica PIN Amministratore (6 Cifre)`)}</Text>
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>PIN Corrente</Text>
+                <Text style={styles.formLabel}>{t(`PIN Corrente`)}</Text>
                 <TextInput
                   style={styles.input}
                   value={currentPin}
                   onChangeText={(t) => setCurrentPin(t.replace(/\D/g, '').slice(0, 6))}
                   keyboardType="numeric"
                   secureTextEntry
-                  placeholder="Inserisci PIN attuale..."
+                  placeholder={t(`Inserisci PIN attuale...`)}
                 />
               </View>
 
               <View style={styles.formRow}>
                 <View style={[styles.formGroup, { flex: 1 }]}>
-                  <Text style={styles.formLabel}>Nuovo PIN (6 Cifre)</Text>
+                  <Text style={styles.formLabel}>{t(`Nuovo PIN (6 Cifre)`)}</Text>
                   <TextInput
                     style={styles.input}
                     value={newPin}
                     onChangeText={(t) => setNewPin(t.replace(/\D/g, '').slice(0, 6))}
                     keyboardType="numeric"
                     secureTextEntry
-                    placeholder="6 cifre..."
+                    placeholder={t(`6 cifre...`)}
                   />
                 </View>
                 <View style={[styles.formGroup, { flex: 1 }]}>
-                  <Text style={styles.formLabel}>Conferma Nuovo PIN</Text>
+                  <Text style={styles.formLabel}>{t(`Conferma Nuovo PIN`)}</Text>
                   <TextInput
                     style={styles.input}
                     value={confirmNewPin}
                     onChangeText={(t) => setConfirmNewPin(t.replace(/\D/g, '').slice(0, 6))}
                     keyboardType="numeric"
                     secureTextEntry
-                    placeholder="Ripeti 6 cifre..."
+                    placeholder={t(`Ripeti 6 cifre...`)}
                   />
                 </View>
               </View>
 
               <TouchableOpacity style={styles.saveCredsBtn} onPress={handleSaveCredentials} disabled={credentialSaving}>
-                {credentialSaving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveCredsBtnText}>Aggiorna PIN di Sicurezza</Text>}
+                {credentialSaving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveCredsBtnText}>{t(`Aggiorna PIN di Sicurezza`)}</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -790,23 +790,23 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="cloud-download-outline" size={18} color="#065F46" />
-              <Text style={styles.cardTitle}>Salvataggio & Ripristino Archivio Locale</Text>
+              <Text style={styles.cardTitle}>{t(`Salvataggio & Ripristino Archivio Locale`)}</Text>
             </View>
-            <Text style={styles.settingSub}>
+            <Text style={styles.settingSub}>{t(`
               Esporta o ripristina un archivio ZIP completo contenente: Categorie, Piatti, Foto, Varianti, Ingredienti e Configurazioni.
-            </Text>
+            `)}</Text>
 
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
               <TouchableOpacity style={styles.backupBtn} onPress={handleExportBackup}>
                 <Ionicons name="download-outline" size={18} color="#1E293B" />
-                <Text style={styles.backupBtnText}>Esporta Backup ZIP</Text>
+                <Text style={styles.backupBtnText}>{t(`Esporta Backup ZIP`)}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.backupBtn} onPress={handleImportBackup} disabled={importing}>
                 {importing ? <ActivityIndicator color="#1E293B" size="small" /> : (
                   <>
                     <Ionicons name="cloud-upload-outline" size={18} color="#1E293B" />
-                    <Text style={styles.backupBtnText}>Importa Backup ZIP</Text>
+                    <Text style={styles.backupBtnText}>{t(`Importa Backup ZIP`)}</Text>
                   </>
                 )}
               </TouchableOpacity>

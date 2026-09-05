@@ -32,8 +32,8 @@ export async function getFastLocalIp(timeoutMs: number = 1500): Promise<string> 
 
     // Check stored manual override
     const settings = await getSettings().catch(() => null);
-    if (settings && isUsableLanIpv4(settings.remote_ip_override)) {
-      return settings.remote_ip_override.trim();
+    if (settings && isUsableLanIpv4(settings.remote_ip_override || '')) {
+      return settings.remote_ip_override?.trim() || '';
     }
     return '';
   } catch {
@@ -152,9 +152,9 @@ export async function autoConfigureTopology(
       master_server_ip: masterDevice.ip,
       master_server_port: masterDevice.port || 3000,
       auto_discovery: true,
-      station_name: currentTopology.station_name || 'Totem Satellite',
-      station_id: currentTopology.station_id || `SAT-${Math.floor(100 + Math.random() * 900)}`,
-      order_prefix: currentTopology.order_prefix || 'T2',
+      station_name: (currentTopology as any).station_name || 'Totem Satellite',
+      station_id: (currentTopology as any).station_id || `SAT-${Math.floor(100 + Math.random() * 900)}`,
+      order_prefix: (currentTopology as any).order_prefix || 'T2',
       sync_interval_sec: 10,
     };
 
@@ -182,9 +182,10 @@ export async function autoConfigureTopology(
       master_server_ip: '',
       master_server_port: 3000,
       auto_discovery: true,
-      station_name: currentTopology.station_name || 'Totem Master Principale',
-      station_id: currentTopology.station_id || 'MASTER-01',
+      station_name: (currentTopology as any).station_name || 'Totem Master Principale',
+      station_id: (currentTopology as any).station_id || 'MASTER-01',
       order_prefix: 'T1',
+      sync_interval_sec: 10,
     };
 
     await updateSettings({

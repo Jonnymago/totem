@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -71,6 +72,7 @@ const DEFAULT_DQ_CONFIG: DqConfig = {
 };
 
 export default function QueueCounterScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const compact = width < 420;
@@ -78,10 +80,6 @@ export default function QueueCounterScreen() {
   const [dqManualInput, setDqManualInput] = useState('');
   const [dqCallingLoading, setDqCallingLoading] = useState(false);
   const [localIp, setLocalIp] = useState('');
-  const [orderResetMode, setOrderResetMode] = useState<'daily' | 'never' | 'manual'>('daily');
-  const [resetTime, setResetTime] = useState('06:00');
-  const [lastResetAt, setLastResetAt] = useState<string | null>(null);
-  const [resetting, setResetting] = useState(false);
   const [dqConfig, setDqConfig] = useState<DqConfig>(DEFAULT_DQ_CONFIG);
 
   const loadCallingNumber = useCallback(async () => {
@@ -99,9 +97,6 @@ export default function QueueCounterScreen() {
         getSettings(),
         getFastLocalIp(1200),
       ]);
-      setOrderResetMode(settings.order_reset_mode || 'daily');
-      setResetTime(settings.reset_time || '06:00');
-      setLastResetAt(settings.last_reset_at || null);
       if (settings.display_queue_config && typeof settings.display_queue_config === 'object') {
         setDqConfig({ ...DEFAULT_DQ_CONFIG, ...settings.display_queue_config });
       }
@@ -119,7 +114,7 @@ export default function QueueCounterScreen() {
     try {
       await updateSettings({ display_queue_config: next });
     } catch {
-      Alert.alert('Errore', 'Impossibile aggiornare la configurazione.');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare la configurazione.'));
     }
   };
 
@@ -139,7 +134,7 @@ export default function QueueCounterScreen() {
         void playQueueCallSound();
       }
     } catch {
-      Alert.alert('Errore', 'Impossibile aggiornare il numero di coda.');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare il numero di coda.'));
     } finally {
       setDqCallingLoading(false);
     }
@@ -157,7 +152,7 @@ export default function QueueCounterScreen() {
   const handleCallManual = () => {
     const num = parseInt(dqManualInput.trim(), 10);
     if (Number.isNaN(num) || num < 0) {
-      Alert.alert('Numero non valido', 'Inserisci un numero intero.');
+      Alert.alert(t('Numero non valido'), t('Inserisci un numero intero.'));
       return;
     }
     setDqManualInput('');
@@ -165,63 +160,30 @@ export default function QueueCounterScreen() {
     void announce(num, false);
   };
   const handleCallReset = () => {
-    Alert.alert('Azzera coda', 'Nessun numero resterà in chiamata sulle TV.', [
-      { text: 'Annulla', style: 'cancel' },
-      { text: 'Azzera', style: 'destructive', onPress: () => { void announce(null, false); } },
+    Alert.alert(t('Azzera coda'), t('Nessun numero resterà in chiamata sulle TV.'), [
+      { text: t('Annulla'), style: 'cancel' },
+      { text: t('Azzera'), style: 'destructive', onPress: () => { void announce(null, false); } },
     ]);
   };
 
-  const saveResetMode = async (mode: 'daily' | 'never' | 'manual', time = resetTime) => {
-    if (mode === 'daily' && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time.trim())) {
-      Alert.alert('Orario non valido', 'Inserisci l’orario di reset nel formato HH:MM, tra 00:00 e 23:59.');
-      return;
-    }
-    setOrderResetMode(mode);
-    setResetTime(time);
-    await updateSettings({ order_reset_mode: mode, reset_time: time.trim() || '06:00' });
-  };
 
-  const handleResetOrders = () => {
-    Alert.alert(
-      'Azzerare i numeri ordine?',
-      'Il contatore torna a 1 e le comande in cucina vengono svuotate. Il numero in chiamata in sala resta invariato.',
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: 'Azzera ora',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setResetting(true);
-              const result = await resetOrderNumber();
-              setLastResetAt(result.reset_at);
-              Alert.alert('Contatore azzerato', `Ordini cancellati: ${result.orders_cleared}`);
-            } catch {
-              Alert.alert('Errore', 'Impossibile azzerare la numerazione.');
-            } finally {
-              setResetting(false);
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const host = localIp || 'IP_TABLET';
   const queueUrl = `http://${host}:3000/queue/`;
 
   const copyUrl = async (url: string) => {
     await Clipboard.setStringAsync(url);
-    Alert.alert('Copiato', url);
+    Alert.alert(t('Copiato'), url);
   };
 
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Contacoda Numerico"
-        subtitle="Chiamata clienti e monitor TV ritiro in sala"
+        title={t(`Contacoda Numerico`)}
+        subtitle={t(`Chiamata clienti e monitor TV ritiro in sala`)}
         emoji="🎫"
         showBack={true}
+        onBack={() => router.back()}
         showTotemButton={true}
       />
 
@@ -229,14 +191,14 @@ export default function QueueCounterScreen() {
         <View style={styles.card}>
           <View style={styles.cardHead}>
             <Ionicons name="megaphone" size={18} color="#FF6B6B" />
-            <Text style={styles.cardTitle}>Numero in chiamata</Text>
+            <Text style={styles.cardTitle}>{t(`Numero in chiamata`)}</Text>
             <InfoTip
-              title="Chiama il numero"
+              title={t(`Chiama il numero`)}
               message="+1 avanza, -1 torna indietro, Chiama imposta un numero a mano. Un suono alto avvisa cassa e TV. Azzera toglie il numero dal tabellone senza cancellare gli ordini."
             />
           </View>
           <View style={styles.numStage}>
-            <Text style={styles.numLabel}>ATTUALE</Text>
+            <Text style={styles.numLabel}>{t(`ATTUALE`)}</Text>
             <View style={styles.digitRow}>
               {(dqCallingNum !== null ? String(dqCallingNum).padStart(2, '0') : '--').split('').map((ch, idx) => (
                 <View key={`${ch}-${idx}`} style={[styles.digitBox, compact && styles.digitBoxCompact]}>
@@ -246,7 +208,7 @@ export default function QueueCounterScreen() {
                 </View>
               ))}
             </View>
-            <Text style={styles.numHint}>Il tabellone TV e il suono si aggiornano subito</Text>
+            <Text style={styles.numHint}>{t(`Il tabellone TV e il suono si aggiornano subito`)}</Text>
           </View>
           <View style={styles.actionsCol}>
             <View style={styles.btnRow}>
@@ -255,10 +217,10 @@ export default function QueueCounterScreen() {
                 onPress={handleCallPrev}
                 disabled={dqCallingLoading || !dqCallingNum || dqCallingNum <= 1}
               >
-                <Text style={styles.btnLight}>-1 Precedente</Text>
+                <Text style={styles.btnLight}>{t(`-1 Precedente`)}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.btn, styles.btnNext]} onPress={handleCallNext} disabled={dqCallingLoading}>
-                {dqCallingLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnWhite}>+1 Chiama</Text>}
+                {dqCallingLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnWhite}>{t(`+1 Chiama`)}</Text>}
               </TouchableOpacity>
             </View>
             <View style={styles.manualRow}>
@@ -266,16 +228,16 @@ export default function QueueCounterScreen() {
                 style={styles.input}
                 value={dqManualInput}
                 onChangeText={setDqManualInput}
-                placeholder="Es. 42"
+                placeholder={t(`Es. 42`)}
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 maxLength={4}
               />
               <TouchableOpacity style={styles.manualBtn} onPress={handleCallManual}>
-                <Text style={styles.manualBtnText}>Chiama</Text>
+                <Text style={styles.manualBtnText}>{t(`Chiama`)}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.resetBtn} onPress={handleCallReset}>
-                <Text style={styles.resetText}>Azzera</Text>
+                <Text style={styles.resetText}>{t(`Azzera`)}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -284,28 +246,28 @@ export default function QueueCounterScreen() {
         <View style={styles.card}>
           <View style={styles.cardHead}>
             <Ionicons name="tv-outline" size={18} color="#2563EB" />
-            <Text style={styles.cardTitle}>IP tabellone coda</Text>
+            <Text style={styles.cardTitle}>{t(`IP tabellone coda`)}</Text>
             <InfoTip
-              title="URL coda"
+              title={t(`URL coda`)}
               message="Apri questo indirizzo sulla Smart TV, Firestick o browser della sala, stessa Wi-Fi del totem. Mostra solo il numero a schermo intero. La vetrina prodotti sta nella tab TV."
             />
           </View>
           {!localIp ? (
-            <Text style={styles.warn}>Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.</Text>
+            <Text style={styles.warn}>{t(`Collega il tablet al Wi-Fi. L'IP appare da solo. Puoi anche impostarlo in Impostazioni → Rete.`)}</Text>
           ) : null}
           <Text style={styles.url} selectable>{queueUrl}</Text>
           <View style={styles.wrapRow}>
             <TouchableOpacity style={styles.ghost} onPress={() => copyUrl(queueUrl)}>
               <Ionicons name="copy-outline" size={15} color="#1E293B" />
-              <Text style={styles.ghostText}>Copia URL</Text>
+              <Text style={styles.ghostText}>{t(`Copia URL`)}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.ghost} onPress={() => Share.share({ message: queueUrl }).catch(() => {})}>
               <Ionicons name="share-social-outline" size={15} color="#1E293B" />
-              <Text style={styles.ghostText}>Condividi</Text>
+              <Text style={styles.ghostText}>{t(`Condividi`)}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.ghost, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]} onPress={() => Linking.openURL(queueUrl).catch(() => Alert.alert('Errore', 'Impossibile aprire il browser locale.'))}>
+            <TouchableOpacity style={[styles.ghost, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]} onPress={() => Linking.openURL(queueUrl).catch(() => Alert.alert(t('Errore'), t('Impossibile aprire il browser locale.')))}>
               <Ionicons name="open-outline" size={15} color="#2563EB" />
-              <Text style={[styles.ghostText, { color: '#2563EB', fontWeight: '800' }]}>Apri Monitor</Text>
+              <Text style={[styles.ghostText, { color: '#2563EB', fontWeight: '800' }]}>{t(`Apri Monitor`)}</Text>
             </TouchableOpacity>
           </View>
           {localIp ? (
@@ -320,17 +282,17 @@ export default function QueueCounterScreen() {
         <View style={styles.card}>
           <View style={styles.cardHead}>
             <Ionicons name="color-palette-outline" size={18} color="#0EA5E9" />
-            <Text style={styles.cardTitle}>Personalizzazione Monitor TV (Contacoda)</Text>
+            <Text style={styles.cardTitle}>{t(`Personalizzazione Monitor TV (Contacoda)`)}</Text>
             <InfoTip
-              title="Personalizzazione TV"
+              title={t(`Personalizzazione TV`)}
               message="Personalizza layout, colori e dimensioni del tabellone visualizzato sulle Smart TV della sala."
             />
           </View>
-          <Text style={styles.hint}>
+          <Text style={styles.hint}>{t(`
             Personalizza layout, colori e dimensioni del tabellone visualizzato sulle Smart TV della sala.
-          </Text>
+          `)}</Text>
 
-          <Text style={styles.sectionSubtitle}>Modalità Visualizzazione TV</Text>
+          <Text style={styles.sectionSubtitle}>{t(`Modalità Visualizzazione TV`)}</Text>
           <View style={styles.pills}>
             {[
               { id: false, label: 'Completo (Chiamata + Liste)' },
@@ -349,7 +311,7 @@ export default function QueueCounterScreen() {
             })}
           </View>
 
-          <Text style={styles.sectionSubtitle}>Tema Colore Schermo</Text>
+          <Text style={styles.sectionSubtitle}>{t(`Tema Colore Schermo`)}</Text>
           <View style={styles.pills}>
             {[
               { id: 'dark-navy', label: 'Blu Notte (Navy)' },
@@ -369,7 +331,7 @@ export default function QueueCounterScreen() {
             })}
           </View>
 
-          <Text style={styles.sectionSubtitle}>Dimensione Cifra</Text>
+          <Text style={styles.sectionSubtitle}>{t(`Dimensione Cifra`)}</Text>
           <View style={styles.pills}>
             {[
               { id: 'normal', label: 'Standard' },
@@ -389,12 +351,12 @@ export default function QueueCounterScreen() {
             })}
           </View>
 
-          <Text style={styles.sectionSubtitle}>Opzioni & Suoni TV</Text>
+          <Text style={styles.sectionSubtitle}>{t(`Opzioni & Suoni TV`)}</Text>
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.settingLabel}>Gong sonoro su Smart TV alla chiamata</Text>
-              <Text style={styles.settingSub}>Emette un segnale acustico alla chiamata di un numero</Text>
+              <Text style={styles.settingLabel}>{t(`Gong sonoro su Smart TV alla chiamata`)}</Text>
+              <Text style={styles.settingSub}>{t(`Emette un segnale acustico alla chiamata di un numero`)}</Text>
             </View>
             <Switch
               value={dqConfig.sound_enabled !== false}
@@ -405,8 +367,8 @@ export default function QueueCounterScreen() {
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.settingLabel}>Orologio digitale in alto</Text>
-              <Text style={styles.settingSub}>Mostra l'ora corrente aggiornata al secondo</Text>
+              <Text style={styles.settingLabel}>{t(`Orologio digitale in alto`)}</Text>
+              <Text style={styles.settingSub}>{t(`Mostra l'ora corrente aggiornata al secondo`)}</Text>
             </View>
             <Switch
               value={dqConfig.show_clock !== false}
@@ -417,8 +379,8 @@ export default function QueueCounterScreen() {
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.settingLabel}>Intestazione con nome attività</Text>
-              <Text style={styles.settingSub}>Mostra il nome del ristorante nella barra superiore</Text>
+              <Text style={styles.settingLabel}>{t(`Intestazione con nome attività`)}</Text>
+              <Text style={styles.settingSub}>{t(`Mostra il nome del ristorante nella barra superiore`)}</Text>
             </View>
             <Switch
               value={dqConfig.show_header !== false}
@@ -429,8 +391,8 @@ export default function QueueCounterScreen() {
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.settingLabel}>Istruzioni per il ritiro</Text>
-              <Text style={styles.settingSub}>Mostra la guida al ritiro al cliente sotto al numero</Text>
+              <Text style={styles.settingLabel}>{t(`Istruzioni per il ritiro`)}</Text>
+              <Text style={styles.settingSub}>{t(`Mostra la guida al ritiro al cliente sotto al numero`)}</Text>
             </View>
             <Switch
               value={dqConfig.show_instruction !== false}
@@ -441,8 +403,8 @@ export default function QueueCounterScreen() {
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
-              <Text style={styles.settingLabel}>Prefisso '#' davanti al numero</Text>
-              <Text style={styles.settingSub}>Mostra #01 anziché 01</Text>
+              <Text style={styles.settingLabel}>{t(`Prefisso '#' davanti al numero`)}</Text>
+              <Text style={styles.settingSub}>{t(`Mostra #01 anziché 01`)}</Text>
             </View>
             <Switch
               value={Boolean(dqConfig.show_prefix)}
@@ -451,88 +413,34 @@ export default function QueueCounterScreen() {
             />
           </View>
 
-          <Text style={styles.sectionSubtitle}>Personalizzazione Testi Schermo TV</Text>
+          <Text style={styles.sectionSubtitle}>{t(`Personalizzazione Testi Schermo TV`)}</Text>
           <View style={{ gap: 10, marginTop: 4 }}>
             <View>
-              <Text style={styles.label}>Etichetta numero chiamata (default: NUMERO IN CHIAMATA)</Text>
+              <Text style={styles.label}>{t(`Etichetta numero chiamata (default: NUMERO IN CHIAMATA)`)}</Text>
               <TextInput
                 style={styles.input}
                 value={dqConfig.call_label}
                 onChangeText={(text) => setDqConfig((prev) => ({ ...prev, call_label: text }))}
                 onEndEditing={() => { void saveDqConfig({ call_label: dqConfig.call_label }); }}
-                placeholder="NUMERO IN CHIAMATA"
+                placeholder={t(`NUMERO IN CHIAMATA`)}
                 placeholderTextColor="#94A3B8"
               />
             </View>
             <View>
-              <Text style={styles.label}>Istruzioni ritiro (default: ⚡ Recarsi alla cassa o al banco di ritiro)</Text>
+              <Text style={styles.label}>{t(`Istruzioni ritiro (default: ⚡ Recarsi alla cassa o al banco di ritiro)`)}</Text>
               <TextInput
                 style={styles.input}
                 value={dqConfig.instruction_text}
                 onChangeText={(text) => setDqConfig((prev) => ({ ...prev, instruction_text: text }))}
                 onEndEditing={() => { void saveDqConfig({ instruction_text: dqConfig.instruction_text }); }}
-                placeholder="⚡ Recarsi alla cassa o al banco di ritiro"
+                placeholder={t(`⚡ Recarsi alla cassa o al banco di ritiro`)}
                 placeholderTextColor="#94A3B8"
               />
             </View>
           </View>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.cardHead}>
-            <Ionicons name="refresh-circle-outline" size={18} color="#8B5CF6" />
-            <Text style={styles.cardTitle}>Numerazione ordini</Text>
-            <InfoTip
-              title="Azzeramento numeri"
-              message="Automatico: ogni giorno all'orario scelto il contatore ordini riparte da 1. Manuale: solo quando premi Azzera ora. Mai: i numeri crescono senza sosta. Non cancella il numero in chiamata sul tabellone."
-            />
-          </View>
-          <Text style={styles.hint}>Quando il contatore scontrini e comande torna a 1.</Text>
-          <View style={styles.pills}>
-            {[
-              { id: 'daily', label: 'Automatico' },
-              { id: 'manual', label: 'Manuale' },
-              { id: 'never', label: 'Mai' },
-            ].map((mode) => {
-              const active = orderResetMode === mode.id;
-              return (
-                <TouchableOpacity
-                  key={mode.id}
-                  style={[styles.pill, active && styles.pillOn]}
-                  onPress={() => { void saveResetMode(mode.id as 'daily' | 'manual' | 'never'); }}
-                >
-                  <Text style={[styles.pillText, active && styles.pillTextOn]}>{mode.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {orderResetMode === 'daily' ? (
-            <View>
-              <Text style={styles.label}>Orario di azzeramento automatico (HH:MM)</Text>
-              <TextInput
-                style={styles.input}
-                value={resetTime}
-                onChangeText={setResetTime}
-                onEndEditing={() => { void saveResetMode('daily', resetTime); }}
-                placeholder="06:00"
-                keyboardType="numbers-and-punctuation"
-                maxLength={5}
-              />
-            </View>
-          ) : null}
-          <Text style={styles.hint}>
-            {orderResetMode === 'daily'
-              ? `Reset automatico alle ${resetTime || '06:00'}.`
-              : orderResetMode === 'manual'
-                ? 'Il contatore si azzera solo quando premi Azzera ora.'
-                : 'I numeri ordine non si azzerano mai da soli.'}
-            {lastResetAt ? ` Ultimo reset: ${lastResetAt}` : ''}
-          </Text>
-          <TouchableOpacity style={styles.danger} onPress={handleResetOrders} disabled={resetting}>
-            {resetting ? <ActivityIndicator color="#fff" /> : <Text style={styles.dangerText}>Azzera ora</Text>}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
     </View>
   );
 }

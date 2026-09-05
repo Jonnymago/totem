@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,15 +7,17 @@ import { Text } from '@/src/components/LocalizedPrimitives';
 import AdminHeader from '@/src/components/AdminHeader';
 
 export default function SignageScreen() {
+  const { t } = useI18n();
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Digital Signage (Vetrina TV)"
-        subtitle="Coming Soon — Funzionalità in sviluppo"
+        title={t(`Digital Signage (Vetrina TV)`)}
+        subtitle={t(`Coming Soon — Funzionalità in sviluppo`)}
         emoji="📺"
         showBack={true}
+        onBack={() => router.back()}
         showTotemButton={true}
       />
 
@@ -25,31 +28,31 @@ export default function SignageScreen() {
           </View>
 
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>IN FASE DI OTTIMIZZAZIONE · COMING SOON</Text>
+            <Text style={styles.badgeText}>{t(`IN FASE DI OTTIMIZZAZIONE · COMING SOON`)}</Text>
           </View>
 
-          <Text style={styles.title}>Vetrina TV & Digital Signage</Text>
+          <Text style={styles.title}>{t(`Vetrina TV & Digital Signage`)}</Text>
 
-          <Text style={styles.description}>
+          <Text style={styles.description}>{t(`
             Il modulo di trasmissione slide prodotti, carosello multimediale e video di sfondo su TV è attualmente disattivato per consentire un refactoring completo del motore grafico e della stabilità.
-          </Text>
+          `)}</Text>
 
           <View style={styles.infoBox}>
             <Ionicons name="information-circle" size={20} color="#0284C7" style={{ marginTop: 2 }} />
-            <Text style={styles.infoText}>
+            <Text style={styles.infoText}>{t(`
               Puoi continuare ad utilizzare la schermata Contacoda TV per visualizzare i numeri d'ordine chiamati in tempo reale per i tuoi clienti.
-            </Text>
+            `)}</Text>
           </View>
 
           <View style={styles.actionRow}>
             <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/admin/queue')}>
               <Ionicons name="megaphone-outline" size={18} color="#FFF" />
-              <Text style={styles.primaryBtnText}>Gestione Contacoda TV</Text>
+              <Text style={styles.primaryBtnText}>{t(`Gestione Contacoda TV`)}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryBtn} onPress={() => router.push('/admin/settings')}>
+            <TouchableOpacity style={styles.secondaryBtn} onPress={() => router.back()}>
               <Ionicons name="arrow-back-outline" size={18} color="#475569" />
-              <Text style={styles.secondaryBtnText}>Torna a Impostazioni</Text>
+              <Text style={styles.secondaryBtnText}>{t(`Torna a Impostazioni`)}</Text>
             </TouchableOpacity>
           </View>
         </View>

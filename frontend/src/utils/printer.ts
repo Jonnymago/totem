@@ -1,7 +1,7 @@
 import * as Print from 'expo-print';
 import { PermissionsAndroid, Platform, NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Order, Settings } from '@/src/api/api';
+import { Order, Settings, ReceiptLayoutConfig } from '@/src/api/api';
 import { getCurrentLanguage, translateSourceText } from '@/src/utils/i18n';
 
 export type PaperWidthMm = 58 | 80;

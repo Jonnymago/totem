@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -29,6 +30,7 @@ import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 type LoginMode = 'login' | 'setup' | 'recovery';
 
 export default function AdminLoginScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const params = useLocalSearchParams<{ mode?: string }>();
   const [mode, setMode] = useState<LoginMode>(params.mode === 'recovery' ? 'recovery' : 'login');
@@ -269,7 +271,7 @@ export default function AdminLoginScreen() {
             <LanguageSelector compact theme="light" />
           </View>
           <Text style={styles.logoEmoji}>🍔</Text>
-          <Text style={styles.title}>Totem Admin</Text>
+          <Text style={styles.title}>{t(`Totem Admin`)}</Text>
 
           {loading ? (
             <ActivityIndicator color="#FF6B6B" style={{ marginVertical: 24 }} />
@@ -293,7 +295,7 @@ export default function AdminLoginScreen() {
               {mode === 'recovery' ? (
                 <View style={styles.formGroup}>
                   <View style={styles.recoveryLabelRow}>
-                    <Text style={styles.formLabel}>Recovery Code Monouso</Text>
+                    <Text style={styles.formLabel}>{t(`Recovery Code Monouso`)}</Text>
                   </View>
                   <TextInput
                     style={styles.formInput}
@@ -301,7 +303,7 @@ export default function AdminLoginScreen() {
                     onChangeText={setRecoveryCode}
                     autoCapitalize="characters"
                     autoCorrect={false}
-                    placeholder="TQB-RC-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+                    placeholder={t(`TQB-RC-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX`)}
                     placeholderTextColor="#94A3B8"
                     editable={!submitting}
                   />
@@ -313,7 +315,7 @@ export default function AdminLoginScreen() {
                       disabled={submitting}
                     >
                       <Ionicons name="clipboard-outline" size={15} color="#0F766E" />
-                      <Text style={styles.recoveryActionBtnText}>Incolla dagli Appunti</Text>
+                      <Text style={styles.recoveryActionBtnText}>{t(`Incolla dagli Appunti`)}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -322,20 +324,20 @@ export default function AdminLoginScreen() {
                       disabled={submitting}
                     >
                       <Ionicons name="document-text-outline" size={15} color="#0F766E" />
-                      <Text style={styles.recoveryActionBtnText}>Importa Scheda (.txt)</Text>
+                      <Text style={styles.recoveryActionBtnText}>{t(`Importa Scheda (.txt)`)}</Text>
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.recoveryHintText}>
+                  <Text style={styles.recoveryHintText}>{t(`
                     💡 Inserisci il Recovery Code monouso ottenuto alla prima configurazione o generato dalle impostazioni per creare un nuovo PIN.
-                  </Text>
+                  `)}</Text>
                 </View>
               ) : null}
 
               {showLogin ? (
                 <View style={styles.formGroup}>
                   <View style={styles.pinLabelRow}>
-                    <Text style={styles.formLabel}>PIN Amministratore (6 cifre)</Text>
+                    <Text style={styles.formLabel}>{t(`PIN Amministratore (6 cifre)`)}</Text>
                     <TouchableOpacity
                       onPress={() => setShowPin((visible) => !visible)}
                       style={styles.togglePinBtn}
@@ -358,7 +360,7 @@ export default function AdminLoginScreen() {
                     secureTextEntry={!showPin}
                     keyboardType="numeric"
                     maxLength={6}
-                    placeholder="Inserisci le 6 cifre"
+                    placeholder={t(`Inserisci le 6 cifre`)}
                     placeholderTextColor="#94A3B8"
                     editable={!submitting}
                     autoFocus
@@ -368,7 +370,7 @@ export default function AdminLoginScreen() {
                 <>
                   <View style={styles.formGroup}>
                     <View style={styles.pinLabelRow}>
-                      <Text style={styles.formLabel}>Nuovo PIN (6 cifre)</Text>
+                      <Text style={styles.formLabel}>{t(`Nuovo PIN (6 cifre)`)}</Text>
                       <TouchableOpacity
                         onPress={() => setShowPin((visible) => !visible)}
                         style={styles.togglePinBtn}
@@ -385,14 +387,14 @@ export default function AdminLoginScreen() {
                       secureTextEntry={!showPin}
                       keyboardType="numeric"
                       maxLength={6}
-                      placeholder="6 cifre numeriche"
+                      placeholder={t(`6 cifre numeriche`)}
                       placeholderTextColor="#94A3B8"
                       editable={!submitting}
                     />
                   </View>
 
                   <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Conferma Nuovo PIN (6 cifre)</Text>
+                    <Text style={styles.formLabel}>{t(`Conferma Nuovo PIN (6 cifre)`)}</Text>
                     <TextInput
                       style={styles.pinInput}
                       value={confirmPin}
@@ -400,7 +402,7 @@ export default function AdminLoginScreen() {
                       secureTextEntry={!showPin}
                       keyboardType="numeric"
                       maxLength={6}
-                      placeholder="Ripeti le 6 cifre"
+                      placeholder={t(`Ripeti le 6 cifre`)}
                       placeholderTextColor="#94A3B8"
                       editable={!submitting}
                     />
@@ -418,7 +420,7 @@ export default function AdminLoginScreen() {
                   {submitting ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={styles.loginBtnText}>Accedi con PIN</Text>
+                    <Text style={styles.loginBtnText}>{t(`Accedi con PIN`)}</Text>
                   )}
                 </TouchableOpacity>
               ) : showSetup ? (
@@ -431,7 +433,7 @@ export default function AdminLoginScreen() {
                   {submitting ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={styles.loginBtnText}>Configura PIN e Accedi</Text>
+                    <Text style={styles.loginBtnText}>{t(`Configura PIN e Accedi`)}</Text>
                   )}
                 </TouchableOpacity>
               ) : (
@@ -444,7 +446,7 @@ export default function AdminLoginScreen() {
                   {submitting ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={styles.loginBtnText}>Reimposta PIN e Accedi</Text>
+                    <Text style={styles.loginBtnText}>{t(`Reimposta PIN e Accedi`)}</Text>
                   )}
                 </TouchableOpacity>
               )}
@@ -458,7 +460,7 @@ export default function AdminLoginScreen() {
                   }}
                   disabled={submitting}
                 >
-                  <Text style={styles.linkText}>Hai smarrito il PIN? Recupera con codice</Text>
+                  <Text style={styles.linkText}>{t(`Hai smarrito il PIN? Recupera con codice`)}</Text>
                 </TouchableOpacity>
               ) : null}
 
@@ -471,7 +473,7 @@ export default function AdminLoginScreen() {
                   }}
                   disabled={submitting}
                 >
-                  <Text style={styles.linkText}>Torna al login</Text>
+                  <Text style={styles.linkText}>{t(`Torna al login`)}</Text>
                 </TouchableOpacity>
               ) : null}
             </>
@@ -484,10 +486,10 @@ export default function AdminLoginScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.recoveryModal}>
             <Ionicons name="shield-checkmark" size={40} color="#047857" />
-            <Text style={styles.modalTitle}>Conserva il Recovery Code</Text>
-            <Text style={styles.modalBody}>
+            <Text style={styles.modalTitle}>{t(`Conserva il Recovery Code`)}</Text>
+            <Text style={styles.modalBody}>{t(`
               Questo codice è l'unico modo per reimpostare il PIN. Viene mostrato una sola volta: scegli se salvarlo su file oppure inviarlo a messaggi o email, poi continua.
-            </Text>
+            `)}</Text>
             <Text selectable style={styles.recoveryCode}>
               {oneTimeRecoveryCode}
             </Text>
@@ -519,7 +521,7 @@ export default function AdminLoginScreen() {
             </TouchableOpacity>
 
             {recoveryHandled === 'none' ? (
-              <Text style={styles.modalBody}>Devi salvare o inviare il codice prima di continuare.</Text>
+              <Text style={styles.modalBody}>{t(`Devi salvare o inviare il codice prima di continuare.`)}</Text>
             ) : null}
 
             <TouchableOpacity

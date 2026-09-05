@@ -432,20 +432,19 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'cat-1', name: 'Panini', description: 'I nostri panini gourmet', order_position: 1, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-2', name: 'Pizze', description: 'Pizze fresche e croccanti', order_position: 2, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-3', name: 'Insalate', description: 'Insalate fresche e salutari', order_position: 3, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-4', name: 'Combo', description: 'I nostri menù combo', order_position: 4, image: 'https://images.unsplash.com/photo-1594212691516-ac8397a6e118?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-5', name: 'Bevande', description: 'Bevande fresche', order_position: 5, image: 'https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&q=80&w=400' },
-  { id: 'cat-6', name: 'Dolci', description: 'Dolci e dessert', order_position: 6, image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=400' },
+  { id: 'cat-1', name: 'Panini', description: 'I nostri panini gourmet', order_index: 1, },
+  { id: 'cat-2', name: 'Pizze', description: 'Pizze fresche e croccanti', order_index: 2, },
+  { id: 'cat-3', name: 'Insalate', description: 'Insalate fresche e salutari', order_index: 3, },
+  { id: 'cat-4', name: 'Combo', description: 'I nostri menù combo', order_index: 4, },
+  { id: 'cat-5', name: 'Bevande', description: 'Bevande fresche', order_index: 5, },
+  { id: 'cat-6', name: 'Dolci', description: 'Dolci e dessert', order_index: 6, },
 ];
 
-const DEFAULT_PRODUCTS: Product[] = [
+const DEFAULT_PRODUCTS: any[] = [
   {
     id: 'prod-1',
     category_id: 'cat-1',
     name: 'Hamburger Classico',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400',
     description: 'Carne di manzo 180g su pane brioche con lattuga, pomodoro e salsa',
     price: 8.5,
     product_type: 'simple',
@@ -455,13 +454,12 @@ const DEFAULT_PRODUCTS: Product[] = [
       { name: 'Extra Bacon', price: 1.5 },
       { name: 'Uovo', price: 1.0 },
     ],
-    order_position: 1,
+    order_index: 1,
   },
   {
     id: 'prod-2',
     category_id: 'cat-1',
     name: 'Cheeseburger Deluxe',
-    image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&q=80&w=400',
     description: 'Hamburger con doppio cheddar e salsa speciale',
     price: 9.5,
     product_type: 'simple',
@@ -470,13 +468,12 @@ const DEFAULT_PRODUCTS: Product[] = [
       { name: 'Extra Formaggio', price: 1.0 },
       { name: 'Extra Bacon', price: 1.5 },
     ],
-    order_position: 2,
+    order_index: 2,
   },
   {
     id: 'prod-3',
     category_id: 'cat-2',
     name: 'Margherita',
-    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&q=80&w=400',
     description: 'Pomodoro, mozzarella di bufala, basilico fresco',
     price: 7.0,
     product_type: 'simple',
@@ -485,19 +482,18 @@ const DEFAULT_PRODUCTS: Product[] = [
       { name: 'Extra Mozzarella', price: 1.5 },
       { name: 'Bordo Ripieno', price: 2.0 },
     ],
-    order_position: 1,
+    order_index: 1,
   },
   {
     id: 'prod-4',
     category_id: 'cat-2',
     name: 'Diavola',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&q=80&w=400',
     description: 'Pomodoro, mozzarella, salame piccante',
     price: 8.5,
     product_type: 'simple',
     base_ingredients: ['Pomodoro', 'Mozzarella', 'Salame piccante'],
     extra_additions: [{ name: 'Extra Mozzarella', price: 1.5 }],
-    order_position: 2,
+    order_index: 2,
   },
   {
     id: 'prod-5',
@@ -508,7 +504,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     product_type: 'simple',
     base_ingredients: ['Lattuga romana', 'Pollo grigliato', 'Parmigiano', 'Crostini'],
     extra_additions: [{ name: 'Extra Pollo', price: 2.0 }],
-    order_position: 1,
+    order_index: 1,
   },
   {
     id: 'prod-6',
@@ -524,7 +520,7 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Hamburger Classico',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400', price_delta: 0.0 },
+    price_delta: 0.0 },
           { name: 'Cheeseburger', price_delta: 1.0 },
         ],
       },
@@ -534,23 +530,22 @@ const DEFAULT_PRODUCTS: Product[] = [
         max_selection: 1,
         options: [
           { name: 'Coca Cola',
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=400', price_delta: 0.0 },
+    price_delta: 0.0 },
           { name: 'Fanta', price_delta: 0.0 },
           { name: 'Acqua', price_delta: 0.0 },
         ],
       },
     ],
-    order_position: 1,
+    order_index: 1,
   },
   {
     id: 'prod-7',
     category_id: 'cat-5',
     name: 'Coca Cola',
-    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=400',
     description: '330ml in lattina',
     price: 2.5,
     product_type: 'simple',
-    order_position: 1,
+    order_index: 1,
   },
   {
     id: 'prod-8',
@@ -559,17 +554,16 @@ const DEFAULT_PRODUCTS: Product[] = [
     description: '500ml',
     price: 1.5,
     product_type: 'simple',
-    order_position: 2,
+    order_index: 2,
   },
   {
     id: 'prod-9',
     category_id: 'cat-6',
     name: 'Tiramisù',
-    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&q=80&w=400',
     description: 'Tiramisù classico fatto in casa',
     price: 5.5,
     product_type: 'simple',
-    order_position: 1,
+    order_index: 1,
   },
 ];
 
@@ -774,27 +768,27 @@ export async function ensureLocalDbLoaded() {
         // rimpiazzato dai dati demo al successivo avvio.
         categories: Array.isArray(parsed.categories)
           ? normalizeOrderIndexes(parsed.categories.map((c: any) => {
-              let img = sanitizeImageUri(c.image) || c.image;
-              if (!img) {
+              let img = sanitizeImageUri(c.image);
+              if (!img || (typeof img === 'string' && img.trim() === '') || img.includes('placeholder')) {
                 const def = DEFAULT_CATEGORIES.find(d => d.id === c.id);
                 if (def && def.image) img = def.image;
               }
               return {
                 ...c,
-                image: img,
+                image: img || '',
               }
             }))
           : clone(DEFAULT_CATEGORIES),
         products: Array.isArray(parsed.products)
           ? normalizeProductOrderIndexes(parsed.products.map((p: any) => {
-              let img = sanitizeImageUri(p.image) || p.image;
-              if (!img) {
+              let img = sanitizeImageUri(p.image);
+              if (!img || (typeof img === 'string' && img.trim() === '') || img.includes('placeholder')) {
                 const def = DEFAULT_PRODUCTS.find(d => d.id === p.id);
                 if (def && def.image) img = def.image;
               }
               return {
                 ...p,
-                image: img,
+                image: img || '',
               }
             }))
           : clone(DEFAULT_PRODUCTS),

@@ -1,3 +1,4 @@
+import { useI18n } from '@/src/utils/i18n';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -31,6 +32,7 @@ import { Text, TextInput } from '@/src/components/LocalizedPrimitives';
 import AdminHeader from '@/src/components/AdminHeader';
 
 export default function CategoriesManagementScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { height: viewportHeight } = useWindowDimensions();
   const modalHeight = Math.max(360, Math.min(760, viewportHeight - 32));
@@ -66,7 +68,7 @@ export default function CategoriesManagementScreen() {
       setProducts(prods);
     } catch (error) {
       console.error('Error loading categories:', error);
-      Alert.alert('Errore', 'Impossibile caricare le categorie');
+      Alert.alert(t('Errore'), t('Impossibile caricare le categorie'));
     } finally {
       setLoading(false);
     }
@@ -140,20 +142,20 @@ export default function CategoriesManagementScreen() {
       setImage(sanitizeImageUri(cleanUri) || cleanUri);
     } catch (e) {
       console.error('pickImage category error', e);
-      Alert.alert('Errore', 'Impossibile aprire la galleria.');
+      Alert.alert(t('Errore'), t('Impossibile aprire la galleria.'));
     }
   };
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Errore', 'Inserisci il nome della categoria');
+      Alert.alert(t('Errore'), t('Inserisci il nome della categoria'));
       return;
     }
 
     const humanPosition = Number.parseInt(orderIndex, 10);
     const maximumPosition = editingCategory ? categories.length : categories.length + 1;
     if (!Number.isInteger(humanPosition) || humanPosition < 1 || humanPosition > maximumPosition) {
-      Alert.alert('Posizione non valida', `Inserisci una posizione da 1 a ${maximumPosition}.`);
+      Alert.alert(t('Posizione non valida'), `${t('Inserisci una posizione da 1 a')} ${maximumPosition}.`);
       return;
     }
 
@@ -173,10 +175,10 @@ export default function CategoriesManagementScreen() {
 
       closeModal();
       loadData();
-      Alert.alert('Successo', editingCategory ? 'Categoria aggiornata' : 'Categoria creata');
+      Alert.alert(t('Successo'), editingCategory ? t('Categoria aggiornata') : t('Categoria creata'));
     } catch (error) {
       console.error('Error saving category:', error);
-      Alert.alert('Errore', 'Impossibile salvare la categoria');
+      Alert.alert(t('Errore'), t('Impossibile salvare la categoria'));
     }
   };
 
@@ -186,32 +188,32 @@ export default function CategoriesManagementScreen() {
       await loadData();
     } catch (error) {
       console.error('Error moving category:', error);
-      Alert.alert('Errore', 'Impossibile aggiornare la posizione della categoria');
+      Alert.alert(t('Errore'), t('Impossibile aggiornare la posizione della categoria'));
     }
   };
 
   const handleDelete = (category: Category) => {
     const count = products.filter((p) => p.category_id === category.id).length;
     Alert.alert(
-      'Conferma Eliminazione',
-      `Vuoi eliminare la categoria "${category.name}"? ${
+      t(t('Conferma Eliminazione')),
+      `${t('Vuoi eliminare la categoria')} "${category.name}"? ${
         count > 0
           ? `Attenzione: contiene ${count} prodotti collegati.`
           : 'Nessun prodotto collegato.'
       }`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('Annulla'), style: 'cancel' },
         {
-          text: 'Elimina',
+          text: t('Elimina'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteCategory(category.id!);
               loadData();
-              Alert.alert('Successo', 'Categoria eliminata');
+              Alert.alert(t('Successo'), t('Categoria eliminata'));
             } catch (error) {
               console.error('Error deleting category:', error);
-              Alert.alert('Errore', 'Impossibile eliminare la categoria');
+              Alert.alert(t('Errore'), t('Impossibile eliminare la categoria'));
             }
           },
         },
@@ -234,7 +236,7 @@ export default function CategoriesManagementScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B6B" />
-        <Text style={styles.loadingText}>Caricamento categorie...</Text>
+        <Text style={styles.loadingText}>{t(`Caricamento categorie...`)}</Text>
       </View>
     );
   }
@@ -242,8 +244,8 @@ export default function CategoriesManagementScreen() {
   return (
     <View style={styles.container}>
       <AdminHeader
-        title="Categorie"
-        subtitle="Organizzazione e reparti del menu"
+        title={t(`Categorie`)}
+        subtitle={t(`Organizzazione e reparti del menu`)}
         emoji="▦"
         counter={filteredCategories.length}
         showBack={false}
@@ -254,7 +256,7 @@ export default function CategoriesManagementScreen() {
             onPress={openCreateModal}
           >
             <Ionicons name="add" size={16} color="white" />
-            <Text style={styles.headerPrimaryBtnText}>Nuova Categoria</Text>
+            <Text style={styles.headerPrimaryBtnText}>{t(`Nuova Categoria`)}</Text>
           </TouchableOpacity>
         }
       />
@@ -265,7 +267,7 @@ export default function CategoriesManagementScreen() {
           <Ionicons name="search" size={18} color="#94A3B8" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Cerca categoria..."
+            placeholder={t(`Cerca categoria...`)}
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -286,11 +288,11 @@ export default function CategoriesManagementScreen() {
       >
         {filteredCategories.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 40, marginBottom: 8 }}>▦</Text>
-            <Text style={styles.emptyTitle}>Nessuna categoria trovata</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={{ fontSize: 40, marginBottom: 8 }}>{t(`▦`)}</Text>
+            <Text style={styles.emptyTitle}>{t(`Nessuna categoria trovata`)}</Text>
+            <Text style={styles.emptySubtitle}>{t(`
               Crea una nuova categoria per organizzare il menu del totem.
-            </Text>
+            `)}</Text>
           </View>
         ) : (
           filteredCategories.map((cat, visibleIndex) => {
@@ -311,7 +313,7 @@ export default function CategoriesManagementScreen() {
                         cachePolicy="memory-disk"
                       />
                     ) : (
-                      <Text style={{ fontSize: 24 }}>▦</Text>
+                      <Text style={{ fontSize: 24 }}>{t(`▦`)}</Text>
                     )}
                   </View>
 
@@ -360,7 +362,7 @@ export default function CategoriesManagementScreen() {
                     onPress={() => openEditModal(cat)}
                   >
                     <Ionicons name="pencil" size={16} color="#2563EB" />
-                    <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>Modifica</Text>
+                    <Text style={[styles.actionBtnText, { color: '#2563EB' }]}>{t(`Modifica`)}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -368,7 +370,7 @@ export default function CategoriesManagementScreen() {
                     onPress={() => handleDelete(cat)}
                   >
                     <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                    <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Elimina</Text>
+                    <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>{t(`Elimina`)}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -406,23 +408,23 @@ export default function CategoriesManagementScreen() {
               keyboardShouldPersistTaps="handled"
             >
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nome Categoria *</Text>
+                <Text style={styles.formLabel}>{t(`Nome Categoria *`)}</Text>
                 <TextInput
                   style={styles.input}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Es: Burger Speciali, Bevande..."
+                  placeholder={t(`Es: Burger Speciali, Bevande...`)}
                   placeholderTextColor="#94A3B8"
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Descrizione</Text>
+                <Text style={styles.formLabel}>{t(`Descrizione`)}</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Descrizione sintetica per i clienti..."
+                  placeholder={t(`Descrizione sintetica per i clienti...`)}
                   placeholderTextColor="#94A3B8"
                   multiline
                   numberOfLines={2}
@@ -430,7 +432,7 @@ export default function CategoriesManagementScreen() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Ordine di Visualizzazione (Priorità)</Text>
+                <Text style={styles.formLabel}>{t(`Ordine di Visualizzazione (Priorità)`)}</Text>
                 <TextInput
                   style={styles.input}
                   value={orderIndex}
@@ -442,7 +444,7 @@ export default function CategoriesManagementScreen() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Foto Icona Categoria</Text>
+                <Text style={styles.formLabel}>{t(`Foto Icona Categoria`)}</Text>
                 <View style={styles.imagePickerRow}>
                   <View style={styles.imagePreviewBox}>
                     {sanitizeImageUri(image) ? (
@@ -454,7 +456,7 @@ export default function CategoriesManagementScreen() {
                         cachePolicy="memory-disk"
                       />
                     ) : (
-                      <Text style={{ fontSize: 24 }}>▦</Text>
+                      <Text style={{ fontSize: 24 }}>{t(`▦`)}</Text>
                     )}
                   </View>
                   <View style={styles.imagePickerActions}>
@@ -463,14 +465,14 @@ export default function CategoriesManagementScreen() {
                       onPress={pickImage}
                     >
                       <Ionicons name="image-outline" size={16} color="#1E293B" />
-                      <Text style={styles.imagePickerBtnText}>Scegli Foto</Text>
+                      <Text style={styles.imagePickerBtnText}>{t(`Scegli Foto`)}</Text>
                     </TouchableOpacity>
                     {image ? (
                       <TouchableOpacity
                         style={styles.imageRemoveBtn}
                         onPress={() => setImage('')}
                       >
-                        <Text style={styles.imageRemoveBtnText}>Rimuovi</Text>
+                        <Text style={styles.imageRemoveBtnText}>{t(`Rimuovi`)}</Text>
                       </TouchableOpacity>
                     ) : null}
                   </View>
@@ -484,7 +486,7 @@ export default function CategoriesManagementScreen() {
                 style={styles.modalCancelBtn}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalCancelBtnText}>Annulla</Text>
+                <Text style={styles.modalCancelBtnText}>{t(`Annulla`)}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

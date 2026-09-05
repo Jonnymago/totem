@@ -1,0 +1,1004 @@
+--- frontend/app/admin/(tabs)/settings.tsx ---
+Prop string: title="Impostazioni Totem"
+Prop string: subtitle="Configurazione generale, dispositivi, licenza e manuale operativo"
+Object string: text: 'Annulla'
+Object string: text: 'Azzera Adesso'
+Object string: text: 'Annulla'
+Object string: text: 'Seleziona File ZIP'
+Object string: label: 'Attività & Logo'
+Object string: label: 'Stampe, TV & Coda'
+Object string: label: 'Rete & Multi-Totem'
+Object string: label: 'Kiosk & Sicurezza'
+Object string: label: 'Licenza & Piani'
+Object string: label: 'Guida & Manuale'
+Object string: label: 'Backup Dati'
+Object string: label: '📅 Giornaliero'
+Object string: label: '🖐️ Solo Manuale'
+Object string: label: '♾️ Mai'
+JSX Text: part
+JSX Text: ('locale');
+
+  // General Settings
+  const [restaurantName, setRestaurantName] = useState('');
+  const [logo, setLogo] = useState('');
+
+  // Reset & Order Numbering
+  const [orderResetMode, setOrderResetMode] = useState
+JSX Text: ('daily');
+  const [resetTime, setResetTime] = useState('06:00');
+  const [lastResetAt, setLastResetAt] = useState
+JSX Text: (null);
+  const [resettingOrders, setResettingOrders] = useState(false);
+
+  // Network & Remote
+  const [localIp, setLocalIp] = useState('192.168.1.9');
+  const [manualIp, setManualIp] = useState('');
+  const [savingManualIp, setSavingManualIp] = useState(false);
+  const [remoteUrl, setRemoteUrl] = useState('');
+
+  // Topology State
+  const [topology, setTopology] = useState
+JSX Text: (null);
+
+  // Security Credentials
+  const [currentPin, setCurrentPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmNewPin, setConfirmNewPin] = useState('');
+  const [credentialSaving, setCredentialSaving] = useState(false);
+  const [generatingRecovery, setGeneratingRecovery] = useState(false);
+  const [newRecoveryCodeModal, setNewRecoveryCodeModal] = useState
+JSX Text: (null);
+  const [savingRecoveryBackup, setSavingRecoveryBackup] = useState(false);
+
+  const [importing, setImporting] = useState(false);
+
+  const [autoScanning, setAutoScanning] = useState(false);
+  const [autoScanLogs, setAutoScanLogs] = useState
+JSX Text: ([]);
+  const [discoveredDevices, setDiscoveredDevices] = useState
+JSX Text: Caricamento impostazioni...
+JSX Text: );
+  }
+
+  return (
+JSX Text: Attività & Lingua Totem
+JSX Text: Nome Ristorante / Attività
+JSX Text: Logo Attività
+JSX Text: Scegli Logo
+JSX Text: setLogo('')}>
+JSX Text: Rimuovi
+JSX Text: ) : null}
+JSX Text: Lingua Principale Interfaccia
+JSX Text: router.push('/admin/printers')}>
+JSX Text: 🖨️ Stampanti Termiche & Editor Scontrino
+JSX Text: Associa stampanti Bluetooth/LAN (58/80mm), personalizza intestazioni, loghi, testi e traduzioni scontrino.
+JSX Text: router.push('/admin/signage')}>
+JSX Text: 📺 Digital Signage (Vetrina TV)
+JSX Text: COMING SOON
+JSX Text: Vetrina multimediale e video in loop (modulo temporaneamente in refactoring).
+JSX Text: router.push('/admin/queue')}>
+JSX Text: 📢 Tabellone Coda Clienti (Monitor Ritiro)
+JSX Text: Chiamata vocale/sonora ordini pronti, tabellone da sala per monitor TV, impostazioni numerazione e reset.
+JSX Text: 🔢 Numerazione Ricevute & Sincronizzazione Coda
+JSX Text: La numerazione progressiva degli ordini viene stampata sugli scontrini cliente e comande cucina. L'azzeramento sincronizza automaticamente anche il tabellone di chiamata della coda.
+JSX Text: Modalità di reset automatico
+JSX Text: setOrderResetMode(item.id as any)}
+                    >
+JSX Text: Orario reset giornaliero (HH:MM)
+JSX Text: ) : null}
+JSX Text: Azzera Adesso Numerazione Ordini & Tabellone Coda
+JSX Text: Rete Wi-Fi Locale Attiva
+JSX Text: Tutti i dispositivi (smartphone, TV, KDS e altri totem) devono essere connessi alla stessa rete Wi-Fi del locale.
+JSX Text: Configurazione Totem & Ruolo LAN
+JSX Text: Totem Principale (Master)
+JSX Text: Questo tablet è il "Cervello": gestisce la cassa, il database e distribuisce gli ordini a tutti gli altri totem.
+JSX Text: Totem Secondario (Satellite)
+JSX Text: Totem cliente aggiuntivo. Si collega automaticamente al Totem Principale per sincronizzare menu e comande.
+JSX Text: Totem Singolo (Stand-Alone)
+JSX Text: Hai un solo totem nel locale. Tutto funziona autonomamente senza bisogno di configurazioni di rete.
+JSX Text: Accesso da Smartphone & PC
+JSX Text: Come accedere da smartphone:
+JSX Text: 1. Connetti lo smartphone al Wi-Fi del locale.
+JSX Text: 2. Inquadra il codice QR con la fotocamera.
+JSX Text: 3. Accedi all'amministrazione in mobilità.
+JSX Text: Copia
+JSX Text: Modalità Kiosk & Blocco Schermo
+JSX Text: Blocco Schermo Kiosk Totem
+JSX Text: Impedisce ai clienti di uscire dall'applicazione
+JSX Text: Schermo Sempre Acceso
+JSX Text: Evita che il tablet entri in standby durante il servizio
+JSX Text: Modifica PIN Amministratore (6 Cifre)
+JSX Text: PIN Corrente
+JSX Text: setCurrentPin(t.replace(/\D/g, '').slice(0, 6))}
+                  keyboardType="numeric"
+                  secureTextEntry
+                  placeholder="Inserisci PIN attuale..."
+                />
+JSX Text: Nuovo PIN (6 Cifre)
+JSX Text: setNewPin(t.replace(/\D/g, '').slice(0, 6))}
+                    keyboardType="numeric"
+                    secureTextEntry
+                    placeholder="6 cifre..."
+                  />
+JSX Text: Conferma Nuovo PIN
+JSX Text: setConfirmNewPin(t.replace(/\D/g, '').slice(0, 6))}
+                    keyboardType="numeric"
+                    secureTextEntry
+                    placeholder="Ripeti 6 cifre..."
+                  />
+JSX Text: Aggiorna PIN di Sicurezza
+JSX Text: Salvataggio & Ripristino Archivio Locale
+JSX Text: Esporta o ripristina un archivio ZIP completo contenente: Categorie, Piatti, Foto, Varianti, Ingredienti e Configurazioni.
+JSX Text: Esporta Backup ZIP
+JSX Text: Importa Backup ZIP
+--- frontend/app/admin/(tabs)/license.tsx ---
+Prop string: title="Licenza Totem"
+Prop string: subtitle="Stato attivazione, abbonamenti Google Play e conformità"
+Object string: text: 'Annulla'
+Object string: text: 'Continua su Google Play'
+Object string: text: 'Annulla'
+Object string: text: 'Riavvia Prova'
+JSX Text: (null);
+  const [restoring, setRestoring] = useState(false);
+  const [license, setLicense] = useState
+JSX Text: (null);
+  const [playProducts, setPlayProducts] = useState
+JSX Text: ([]);
+  const [billingConfigured, setBillingConfigured] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [billingMessage, setBillingMessage] = useState('Caricamento stato Google Play…');
+
+  // Modali Legali
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalModalType, setLegalModalType] = useState
+JSX Text: Caricamento stato licenza...
+JSX Text: );
+  }
+
+  const isProActive = license?.status === 'active';
+  const isTrial = license?.status === 'trial';
+  const daysRemaining = license?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(license.expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : 0;
+  const expiryLabel = license?.expiresAt
+    ? new Date(license.expiresAt).toLocaleDateString('it-IT')
+    : 'Nessuna scadenza';
+  const lastVerifiedLabel = license?.lastVerifiedAt
+    ? new Date(license.lastVerifiedAt).toLocaleString('it-IT')
+    : 'Non ancora verificata dal backend Play';
+  const offlineGraceLabel = license?.offlineGraceUntil
+    ? new Date(license.offlineGraceUntil).toLocaleString('it-IT')
+    : 'Non disponibile';
+
+  return (
+JSX Text: Stato Licenza Totem
+JSX Text: ) : null}
+JSX Text: Dettagli Prova Gratuita (7 Giorni)
+JSX Text: ✨ Accesso Completo Totem Multi Incluso
+JSX Text: Nessun addebito automatico. Al termine puoi attivare Totem Mono o Multi.
+JSX Text: Riavvia Prova
+JSX Text: Piani mensili Totem
+JSX Text: Solo abbonamento mensile. Nessun piano annuale. Totem Mono 9,99 € funzioni base, Totem Multi 19,99 € funzioni avanzate.
+JSX Text: Aggiornamento offerte Google Play…
+JSX Text: ) : null}
+JSX Text: Attivo
+JSX Text: : null}
+JSX Text: Rinnovo automatico mensile. Gestisci o annulla dal Centro abbonamenti Google Play.
+JSX Text: Ripristina acquisti
+JSX Text: Gestisci abbonamento
+JSX Text: Aggiorna offerte
+JSX Text: Conformità & Privacy
+JSX Text: Consulta le informazioni operative su dati locali, accesso amministratore, conservazione delle comande e condizioni d&apos;uso del software.
+JSX Text: Informativa Privacy
+JSX Text: Termini di Servizio
+JSX Text: setShowLegalModal(false)}
+      >
+JSX Text: setShowLegalModal(false)}>
+JSX Text: Dati trattati e finalità
+JSX Text: Totem QuickBite conserva sul tablet le configurazioni del locale, il catalogo, le preferenze operative e le comande necessarie al servizio. Questi dati sono usati esclusivamente per erogare le funzioni di ordinazione, cucina, stampa e amministrazione del totem.
+JSX Text: Conservazione e accesso
+JSX Text: I dati restano localmente sul dispositivo finché l&apos;operatore non li modifica, esporta o cancella. Il pannello remoto è progettato per la rete locale: proteggi la rete Wi-Fi, le credenziali amministrative e il PIN di accesso.
+JSX Text: Responsabilità del gestore
+JSX Text: Il titolare dell&apos;attività definisce le procedure di conservazione, informa il personale e gli utenti quando necessario e verifica l&apos;applicazione degli obblighi privacy pertinenti al proprio esercizio.
+JSX Text: Licenza d&apos;uso
+JSX Text: Totem QuickBite è destinato alla gestione di ordinazioni self-service, comande e stampe in un esercizio commerciale. L&apos;uso è consentito al personale autorizzato sul dispositivo associato alla licenza attiva.
+JSX Text: Uso operativo sicuro
+JSX Text: Configura e verifica kiosk, stampanti, KDS, rete e pannello remoto prima dell&apos;uso in servizio. Mantieni il PIN riservato e non lasciare il pannello di amministrazione incustodito.
+JSX Text: Aggiornamenti e assistenza
+JSX Text: Installa gli aggiornamenti dopo un controllo operativo e conserva un backup prima di modifiche importanti. Il gestore resta responsabile dell&apos;uso conforme alle procedure interne e ai requisiti applicabili.
+--- frontend/app/admin/(tabs)/printers.tsx ---
+Prop string: title="Stampanti & Scontrino"
+Prop string: subtitle="Gestione stampanti termiche LAN/Bluetooth ed editor avanzato scontrino"
+Object string: label: 'P.IVA'
+Object string: label: 'VAT ID'
+Object string: label: 'TVA'
+Object string: label: 'UST-ID'
+Object string: label: 'NIF/CIF'
+Object string: title: 'BURGER FAST FOOD'
+Object string: subtitle: 'Via Roma 12, Milano'
+Object string: message: 'Grazie per la visita!\nArrivederci!'
+Object string: text: 'Wi-Fi Clienti: TotemGuest (Pass: 1234)'
+Object string: text: 'Annulla'
+Object string: text: 'Vedi licenza'
+Object string: text: 'Nuova riga testo...'
+Object string: text: 'Annulla'
+Object string: text: 'Elimina'
+Object string: label: 'Blocchi & Righe'
+Object string: label: 'Righe Custom'
+Object string: label: 'Traduzioni'
+Object string: label: 'Formato Carta'
+Object string: label: '🇮🇹 Italiano'
+Object string: label: '🇬🇧 English'
+Object string: label: '🇫🇷 Français'
+Object string: label: '🇩🇪 Deutsch'
+Object string: label: '🇪🇸 Español'
+Object string: label: 'Trattini (- - -)'
+Object string: label: 'Doppia linea (===)'
+Object string: label: 'Stelline (***)'
+Object string: label: 'Continua (___)'
+Object string: text: 'Annulla'
+Object string: text: 'Ripristina'
+Object string: title: 'BURGER FAST FOOD'
+Object string: subtitle: 'Via Roma 12, Milano'
+Object string: message: 'Grazie per la visita!\nArrivederci!'
+Object string: text: 'Wi-Fi Clienti: TotemGuest (Pass: 1234)'
+JSX Text: PAGA ALLA CASSA
+JSX Text: PAGA ALLA CASSA
+JSX Text: PAY AT CASHIER
+JSX Text: PAYER EN CAISSE
+JSX Text: AN DER KASSE BEZAHLEN
+JSX Text: PAGAR EN CAJA
+JSX Text: = 768;
+
+  const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
+  const [printers, setPrinters] = useState
+JSX Text: ([]);
+  const [categories, setCategories] = useState
+JSX Text: ([]);
+  const [found, setFound] = useState
+JSX Text: ([]);
+  const [license, setLicense] = useState
+JSX Text: (null);
+  const [newName, setNewName] = useState('');
+  const [newDept, setNewDept] = useState('Cucina');
+  const [newAddr, setNewAddr] = useState('');
+  const [renameDraft, setRenameDraft] = useState
+JSX Text: (58);
+
+  // Receipt Layout Editor Modal State
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorTab, setEditorTab] = useState
+JSX Text: ('blocks');
+  const [savingLayout, setSavingLayout] = useState(false);
+  const [activeTranslationLang, setActiveTranslationLang] = useState
+JSX Text: ('it');
+  const [expandedBlockInfo, setExpandedBlockInfo] = useState
+JSX Text: (null);
+  const [showBlocksGuide, setShowBlocksGuide] = useState(false);
+  const [previewCollapsed, setPreviewCollapsed] = useState(false);
+
+  const [receiptConfig, setReceiptConfig] = useState
+JSX Text: );
+  }
+
+  const currentBlocksOrder = receiptConfig.blocks_order || DEFAULT_BLOCKS.map((b) => b.id);
+
+  return (
+JSX Text: setEditorOpen(true)}>
+JSX Text: ⚙️ Personalizza Layout Scontrino & Traduzioni
+JSX Text: Riordina le righe, modifica testi, aggiungi messaggi personalizzati e personalizza le traduzioni in 5 lingue.
+JSX Text: ⚙️ Automatismi di Stampa Ordini
+JSX Text: Stampa automatica Scontrino di Cortesia (Cassa/Cliente)
+JSX Text: Stampa automatica Comanda Cucina / Reparto
+JSX Text: Nessuna stampante associata. Cerca un dispositivo Bluetooth o aggiungine uno manuale.
+JSX Text: ) : (
+            printers.map((p) => (
+JSX Text: Abilitata
+JSX Text: Scontrino Cortesia
+JSX Text: Comanda Cucina
+JSX Text: Categorie KDS (Lascia vuoto per stamparle tutte)
+JSX Text: addFromScan(d)}>
+JSX Text: + Associa
+JSX Text: ➕ Aggiungi Stampante Manuale
+JSX Text: Aggiungi Stampante
+JSX Text: setEditorOpen(false)}>
+JSX Text: setEditorOpen(false)}>
+JSX Text: Personalizzazione termica completa
+JSX Text: Salva
+JSX Text: setEditorTab(tab.id as any)}
+                >
+JSX Text: setPreviewCollapsed(!previewCollapsed)}
+                  >
+JSX Text: Come funzionano i blocchi e cosa puoi personalizzare?
+JSX Text: 🟢 Personalizzabile
+JSX Text: Testi modificabili da te (Nome ristorante, indirizzo, P.IVA, note, saluti, righe custom).
+JSX Text: 🔵 Generato dal sistema
+JSX Text: Dati dinamici calcolati dal Totem al checkout (data/ora, numero progressivo comanda, piatti scelti, totale euro, linee grafiche).
+JSX Text: Suggerimento:
+JSX Text: Usa le frecce ⬆️ e ⬇️ per riordinare la posizione nello scontrino. Usa lo switch per mostrare o nascondere un rigo. Tocca
+JSX Text: ℹ️ Info
+JSX Text: su ciascun rigo per conoscere la funzione e vederne l'esempio reale di stampa.
+JSX Text: 🏪 Nome Attività (Intestazione)
+JSX Text: Personalizzabile
+JSX Text: 📍 Sottotitolo / Indirizzo
+JSX Text: Personalizzabile
+JSX Text: 🏛️ Partita IVA / Dati Fiscali
+JSX Text: Personalizzabile
+JSX Text: 💬 Messaggio di Saluto a Piè di Pagina
+JSX Text: Personalizzabile
+JSX Text: 📜 Dicitura Non Fiscale
+JSX Text: Personalizzabile
+JSX Text: Sequenza, Ruoli e Visibilità Righe Scontrino
+JSX Text: Tocca "Info" per scoprire lo scopo del rigo e come personalizzarlo.
+JSX Text: moveBlock(idx, 'up')}
+                            >
+JSX Text: moveBlock(idx, 'down')}
+                            >
+JSX Text: 📌 A COSA SERVE QUESTO RIGO:
+JSX Text: 📄 Esempio reale di stampa:
+JSX Text: Aggiungi righe di testo personalizzate allo scontrino (es. Wi-Fi, Social Network, Orari di apertura, Promozioni).
+JSX Text: removeCustomLine(line.id)}>
+JSX Text: Allineamento:
+JSX Text: + Aggiungi Nuova Riga
+JSX Text: Modifica le diciture dello scontrino per ogni lingua supportata. Le traduzioni verranno stampate in base alla lingua dell'ordine o del cliente.
+JSX Text: setActiveTranslationLang(l.code)}
+                        >
+JSX Text: Titolo Scontrino di Cortesia
+JSX Text: updateTranslationField(activeTranslationLang, 'courtesy', t)}
+                          />
+JSX Text: Etichetta Numero Ordine
+JSX Text: updateTranslationField(activeTranslationLang, 'order_num', t)}
+                          />
+JSX Text: Dicitura Totale
+JSX Text: updateTranslationField(activeTranslationLang, 'total', t)}
+                          />
+JSX Text: Dicitura Subtotale
+JSX Text: updateTranslationField(activeTranslationLang, 'subtotal', t)}
+                          />
+JSX Text: Istruzione Pagamento Cassa
+JSX Text: updateTranslationField(activeTranslationLang, 'pay_at_cash', t)}
+                          />
+JSX Text: Dicitura Asporto
+JSX Text: updateTranslationField(activeTranslationLang, 'takeaway', t)}
+                          />
+JSX Text: Dicitura Tavolo / Sul Posto
+JSX Text: updateTranslationField(activeTranslationLang, 'dine_in', t)}
+                          />
+JSX Text: Prefisso Senza Ingrediente
+JSX Text: updateTranslationField(activeTranslationLang, 'without', t)}
+                          />
+JSX Text: Prefisso Note
+JSX Text: updateTranslationField(activeTranslationLang, 'notes', t)}
+                          />
+JSX Text: 📏 Larghezza Rotolo Carta Termica
+JSX Text: ➗ Stile Linee Separatori
+JSX Text: Ripristina Valori di Fabbrica
+--- src/views/AdminView.tsx ---
+Prop string: label="Chiudi menu"
+Prop string: title="Sposta Su"
+Prop string: title="Sposta Giù"
+Prop string: title="Elimina"
+Prop string: title="Sposta Su"
+Prop string: title="Sposta Giù"
+Prop string: title="Sposta Su"
+Prop string: title="Sposta Giù"
+Prop string: title="Copia link negli appunti"
+Prop string: title="Azzera chiamata"
+Prop string: title="Live Display Queue Preview"
+Prop string: title="Remote Admin"
+Object string: label: 'Prodotti'
+Object string: label: 'Categorie'
+Object string: label: 'Ingredienti'
+Object string: label: 'KDS Comande'
+Object string: label: 'Coda'
+Object string: label: 'Vetrina TV'
+Object string: title: '📺 Schermi, TV & Reparti'
+Object string: description: 'Configura la visualizzazione TV e la gestione cucine'
+Object string: label: 'Digital Signage & TV'
+Object string: sub: 'Vetrina prodotti, animazioni e pubblicità in sala'
+Object string: label: 'Contacoda numerico'
+Object string: sub: 'Chiamata ritiro e tabellone sala, sezione separata dalla vetrina'
+Object string: label: 'Multi-Stampanti & Reparti'
+Object string: sub: 'Routing comande e stampanti termiche ESC/POS'
+Object string: title: '🌐 Rete, Totem & Dispositivi'
+Object string: description: 'Architettura di rete e controllo postazioni'
+Object string: label: 'Topologia & Rete Multi-Totem'
+Object string: sub: 'Architettura Master/Satellite e sync locale LAN'
+Object string: label: 'Pannello Remoto Web & QR'
+Object string: sub: 'Accesso da smartphone via QR code e URL diretta'
+Object string: label: 'Controllo Kiosk & Hardware'
+Object string: sub: 'Blocco schermo, timeout, screensaver e tap segreti'
+Object string: title: '⚙️ Configurazione & Sistema'
+Object string: description: 'Impostazioni generali, licenze e sicurezza'
+Object string: label: 'Dati Locale & Numerazione'
+Object string: sub: 'Intestazione scontrino, orari, valuta e reset comande'
+Object string: label: 'Licenza & Multi-Postazione'
+Object string: sub: 'Piano Google Play, postazioni autorizzate e ID hardware'
+Object string: label: 'Sicurezza, PIN & Privacy'
+Object string: sub: 'Modifica credenziali, PIN master e recovery code'
+Object string: label: 'Guida Operativa & Manuale'
+Object string: sub: 'Manuale completo, risoluzione problemi e istruzioni'
+Object string: title: 'Gestione Catalogo & Prodotti'
+Object string: sub: 'Crea, modifica prezzi, allergeni e disponibilità piatti'
+Object string: title: 'Gestione Categorie & Menù'
+Object string: sub: 'Ordina e organizza le categorie del menù visualizzate al cliente'
+Object string: title: 'Gruppi Opzioni & Ingredienti'
+Object string: sub: 'Personalizzazioni, varianti, salse ed esclusioni'
+Object string: title: 'Monitor Comande & KDS Cucina'
+Object string: sub: 'Flusso ordini in tempo reale, avanzamento stato e ristampa'
+Object string: title: 'Contacoda numerico'
+Object string: sub: 'Chiamata ritiro in sala — sezione separata dal Digital Signage'
+Object string: title: 'Digital Signage & Vetrina Smart TV'
+Object string: sub: 'Carosello prodotti, animazioni Ken Burns/Slide/Fade e pubblicità in evidenza'
+Object string: title: 'Configurazione Multi-Stampanti & Reparti'
+Object string: sub: 'Routing comande per cucina, bar, pizzeria e cassa'
+Object string: title: 'Topologia & Rete Multi-Totem LAN'
+Object string: sub: 'Architettura Master/Satellite e sincronizzazione cassa locale'
+Object string: title: 'Controllo Kiosk & Blocco Hardware'
+Object string: sub: 'Timeout inattività, screensaver video, blocco uscite e tap segreti'
+Object string: title: 'Impostazioni Totem & Numerazione'
+Object string: sub: 'Intestazione ricevute, orari del locale e modalità reset ordine'
+Object string: title: 'Licenza & Multi-Postazione'
+Object string: sub: 'Gestione piano Google Play, hardware ID e postazioni abilitate'
+Object string: title: 'Sicurezza, PIN Master & Privacy'
+Object string: sub: 'Modifica credenziali, codice di recupero e conformità locale'
+Object string: title: 'Pannello Web Remoto & Accesso Smartphone'
+Object string: sub: 'Gestione da cellulare in Wi-Fi e collegamenti rapidi LAN'
+Object string: title: 'Guida Operativa & Manuale Utente'
+Object string: sub: 'Procedure rapide, risoluzione problemi e istruzioni per lo staff'
+Object string: title: 'Pannello Amministratore'
+Object string: sub: 'Configurazione totem e gestione locale'
+Object string: title: 'Mono Totem Autonomo'
+Object string: title: 'Totem Master (Server LAN)'
+Object string: title: 'Totem Satellite (Client LAN)'
+Object string: label: 'In alto a destra'
+Object string: label: 'In alto al centro'
+Object string: label: 'In alto a sinistra'
+Object string: title: 'Totem Mono'
+Object string: title: 'Totem Multi'
+Object string: label: 'Nero OLED / LED'
+Object string: sub: 'Massimo contrasto nero puro'
+Object string: label: 'Blu Notte Navy'
+Object string: sub: 'Elegante e moderno'
+Object string: label: 'Alto Contrasto'
+Object string: sub: 'Giallo e ciano su nero'
+Object string: label: 'Chiaro Minimal'
+Object string: sub: 'Per ambienti molto illuminati'
+Object string: label: 'Gigantesco (Consigliato)'
+Object string: label: 'Enorme'
+Object string: label: 'Standard (Compatto)'
+Object string: label: 'Giornaliero'
+Object string: label: 'Manuale'
+Object string: label: 'Mai'
+JSX Text: ('products');
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
+
+  // Products
+  const [adminProducts, setAdminProducts] = useState
+JSX Text: ([]);
+  const [editingProduct, setEditingProduct] = useState
+JSX Text: | null>(null);
+  const [prodSearch, setProdSearch] = useState('');
+  const [prodCatFilter, setProdCatFilter] = useState
+JSX Text: ('all');
+
+  // Categories
+  const [adminCategories, setAdminCategories] = useState
+JSX Text: ([]);
+  const [editingCategory, setEditingCategory] = useState
+JSX Text: | null>(null);
+
+  // Groups & Modifiers
+  const [adminGroups, setAdminGroups] = useState
+JSX Text: ([]);
+  const [editingGroup, setEditingGroup] = useState
+JSX Text: | null>(null);
+
+  // Orders
+  const [adminOrders, setAdminOrders] = useState
+JSX Text: ([]);
+  const [orderFilter, setOrderFilter] = useState
+JSX Text: ('all');
+
+  // Printers & Multi-Department Routing
+  const [adminPrinters, setAdminPrinters] = useState
+JSX Text: ([]);
+  const [editingPrinter, setEditingPrinter] = useState
+JSX Text: | null>(null);
+  const [testPrintLoadingId, setTestPrintLoadingId] = useState
+JSX Text: (null);
+
+  // Topology & Station Network
+  const [stationTopology, setStationTopology] = useState
+JSX Text: ([]);
+  const [isScanningLan, setIsScanningLan] = useState(false);
+  const [isSyncingMaster, setIsSyncingMaster] = useState(false);
+
+  // Kiosk & Hardware
+  const [kioskConfig, setKioskConfig] = useState
+JSX Text: (null);
+  const [dqManualInput, setDqManualInput] = useState
+JSX Text: ('');
+  const [dqTheme, setDqTheme] = useState
+JSX Text: ('dark');
+  const [dqMode, setDqMode] = useState
+JSX Text: ('full');
+  const [dqCols, setDqCols] = useState
+JSX Text: (4);
+  const [dqHero, setDqHero] = useState
+JSX Text: (true);
+  const [dqDaypart, setDqDaypart] = useState
+JSX Text: (true);
+  const [dqInterval, setDqInterval] = useState
+JSX Text: (9000);
+  const [dqLang, setDqLang] = useState
+JSX Text: ('it');
+  const [dqAnim, setDqAnim] = useState
+JSX Text: ('kenburns');
+  const [kdsDepartments, setKdsDepartments] = useState
+JSX Text: ([]);
+  const [kdsDeptFilter, setKdsDeptFilter] = useState
+JSX Text: Totem Security Hub
+JSX Text: ) : authTab === 'pin' ? (
+JSX Text: ) : authTab === 'recovery' ? (
+JSX Text: setSetupPass(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500 pr-10"
+                      />
+JSX Text: Valida
+JSX Text: setSetupPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Es. 1234"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white focus:outline-none focus:border-rose-500 font-mono tracking-widest text-center text-lg font-bold"
+                  />
+JSX Text: setRecoveryConfirmed(e.target.checked)}
+                      className="mt-0.5 rounded border-zinc-700 text-rose-600 focus:ring-rose-500 bg-zinc-800 w-4 h-4"
+                    />
+JSX Text: setLoginUser(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
+                  />
+JSX Text: setLoginPass(e.target.value)}
+                    placeholder="Lascia vuoto o inserisci password"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
+                  />
+JSX Text: setPinLoginInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="• • • •"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl p-4 text-white text-center text-3xl font-mono tracking-widest focus:outline-none focus:border-rose-500"
+                />
+JSX Text: setPinLoginInput('')}
+                  className="h-14 rounded-xl bg-zinc-800/40 hover:bg-zinc-800 text-zinc-400 text-xs font-bold flex items-center justify-center"
+                >
+                  CANCELLA
+JSX Text: prev + '0');
+                    }
+                  }}
+                  className="h-14 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-rose-600 text-white text-xl font-bold transition-all flex items-center justify-center border border-zinc-700/50"
+                >
+                  0
+JSX Text: setPinLoginInput((prev) => prev.slice(0, -1))}
+                  className="h-14 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 text-sm font-bold flex items-center justify-center border border-zinc-700/50"
+                >
+                  ⌫
+JSX Text: setRecoveryInput(e.target.value.toUpperCase())}
+                    placeholder="TOTEM-REC-XXXX-XXXX"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white font-mono tracking-wider focus:outline-none focus:border-rose-500 uppercase"
+                  />
+JSX Text: Inserisci il codice di emergenza generato durante il primo accesso
+JSX Text: Nuova Password
+JSX Text: setRecoveryNewPass(e.target.value)}
+                      placeholder="Min. 6 caratteri"
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
+                    />
+JSX Text: Conferma Nuova Password
+JSX Text: setRecoveryNewConfirmPass(e.target.value)}
+                      placeholder="Ripeti password"
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
+                    />
+JSX Text: Nuovo PIN Amministratore (4 cifre)
+JSX Text: setRecoveryNewPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Es. 1234"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white text-center font-mono tracking-widest text-lg font-bold focus:outline-none focus:border-rose-500"
+                  />
+JSX Text: Reimposta Credenziali & Accedi
+JSX Text: Pannello Totem Unificato
+JSX Text: v2.0 • Local-First
+JSX Text: Sincronizza
+JSX Text: Menu Impostazioni
+JSX Text: Esci
+JSX Text: Menu Impostazioni & Strumenti
+JSX Text: Configurazioni avanzate, schermi e hardware
+JSX Text: setIsSettingsMenuOpen(false)}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
+                  aria-label="Chiudi menu"
+                >
+JSX Text: Totem QuickBite Pro • v2.0
+JSX Text: Esci
+JSX Text: Gestisci posizioni, ingredienti, prezzi, varianti ed extra
+JSX Text: Nuovo Prodotto
+JSX Text: setProdSearch(e.target.value)}
+              placeholder="🔍 Cerca prodotto o ingrediente..."
+              className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500"
+            />
+JSX Text: setProdCatFilter(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-rose-500"
+            >
+JSX Text: Combo
+JSX Text: Screensaver
+JSX Text: Modifica
+JSX Text: handleDeleteProduct(p.id)}
+                        className="p-2 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                        title="Elimina"
+                      >
+JSX Text: Ordina la sequenza di visualizzazione delle categorie nel totem
+JSX Text: Nuova Categoria
+JSX Text: handleDeleteCategory(c.id)}
+                    className="p-2 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                  >
+JSX Text: Configura ordine di visualizzazione per salse a scelta, cotture ed extra
+JSX Text: Nuovo Gruppo
+JSX Text: handleDeleteGroup(g.id)}
+                      className="p-2 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl"
+                    >
+JSX Text: Visualizza tutte le comande ricevute e gestisci gli stati
+JSX Text: Nessuna comanda trovata
+JSX Text: Le nuove comande inviate dal totem appariranno qui in tempo reale
+JSX Text: Comanda
+JSX Text: Ticket Solo Numero (ordinazione in cassa)
+JSX Text: ) : (
+                      ord.items?.map((it: any, i: number) => (
+JSX Text: handleUpdateOrderStatus(ord.id, 'preparing')}
+                        className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                      >
+JSX Text: Inizia Preparazione
+JSX Text: handleUpdateOrderStatus(ord.id, 'ready')}
+                        className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                      >
+JSX Text: Segna Pronto
+JSX Text: handleUpdateOrderStatus(ord.id, 'completed')}
+                        className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                      >
+JSX Text: Completa
+JSX Text: Multi-Postazione & Rete Locale
+JSX Text: Architettura Master / Satellite
+JSX Text: Topologia di Rete & Configurazione Postazioni
+JSX Text: Configura questa postazione come Totem Singolo (Mono), Totem Master (Coordinatore LAN e Licenza Play Store) o Totem Satellite.
+JSX Text: Stato:
+JSX Text: Identificativo Postazione & Prefisso Comande
+JSX Text: Personalizza il nome del totem e il prefisso numerazione ordini
+JSX Text: ID Univoco Postazione
+JSX Text: Nome Descrittivo Postazione
+JSX Text: Prefisso Numero Ordine (Opzionale)
+JSX Text: Es. "T1-042" per distinguere la postazione
+JSX Text: Connessione al Totem Master in LAN
+JSX Text: Indirizzo IP del Master per sincronizzazione catalogo e stato licenza Google Play
+JSX Text: Indirizzo IP del Totem Master (LAN)
+JSX Text: Porta HTTP Server
+JSX Text: Dispositivi Rilevati sulla Rete Locale:
+JSX Text: Multi-Stampanti Illimitate
+JSX Text: ESC/POS • Termiche TCP/IP & USB
+JSX Text: Gestione Stampanti Termiche & Routing Reparti
+JSX Text: Collega quante stampanti desideri (Cucina, Pizzeria, Bar, Griglieria, Cassa Cortesia) e assegna a ciascuna le proprie categorie.
+JSX Text: Aggiungi Stampante
+JSX Text: Come funziona il routing delle stampanti e dei KDS:
+JSX Text: Ogni stampante è associata a un
+JSX Text: Reparto
+JSX Text: e alle relative
+JSX Text: Categorie
+JSX Text: di prodotti. All'emissione di un ordine, il sistema invia la stampa termica solo alla stampante competente (es. le pizze al Forno, le bibite al Bar) e contemporaneamente sincronizza la scheda sul KDS di quel reparto.
+JSX Text: Nessuna Stampante Configurato
+JSX Text: Aggiungi la tua prima stampante termica di rete (porta 9100 Raw ESC/POS) o USB/Sunmi per abilitare la stampa automatica delle comande.
+JSX Text: Connessione:
+JSX Text: Tipo Protocollo:
+JSX Text: Ruolo Stampa:
+JSX Text: Categorie Prodotti Assegnate:
+JSX Text: Tutte le categorie (Default fallback)
+JSX Text: ) : (
+                            assignedCats.map((cat) => (
+JSX Text: setEditingPrinter(prn)}
+                          className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold transition-all"
+                        >
+JSX Text: handleDeletePrinter(prn.id)}
+                          className="p-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all"
+                        >
+JSX Text: Reparti KDS
+JSX Text: Ogni reparto filtra le comande per categoria e ha un URL LAN dedicato.
+JSX Text: setNewKdsName(e.target.value)} placeholder="Es. Pizzeria" className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white" />
+JSX Text: Controllo Totem Kiosk & Hardware
+JSX Text: Parametri hardware del totem, orientamento, indirizzi di rete e diagnostica
+JSX Text: Diagnostica Indirizzo IP & Rete
+JSX Text: Indirizzo IP per accesso e configurazione locale
+JSX Text: Indirizzo Host / IP
+JSX Text: Pannello Remoto LAN
+JSX Text: Accesso wireless
+JSX Text: Stato Modalità Kiosk
+JSX Text: Attivo & Protetto
+JSX Text: Local-First Sandbox
+JSX Text: Modalità Kiosk & Blocco Task
+JSX Text: Nasconde la navigation bar e blocca l'uscita
+JSX Text: Stato Blocco Kiosk
+JSX Text: Trigger Tocco Segreto per Admin (Numero Tocchi)
+JSX Text: Posizione Tocco Segreto
+JSX Text: Display, Audio & Risparmio
+JSX Text: Orientamento schermo, timeout salvaschermo e audio beep
+JSX Text: Orientamento Schermo
+JSX Text: Verticale (Totem)
+JSX Text: Orizzontale (Tablet)
+JSX Text: Timeout Salvaschermo Inattività
+JSX Text: Test Strumenti Hardware
+JSX Text: Test Beep Acustico
+JSX Text: setIsTestScreensaverOpen(true)}
+                    className="p-3 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white"
+                  >
+JSX Text: Test Salvaschermo
+JSX Text: Impostazioni Ristorante & Numerazione
+JSX Text: Parametri di base, KDS display, azzeramento ordini e stampanti termiche
+JSX Text: Nome Ristorante
+JSX Text: Monitor Cucina KDS (Comande)
+JSX Text: Abilita o disabilita il display comande della cucina
+JSX Text: Modalità Numerazione Comande
+JSX Text: Orario di Azzeramento Automatico Giornaliero
+JSX Text: Sicurezza & Credenziali Amministratore
+JSX Text: Username Amministratore
+JSX Text: Nuova Password (opzionale)
+JSX Text: PIN Amministratore (4 cifre per accesso rapido)
+JSX Text: Emergency Recovery Code
+JSX Text: Rigenera
+JSX Text: Copiato
+JSX Text: Copia
+JSX Text: Stampa Automatica Ticket Cortesia
+JSX Text: Rilascia scontrino con numero per il cliente
+JSX Text: Stampa Automatica Comanda Cucina
+JSX Text: Invia ticket direttamente al banco di preparazione
+JSX Text: Salva Modifiche
+JSX Text: Manutenzione & Azzeramento
+JSX Text: Azzera Numero Ordini a 1
+JSX Text: Re-seed Dati Default
+JSX Text: Licenza & Abbonamenti Google Play
+JSX Text: Verifica lo stato di attivazione del dispositivo e i piani di sottoscrizione
+JSX Text: Dispositivo Hardware
+JSX Text: Piano Attivo:
+JSX Text: Scadenza:
+JSX Text: Totem Autorizzati:
+JSX Text: 🔄 Verifica & Ripristina Abbonamento
+JSX Text: Ripristina prova (7 giorni)
+JSX Text: Piani Abbonamento Google Play Store
+JSX Text: Tutti i piani includono Kiosk, KDS cucina, stampe termiche e controllo remoto LAN.
+JSX Text: Conformità Normativa, GDPR & Privacy
+JSX Text: Trattamento dati, accessibilità Kiosk e gestione fiscale
+JSX Text: 🔒 Protezione Dati Personali (GDPR 2016/679)
+JSX Text: Il totem non raccoglie né trasmette dati sensibili dei clienti (nomi, indirizzi email, numeri telefonici o dettagli carte di credito). Ogni comanda è identificata esclusivamente da un numero sequenziale progressivo temporaneo.
+JSX Text: 🛡️ Cancellazione Automatica Sessione
+JSX Text: Dopo l'emissione del ticket o trascorsi 60 secondi di inattività dello schermo, la sessione e il carrello vengono azzerati all'istante per salvaguardare la totale riservatezza del cliente successivo.
+JSX Text: 🧾 Separazione Fiscale & HACCP
+JSX Text: Gli scontrini emessi dal totem fungono da promemoria di cortesia e comande interne per la cucina. La memorizzazione fiscale definitiva e la trasmissione telematica dei corrispettivi sono affidate al Registratore Telematico di cassa.
+JSX Text: ♿ Accessibilità & Contrasto WCAG
+JSX Text: Interfaccia progettata con aree di tocco touch minime superiori a 48px, elevato contrasto visivo e traduzione multilingua istantanea in 5 idiomi europei (Italiano, English, Español, Français, Deutsch).
+JSX Text: Contacoda Numerico Sala
+JSX Text: Gestione avanzata della chiamata clienti, monitor Smart TV per sala/ritiro e sincronizzazione in tempo reale.
+JSX Text: Apri Tabellone TV
+JSX Text: Chiamata Clienti in Sala
+JSX Text: Aggiorna istantaneamente tutti i monitor collegati
+JSX Text: LIVE
+JSX Text: updateDisplayQueueCalling((dqCallingNum ?? 0) + 1)}
+                    className="p-3.5 bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-rose-950/40"
+                  >
+JSX Text: +1 Successivo
+JSX Text: -1 Precedente
+JSX Text: updateDisplayQueueCalling(null)}
+                    className="px-3.5 py-2.5 text-red-400 hover:bg-red-950/30 border border-red-900/30 font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Azzera
+JSX Text: Link Monitor TV Ritiro
+JSX Text: Apri questo indirizzo sul browser della Smart TV, Fire TV Stick, tablet a parete o mini PC collegato allo schermo in sala.
+JSX Text: copyToClipboard(tvUrl)}
+                      className="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors shrink-0"
+                      title="Copia link negli appunti"
+                    >
+JSX Text: Modalità schermo
+JSX Text: Automatico (OLED / LED Ready)
+JSX Text: Aggiornamento
+JSX Text: Push istantaneo WebSocket
+JSX Text: Suono Smart TV
+JSX Text: copyToClipboard(tvUrl)}
+                    className="p-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+JSX Text: Copia Indirizzo
+JSX Text: Schermo Intero
+JSX Text: Aspetto & Personalizzazione TV
+JSX Text: Configura grafica, contrasto, scala tipografica e comportamento sonoro dello schermo in sala.
+JSX Text: Tema Colore Schermo
+JSX Text: Dimensione Cifra Chiamata
+JSX Text: Opzioni & Interruttori Schermo TV
+JSX Text: Gong sonoro su Smart TV
+JSX Text: Doppio rintocco acustico alla chiamata
+JSX Text: Schermo Solo Numero Gigante
+JSX Text: Nasconde liste ordini e mostra solo il numero
+JSX Text: Orologio digitale in alto
+JSX Text: Ora esatta sincronizzata in tempo reale
+JSX Text: Intestazione con nome attività
+JSX Text: Barra superiore con logo e titolo
+JSX Text: Istruzioni per il ritiro
+JSX Text: Testo guida mostrato sotto al numero
+JSX Text: Prefisso '#' davanti al numero
+JSX Text: Es. "#42" invece di solo "42"
+JSX Text: Personalizzazione Testi Schermo TV
+JSX Text: Etichetta Numero in Chiamata
+JSX Text: Testo Istruzioni Ritiro
+JSX Text: Numerazione Ordini & Reset Scontrini
+JSX Text: Configura la frequenza di azzeramento del numero scontrino emesso dal Totem e reimposta la numerazione da #1.
+JSX Text: Modalità di Azzeramento
+JSX Text: Orario di Azzeramento Automatico
+JSX Text: Digital Signage & Segna-Coda Smart TV
+JSX Text: Smart TV • Firestick • Android TV
+JSX Text: Visualizzatore sala con striscia superiore segna-coda in tempo reale (15%) e carosello vetrina prodotti dinamico (85%).
+JSX Text: Copia URL TV
+JSX Text: Apri Schermo TV Schermo Intero
+JSX Text: Controllo Chiamata Sala
+JSX Text: ● Live Sync LAN
+JSX Text: Numero Attualmente in Chiamata
+JSX Text: — In Attesa —
+JSX Text: updateDisplayQueueCalling((dqCallingNum ?? 0) + 1)}
+                      className="p-3.5 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-rose-600/20"
+                    >
+JSX Text: Chiama Succ. (+1)
+JSX Text: Precedente (-1)
+JSX Text: setDqManualInput(e.target.value)}
+                      className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-rose-500 font-mono"
+                    />
+JSX Text: updateDisplayQueueCalling(null)}
+                      className="px-3 py-2.5 bg-zinc-900 hover:bg-red-950/40 text-red-400 border border-red-900/30 font-bold rounded-xl text-xs transition-all"
+                      title="Azzera chiamata"
+                    >
+                      Azzera
+JSX Text: Parametri & Aspetto Schermo TV
+JSX Text: Layout Display
+JSX Text: setDqMode(e.target.value as 'full' | 'products')}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: 15% Coda + 85% Vetrina
+JSX Text: Solo Vetrina Prodotti
+JSX Text: Tema Grafico
+JSX Text: setDqTheme(e.target.value as 'dark' | 'light')}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: Sala scura
+JSX Text: Sala chiara
+JSX Text: Griglia Prodotti
+JSX Text: setDqCols(parseInt(e.target.value, 10))}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: 2 Colonne (Verticale)
+JSX Text: 3 Colonne (Media)
+JSX Text: 4 Colonne (Standard 16:9)
+JSX Text: 6 Colonne (UltraWide / 4K)
+JSX Text: Rotazione Slide
+JSX Text: setDqInterval(parseInt(e.target.value, 10))}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: 6 secondi (Veloce)
+JSX Text: 9 secondi (Consigliato)
+JSX Text: 15 secondi (Lento)
+JSX Text: 30 secondi (Statico)
+JSX Text: Lingua Schermo
+JSX Text: setDqLang(e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: Italiano (IT)
+JSX Text: English (EN)
+JSX Text: Español (ES)
+JSX Text: Français (FR)
+JSX Text: Deutsch (DE)
+JSX Text: Animazione
+JSX Text: setDqAnim(e.target.value as 'kenburns' | 'slide' | 'fade')}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-rose-500 font-medium"
+                      >
+JSX Text: Cinema (consigliata)
+JSX Text: Scorrimento
+JSX Text: Dissolvenza
+JSX Text: Opzioni Vetrina
+JSX Text: setDqHero(e.target.checked)}
+                            className="rounded accent-rose-600 w-4 h-4"
+                          />
+JSX Text: Hero Banner
+JSX Text: setDqDaypart(e.target.checked)}
+                            className="rounded accent-rose-600 w-4 h-4"
+                          />
+JSX Text: Dayparting
+JSX Text: URL Smart TV & Firestick (Scansiona QR o incolla nel browser TV)
+JSX Text: Anteprima Live Schermo TV
+JSX Text: Risoluzione Automatica 16:9
+JSX Text: Visualizzazione in tempo reale di quanto mostrato sullo schermo in sala o sulla Smart TV.
+JSX Text: Schermo Intero
+JSX Text: 🔥 Amazon Fire TV Stick
+JSX Text: Apri l'app
+JSX Text: Amazon Silk Browser
+JSX Text: sulla Fire TV, digita l'URL o imposta l'avvio automatico a tutto schermo (Kiosk mode).
+JSX Text: 📺 Smart TV (LG / Samsung / Android)
+JSX Text: Apri il browser integrato nella Smart TV connessa alla stessa rete Wi-Fi/LAN e inserisci l'indirizzo del totem.
+JSX Text: 🍓 Raspberry Pi / PC Mini
+JSX Text: Avvia Chromium in modalità
+JSX Text: --kiosk
+JSX Text: all'avvio del sistema puntando all'indirizzo TV del totem master.
+JSX Text: Pannello Web Remoto & Accesso Smartphone
+JSX Text: Accedi all'amministrazione, alle comande e al listino da qualsiasi smartphone o PC connesso alla rete Wi-Fi locale.
+JSX Text: Copia Link
+JSX Text: Apri in nuova scheda
+JSX Text: Inquadra con la Fotocamera
+JSX Text: Indirizzo di Rete Locale (LAN)
+JSX Text: Dispositivo Master attivo su porta
+JSX Text: 📱 Gestione da Smartphone
+JSX Text: Modifica prezzi, disattiva piatti esauriti e visualizza comande in tempo reale.
+JSX Text: 🔒 Nessuna Installazione
+JSX Text: Funziona direttamente tramite Safari o Chrome senza scaricare app terze.
+JSX Text: KDS Cucina Web
+JSX Text: Schermo ordini per reparto cuochi
+JSX Text: Hub Servizi LAN
+JSX Text: Portale collegamenti e diagnostica
+JSX Text: Pannello Remoto SPA
+JSX Text: Gestione prodotti e comande da mobile
+JSX Text: Pannello Web Admin Remoto Completo
+JSX Text: Applicazione reattiva ottimizzata per touch smartphone e tablet.
+JSX Text: Apri in nuova scheda
+JSX Text: Nome Prodotto
+JSX Text: Posizione
+JSX Text: Descrizione
+JSX Text: Prezzo (€)
+JSX Text: Categoria
+JSX Text: URL Immagine
+JSX Text: Ingredienti Base (separati da virgola, es: Pane, Carne, Formaggio)
+JSX Text: Disponibilità Prodotto
+JSX Text: Screensaver / Pubblicità
+JSX Text: Mostra questo prodotto nella rotazione salvaschermo
+JSX Text: setEditingProduct(null)}
+                className="flex-1 py-3 bg-zinc-800 text-zinc-300 rounded-xl font-bold text-xs"
+              >
+                Annulla
+JSX Text: Salva
+JSX Text: Nome Categoria
+JSX Text: Posizione
+JSX Text: Descrizione
+JSX Text: URL Immagine
+JSX Text: setEditingCategory(null)}
+                className="flex-1 py-3 bg-zinc-800 text-zinc-300 rounded-xl font-bold text-xs"
+              >
+                Annulla
+JSX Text: Salva
+JSX Text: Nome Gruppo Interno
+JSX Text: Posizione
+JSX Text: Titolo Visibile al Cliente
+JSX Text: Opzioni (separate da virgola)
+JSX Text: Min Selezioni
+JSX Text: Max Selezioni
+JSX Text: setEditingGroup(null)}
+                className="flex-1 py-3 bg-zinc-800 text-zinc-300 rounded-xl font-bold text-xs"
+              >
+                Annulla
+JSX Text: Salva
+JSX Text: Configura reparto e instradamento comande
+JSX Text: setEditingPrinter(null)}
+                className="text-zinc-500 hover:text-white text-lg font-bold"
+              >
+                ✕
+JSX Text: Nome Identificativo Stampante
+JSX Text: Nome Reparto (KDS / Stampa)
+JSX Text: Formato Carta
+JSX Text: 80mm (Standard Termico)
+JSX Text: 58mm (Compatta / Mobile)
+JSX Text: Tipo Connessione / Driver
+JSX Text: Ethernet / Wi-Fi (TCP Port 9100 Raw ESC/POS)
+JSX Text: Sunmi / Android Built-in Stampante Interna
+JSX Text: USB Diretta / Seriale Virtuale
+JSX Text: Bluetooth ESC/POS
+JSX Text: Stringa di Connessione (IP:Porta o Percorso Device)
+JSX Text: Funzionalità di Stampa:
+JSX Text: Stampa Comande Cucina / Reparto
+JSX Text: Stampa Scontrino di Cortesia / Ricevuta Cliente
+JSX Text: Assegna Categorie Prodotti a questa stampante:
+JSX Text: Se non selezioni alcuna categoria, la stampante riceverà tutti i prodotti (modalità globale).
+JSX Text: setEditingPrinter(null)}
+                className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-bold text-xs"
+              >
+                Annulla
+JSX Text: Salva Stampante
+JSX Text: setIsTestScreensaverOpen(false)}
+      />
